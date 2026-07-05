@@ -20,6 +20,7 @@ function parseCCCD(qrText) {
 }
 
 // KHỞI ĐỘNG CAMERA QUÉT TỰ ĐỘNG
+// KHỞI ĐỘNG CAMERA QUÉT TỰ ĐỘNG
 function startScanner() {
   document.getElementById('reader').style.display = 'block';
   document.getElementById('start-btn').style.display = 'none';
@@ -30,18 +31,17 @@ function startScanner() {
     html5QrCode = new Html5Qrcode("reader");
   }
 
-  // Cấu hình quét mã QR
+  // Cấu hình khung quét
   const config = {
     fps: 10,
     qrbox: { width: 230, height: 230 },
     formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE]
   };
 
-  // ĐÃ SỬA: Cấu hình chuẩn cho MediaTrackConstraints (Không bọc trong thẻ 'video')
+  // ĐÃ SỬA: Xóa phần ép độ phân giải để tránh lỗi OverconstrainedError trên trình duyệt.
+  // Chỉ yêu cầu sử dụng camera sau (environment).
   const cameraConstraints = {
-    facingMode: "environment",
-    width: { ideal: 1920 }, // Độ phân giải Full HD giúp quét QR dày tốt hơn
-    height: { ideal: 1080 }
+    facingMode: "environment"
   };
 
   html5QrCode.start(cameraConstraints, config, (decodedText) => {
@@ -55,7 +55,8 @@ function startScanner() {
     stopScanner();
   }).catch(err => {
     console.error("Lỗi mở camera tự động:", err);
-    alert("Không thể mở camera quét trực tiếp. Vui lòng chuyển sang dùng chức năng 'Chụp Ảnh Thẻ để Quét'.");
+    // Hiển thị thẳng mã lỗi ra màn hình để bắt bệnh nếu vẫn thất bại
+    alert("Lỗi mở camera: " + (err.name || err.message || err) + "\n\nVui lòng dùng chức năng 'Chụp Ảnh Thẻ' tạm thời.");
     stopScanner();
   });
 }
