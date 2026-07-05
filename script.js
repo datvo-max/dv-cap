@@ -27,19 +27,24 @@ function startScanner() {
 
     html5QrCode = new Html5Qrcode("reader");
 
-    // Cấu hình an toàn, tương thích mọi trình duyệt
     const config = {
         fps: 10,
-        qrbox: { width: 250, height: 250 }
+        // Giảm kích thước khung quét một chút để người dùng đưa thẻ ra xa hơn, giúp lấy nét dễ hơn
+        qrbox: { width: 220, height: 220 },
+        formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE]
     };
 
-    // Chỉ yêu cầu dùng camera sau, không ép tính năng nâng cao gây lỗi
+    // ÉP ĐỘ PHÂN GIẢI CAO HƠN TẠI ĐÂY
     const cameraConstraints = {
-        facingMode: "environment"
+        video: {
+            facingMode: "environment",
+            // Yêu cầu độ phân giải lý tưởng là 2K, nếu không được sẽ lùi về thấp hơn
+            width: { ideal: 2560 },
+            height: { ideal: 1440 }
+        }
     };
 
     html5QrCode.start(cameraConstraints, config, (decodedText) => {
-        // Khi quét thành công
         const personData = parseCCCD(decodedText);
         scannedData.push(personData);
 
@@ -50,8 +55,23 @@ function startScanner() {
 
     }).catch(err => {
         console.log("Lỗi khởi tạo camera:", err);
-        // Hiển thị trực tiếp mã lỗi để dễ kiểm tra
-        alert("Không thể mở camera. Chi tiết lỗi: " + err);
+        // Nếu ép độ phân giải cao bị lỗi trên một số máy cũ, chúng ta sẽ lùi về cấu hình cơ bản
+        console.log("Thử lại với cấu hình thấp...");
+        retryScannerWithLowRes();
+    });
+}
+
+// Hàm dự phòng nếu ép độ phân giải cao bị lỗi
+function retryScannerWithLowRes() {
+    const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+    html5QrCode.start({ facingMode: "environment" }, config, (decodedText) => {
+        const personData = parseCCCD(decodedText);
+        scannedData.push(personData);
+        updateTable();
+        alert("Đã quét thành công: " + (personData["Họ và Tên"]));
+        stopScanner();
+    }).catch(err2 => {
+        alert("Không thể mở camera: " + err2);
     });
 }
 
