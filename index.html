@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quét QR Thẻ Căn Cước</title>
+
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 15px;
+      background-color: #f4f7f6;
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: white;
+      font-weight: bold;
+    }
+
+    .btn-scan {
+      background-color: #007bff;
+    }
+
+    .btn-stop {
+      background-color: #dc3545;
+      display: none;
+    }
+
+    .btn-export {
+      background-color: #28a745;
+    }
+
+    #reader {
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto 20px auto;
+      border-radius: 8px;
+      overflow: hidden;
+      display: none;
+      /* Ẩn đi khi chưa bấm quét */
+    }
+
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      /* Cho phép cuộn ngang trên điện thoại */
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      white-space: nowrap;
+    }
+
+    th,
+    td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #f8f9fa;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>Quét Mã QR Căn Cước</h2>
+
+  <div class="btn-group">
+    <button class="btn-scan" id="start-btn" onclick="startScanner()">Mở Camera Quét QR</button>
+    <button class="btn-stop" id="stop-btn" onclick="stopScanner()">Đóng Camera</button>
+    <button class="btn-export" onclick="exportExcel()">Xuất File Excel</button>
+  </div>
+
+  <div id="reader"></div>
+
+  <div class="table-container">
+    <table id="data-table">
+      <thead>
+        <tr>
+          <th>STT</th>
+          <th>Số CCCD</th>
+          <th>Họ và Tên</th>
+          <th>Ngày Sinh</th>
+          <th>Giới Tính</th>
+          <th>Địa Chỉ</th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    let scannedData = []; // Mảng lưu trữ dữ liệu
+    let html5QrCode;
+
+    // Hàm phân tích chuỗi QR của CCCD
+    function parseCCCD(qrText) {
+      const parts = qrText.split('|');
+      if (parts.length >= 6) {
+        return {
+          "Số CCCD": parts[0] || "",
+          "CMND Cũ": parts[1] || "",
+          "Họ và Tên": parts[2] || "",
+          "Ngày Sinh": parts[3] || "",
+          "Giới Tính": parts[4] || "",
+          "Địa Chỉ": parts[5] || "",
+          "Ngày Cấp": parts[6] || ""
+        };
+      } else {
+        // Nếu không đúng chuẩn CCCD thì trả về chuỗi gốc
+        return { "Dữ liệu": qrText };
+      }
+    }
+
+    // Bắt đầu mở camera quét
+    function startScanner() {
+      document.getElementById('reader').style.display = 'block';
+      document.getElementById('start-btn').style.display = 'none';
+      document.getElementById('stop-btn').style.display = 'inline-block';
+
+      html5QrCode = new Html5Qrcode("reader");
+
+      // Cấu hình: dùng camera sau (environment), giới hạn khung quét
+      const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+      html5QrCode.start({ facingMode: "environment" }, config, (decodedText) => {
+        // Khi quét thành công
+        const personData = parseCCCD(decodedText);
+        scannedData.push(personData);
+
+        updateTable();
+        alert("Đã quét thành công: " + (personData["Họ và Tên"] || "Mã QR khác"));
+
+        // Tự động đóng camera sau khi quét xong (nếu muốn quét liên tục thì bỏ dòng này)
+        stopScanner();
+
+      }).catch(err => {
+        console.log("Lỗi khởi tạo camera:", err);
+      });
+    }
+
+    // Đóng camera
+    function stopScanner() {
+      if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+          document.getElementById('reader').style.display = 'none';
+          document.getElementById('start-btn').style.display = 'inline-block';
+          document.getElementById('stop-btn').style.display = 'none';
+        }).catch(err => {
+          console.log("Lỗi khi tắt camera: ", err);
+        });
+      }
+    }
+
+    // Cập nhật giao diện bảng
+    function updateTable() {
+      const tbody = document.getElementById('table-body');
+      tbody.innerHTML = ""; // Xóa cũ
+
+      scannedData.forEach((item, index) => {
+        const tr = document.createElement('tr');
+        // Nếu là CCCD chuẩn
+        if (item["Số CCCD"]) {
+          tr.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${item["Số CCCD"]}</td>
+                        <td>${item["Họ và Tên"]}</td>
+                        <td>${item["Ngày Sinh"]}</td>
+                        <td>${item["Giới Tính"]}</td>
+                        <td>${item["Địa Chỉ"]}</td>
+                    `;
+        } else {
+          // Nếu quét QR bừa
+          tr.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td colspan="5">${item["Dữ liệu"]}</td>
+                    `;
+        }
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Xuất file Excel
+    function exportExcel() {
+      if (scannedData.length === 0) {
+        alert("Chưa có dữ liệu để xuất Excel!");
+        return;
+      }
+      // Tạo Worksheet từ JSON (mảng scannedData)
+      const worksheet = XLSX.utils.json_to_sheet(scannedData);
+      // Tạo Workbook mới
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "DanhSachCCCD");
+      // Tải file xuống
+      XLSX.writeFile(workbook, "Danh_Sach_CCCD.xlsx");
+    }
+  </script>
+</body>
+
+</html>
