@@ -8,12 +8,31 @@ body {
 h2 {
   text-align: center;
   color: #333;
+  margin-bottom: 5px;
 }
 
 h4 {
   text-align: center;
   color: #333;
   font-size: 12px;
+}
+
+/* Định dạng khu vực thống kê */
+.stats-container {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.stats-container h3 {
+  margin: 0;
+  color: #555;
+  font-size: 18px;
+}
+
+#total-count {
+  color: #e91e63;
+  font-size: 22px;
+  font-weight: bold;
 }
 
 .btn-group {
@@ -39,13 +58,19 @@ button {
 }
 
 .btn-stop {
-  background-color: #dc3545;
+  background-color: #6c757d;
   display: none;
 }
 
 .btn-export {
   background-color: #28a745;
 }
+
+.btn-delete {
+  background-color: #dc3545;
+}
+
+/* Màu đỏ cảnh báo cho nút xóa */
 
 #reader {
   width: 100%;
@@ -54,13 +79,11 @@ button {
   border-radius: 8px;
   overflow: hidden;
   display: none;
-  /* Ẩn đi khi chưa bấm quét */
 }
 
 .table-container {
   width: 100%;
   overflow-x: auto;
-  /* Cho phép cuộn ngang trên điện thoại */
   background: white;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -81,4 +104,86 @@ td {
 
 th {
   background-color: #f8f9fa;
+}
+
+/* Nút dành cho máy quét vật lý */
+.btn-device {
+  background-color: #6f42c1;
+}
+
+.btn-device.active {
+  background-color: #dc3545;
+  /* Đổi sang đỏ khi đang hoạt động */
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.8;
+    box-shadow: 0 0 10px #dc3545;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+/* =========================================
+   HỆ THỐNG TOAST THÔNG BÁO 
+========================================= */
+#toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toast {
+  min-width: 250px;
+  padding: 16px 20px;
+  color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  font-size: 15px;
+  font-weight: bold;
+  opacity: 0;
+  transform: translateX(100%);
+  animation: slideIn 0.3s forwards, fadeOut 0.3s 2.7s forwards;
+}
+
+.toast-success {
+  background-color: #28a745;
+  border-left: 5px solid #1e7e34;
+}
+
+.toast-error {
+  background-color: #dc3545;
+  border-left: 5px solid #bd2130;
+}
+
+.toast-warning {
+  background-color: #ffc107;
+  color: #333;
+  border-left: 5px solid #d39e00;
+}
+
+@keyframes slideIn {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translateX(120%);
+  }
 }
