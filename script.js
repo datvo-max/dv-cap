@@ -95,9 +95,13 @@ function clearData() {
 
 // HÀM PHÂN TÍCH VÀ NHẬN DIỆN LOẠI THẺ
 function parseCCCD(qrText) {
+<<<<<<< HEAD
   const cleanText = qrText.trim();
   const parts = cleanText.split('|');
 
+=======
+  const parts = qrText.split('|').slice(0,7);
+>>>>>>> 9935f3cb6daafc5fc9e365a6ed1439ba79b6a9ce
   if (parts.length >= 6) {
     const loaiThe = parts.length > 7 ? "Thẻ Căn cước" : "Căn cước công dân";
 
