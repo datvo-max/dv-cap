@@ -95,13 +95,9 @@ function clearData() {
 
 // HÀM PHÂN TÍCH VÀ NHẬN DIỆN LOẠI THẺ
 function parseCCCD(qrText) {
-<<<<<<< HEAD
   const cleanText = qrText.trim();
   const parts = cleanText.split('|');
 
-=======
-  const parts = qrText.split('|').slice(0,7);
->>>>>>> 9935f3cb6daafc5fc9e365a6ed1439ba79b6a9ce
   if (parts.length >= 6) {
     const loaiThe = parts.length > 7 ? "Thẻ Căn cước" : "Căn cước công dân";
 
@@ -250,10 +246,78 @@ function exportExcel() {
     alert("Chưa có dữ liệu trong danh sách để xuất Excel!");
     return;
   }
-  const worksheet = XLSX.utils.json_to_sheet(scannedData);
+
+  // 1. Xếp lại thứ tự dữ liệu và bổ sung cột STT cho file Excel
+  const dataToExport = scannedData.map((item, index) => ({
+    "STT": index + 1,
+    "Loại Thẻ": item["Loại Thẻ"],
+    "Số CCCD": item["Số CCCD"],
+    "Số CMND Cũ": item["CMND Cũ"],
+    "Họ và Tên": item["Họ và Tên"],
+    "Ngày Sinh": item["Ngày Sinh"],
+    "Giới Tính": item["Giới Tính"],
+    "Địa Chỉ": item["Địa Chỉ"],
+    "Ngày Cấp": item["Ngày Cấp"],
+    "Họ Tên Vợ/Chồng": item["Họ Tên Vợ/Chồng"],
+    "Họ Tên Cha": item["Họ Tên Cha"],
+    "Họ Tên Mẹ": item["Họ Tên Mẹ"]
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(dataToExport);
+
+  // 2. THIẾT LẬP ĐỘ RỘNG CỘT (Tính bằng số lượng ký tự)
+  ws['!cols'] = [
+    { wch: 6 },   // STT
+    { wch: 12 },  // Loại Thẻ
+    { wch: 16 },  // Số CCCD
+    { wch: 14 },  // Số CMND Cũ
+    { wch: 25 },  // Họ và Tên
+    { wch: 12 },  // Ngày Sinh
+    { wch: 10 },  // Giới Tính
+    { wch: 45 },  // Địa Chỉ (Rộng nhất để Wrap text)
+    { wch: 12 },  // Ngày Cấp
+    { wch: 25 },  // Vợ/Chồng
+    { wch: 25 },  // Cha
+    { wch: 25 }   // Mẹ
+  ];
+
+  // 3. TÙY CHỈNH STYLE (Font, Cỡ chữ, Border, Wrap text)
+  const range = XLSX.utils.decode_range(ws['!ref']);
+
+  for (let R = range.s.r; R <= range.e.r; ++R) {
+    for (let C = range.s.c; C <= range.e.c; ++C) {
+      const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+      if (!ws[cellAddress]) continue;
+
+      // Thiết lập style cho từng ô trong bảng
+      ws[cellAddress].s = {
+        font: {
+          name: "Times New Roman",
+          sz: 12, // Cỡ chữ 12
+          bold: R === 0 // Chỉ in đậm dòng số 0 (Dòng tiêu đề)
+        },
+        border: { // Kẻ khung toàn bộ các ô
+          top: { style: "thin", color: { rgb: "000000" } },
+          bottom: { style: "thin", color: { rgb: "000000" } },
+          left: { style: "thin", color: { rgb: "000000" } },
+          right: { style: "thin", color: { rgb: "000000" } }
+        },
+        alignment: {
+          wrapText: true, // Tự động xuống dòng
+          vertical: "center", // Căn giữa theo chiều dọc
+          horizontal: R === 0 ? "center" : "left" // Dòng tiêu đề căn giữa, dữ liệu căn trái
+        }
+      };
+    }
+  }
+
+  // 4. Khởi tạo file và tải xuống
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "DanhSachCCCD");
-  XLSX.writeFile(workbook, "Danh_Sach_CCCD.xlsx");
+  XLSX.utils.book_append_sheet(workbook, ws, "DanhSachCCCD");
+
+  // Tạo tên file tự động có chứa ngày giờ để không bị lưu đè
+  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  XLSX.writeFile(workbook, `Danh_Sach_CCCD_${dateStr}.xlsx`);
 }
 
 // GỌI HÀM UPDATE BẢNG NGAY KHI LOAD TRANG ĐỂ HIỂN THỊ DỮ LIỆU CŨ TỪ LOCAL STORAGE
