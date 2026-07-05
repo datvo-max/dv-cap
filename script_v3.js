@@ -102,20 +102,39 @@ function scanImage(event) {
 
 // Hàm bổ trợ xử lý đọc mã từ file ảnh tĩnh
 function processImageFile(file, event) {
-  // ĐÃ SỬA: Đổi tham số thứ 2 thành 'false' để xử lý ngầm trong bộ nhớ thay vì vẽ lên giao diện ẩn
   html5QrCode.scanFile(file, false)
     .then(decodedText => {
       const personData = parseCCCD(decodedText);
       scannedData.push(personData); // Thêm vào mảng dữ liệu
 
       updateTable(); // Cập nhật lại bảng hiển thị
-      alert("Đã xử lý ảnh và thêm thành công: " + (personData["Họ và Tên"] || "Dữ liệu QR"));
-      event.target.value = ""; // Xóa dữ liệu cũ trong thẻ input để sẵn sàng cho lần chụp sau
+
+      // THAY ĐỔI: Dùng confirm để hỏi người dùng có muốn quét tiếp không
+      const tiepTuc = confirm("Đã thêm thành công: " + (personData["Họ và Tên"] || "Dữ liệu QR") + "\n\nTiếp tục chụp thẻ tiếp theo?");
+
+      event.target.value = ""; // Xóa dữ liệu cũ trong thẻ input
+
+      // Nếu người dùng chọn OK, tự động mở lại camera gốc
+      if (tiepTuc) {
+        // Thêm một độ trễ nhỏ (300ms) để trình duyệt kịp đóng hộp thoại confirm trước khi gọi camera, tránh xung đột trên một số dòng máy.
+        setTimeout(() => {
+          document.getElementById('file-input').click();
+        }, 300);
+      }
     })
     .catch(err => {
       console.error("Lỗi phân tích mã QR từ ảnh:", err);
-      alert("Không tìm thấy mã QR hợp lệ trong ảnh vừa chụp.\nMẹo: Hãy đưa camera điện thoại sát hơn, giữ chắc tay để ảnh chụp rõ nét các ký tự chấm vuông của mã QR rồi thử lại!");
+
+      // Tương tự, nếu lỗi cũng hỏi xem có muốn chụp lại luôn không
+      const thuLai = confirm("Không tìm thấy mã QR hợp lệ trong ảnh.\nMẹo: Hãy đưa máy sát thẻ và đợi ống kính lấy nét chữ thật rõ.\n\nBạn có muốn chụp lại ngay không?");
+
       event.target.value = "";
+
+      if (thuLai) {
+        setTimeout(() => {
+          document.getElementById('file-input').click();
+        }, 300);
+      }
     });
 }
 
