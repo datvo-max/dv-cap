@@ -151,10 +151,21 @@
 
       html5QrCode = new Html5Qrcode("reader");
 
-      // Cấu hình: dùng camera sau (environment), giới hạn khung quét
-      const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+      // 1. CẤU HÌNH TỐI ƯU CHO QR DÀY ĐẶC
+      const config = {
+        fps: 10,
+        qrbox: { width: 250, height: 250 },
+        // Chỉ tập trung quét QR Code, bỏ qua các loại mã vạch khác để tăng tốc độ xử lý
+        formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE]
+      };
 
-      html5QrCode.start({ facingMode: "environment" }, config, (decodedText) => {
+      // 2. ÉP ĐỘ PHÂN GIẢI CAMERA CAO HƠN
+      const cameraConstraints = {
+        facingMode: "environment",
+        advanced: [{ focusMode: "continuous" }] // Cố gắng bật lấy nét liên tục nếu điện thoại hỗ trợ
+      };
+
+      html5QrCode.start(cameraConstraints, config, (decodedText) => {
         // Khi quét thành công
         const personData = parseCCCD(decodedText);
         scannedData.push(personData);
@@ -162,11 +173,11 @@
         updateTable();
         alert("Đã quét thành công: " + (personData["Họ và Tên"] || "Mã QR khác"));
 
-        // Tự động đóng camera sau khi quét xong (nếu muốn quét liên tục thì bỏ dòng này)
         stopScanner();
 
       }).catch(err => {
         console.log("Lỗi khởi tạo camera:", err);
+        alert("Lỗi camera: Hãy đảm bảo bạn đã cấp quyền và đang dùng HTTPS.");
       });
     }
 
