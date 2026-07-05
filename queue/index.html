@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng Ký Lấy Số Thứ Tự Cấp Căn Cước</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background-color: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      background-color: #ffffff;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    h1,
+    h2 {
+      color: #1a73e8;
+      font-size: 22px;
+      margin-bottom: 5px;
+    }
+
+    p {
+      color: #5f6368;
+      font-size: 14px;
+      margin-bottom: 25px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      margin-bottom: 15px;
+      border: 1px solid #dcdcdc;
+      border-radius: 8px;
+      font-size: 15px;
+      box-sizing: border-box;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #1a73e8;
+    }
+
+    .btn {
+      background-color: #1a73e8;
+      color: white;
+      border: none;
+      padding: 15px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      transition: 0.2s;
+    }
+
+    .btn:hover {
+      background-color: #1557b0;
+    }
+
+    .btn:disabled {
+      background-color: #a0c1ef;
+      cursor: not-allowed;
+    }
+
+    .display-name {
+      font-size: 16px;
+      margin-bottom: 25px;
+      font-weight: bold;
+    }
+
+    #resultSection,
+    #lockSection {
+      display: none;
+    }
+
+    .ticket-box {
+      font-size: 70px;
+      font-weight: bold;
+      color: #d93025;
+      background-color: #fce8e6;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+      border: 2px dashed #f5c2c7;
+    }
+
+    .success-text {
+      color: #1e8e3e;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .countdown {
+      font-size: 32px;
+      font-weight: bold;
+      color: #d93025;
+      margin: 20px 0;
+      letter-spacing: 2px;
+    }
+
+    .version {
+      color: #1e8e3e;
+      font-size: 10px;
+      text-align: right;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container" id="formSection">
+    <h1>THÔNG TIN LẤY SỐ THỨ TỰ</h1>
+    <h2>CẤP CĂN CƯỚC</h2>
+    <p>Vui lòng điền thông tin để nhận số thứ tự</p>
+    <input type="text" id="cusName" placeholder="Họ và tên của bạn" required>
+    <input type="tel" id="cusPhone" placeholder="Số điện thoại" required>
+    <button class="btn" id="submitBtn" onclick="getTicket()">NHẬN SỐ THỨ TỰ</button>
+    <div class="version">2026 - Phiên bản: 1.0.0</div>
+  </div>
+
+  <div class="container" id="resultSection">
+    <div class="success-text">Đăng ký thành công!</div>
+    <p class="display-name" id="displayName"></p>
+    <p>Số thứ tự của bạn là:</p>
+    <div class="ticket-box" id="displayTicket">--</div>
+    <p>Vui lòng chụp màn hình lại và chờ đến lượt phục vụ.</p>
+  </div>
+
+  <div class="container" id="lockSection">
+    <h1 style="color: #d93025;">THIẾT BỊ ĐANG BỊ KHÓA</h1>
+    <p style="margin-bottom: 10px;">Hệ thống giới hạn mỗi điện thoại / thông tin chỉ được bốc 1 số trong vòng 5 phút.
+    </p>
+    <p>Vui lòng thử lại sau:</p>
+    <div class="countdown" id="countdownTimer">05:00</div>
+  </div>
+
+  <script>
+    // DÁN ĐƯỜNG LINK URL WEB APP GOOGLE CỦA BẠN VÀO ĐÂY
+    const API_URL = "https://script.google.com/macros/s/AKfycbzs_pywxz4PLYULAv9GnwZ_EbbVFKk4v8cr-tUwqsgwV4HIMVzJrm_P2wHd4PpajqUURA/exec";
+
+    // Tự động chạy khi khách vừa truy cập trang web để check dấu vết thiết bị
+    window.onload = function () {
+      checkDeviceLock();
+    };
+
+    function checkDeviceLock() {
+      const lastBooking = localStorage.getItem('lastBookingTime');
+      if (lastBooking) {
+        const diff = Date.now() - parseInt(lastBooking);
+        const limit = 5 * 60 * 1000; // Quy đổi 5 phút sang miligiây (300000ms)
+        if (diff < limit) {
+          startCountdown(Math.ceil((limit - diff) / 1000));
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function startCountdown(seconds) {
+      document.getElementById('formSection').style.display = 'none';
+      document.getElementById('resultSection').style.display = 'none';
+      document.getElementById('lockSection').style.display = 'block';
+
+      const timerDisplay = document.getElementById('countdownTimer');
+      const interval = setInterval(() => {
+        seconds--;
+        if (seconds <= 0) {
+          clearInterval(interval);
+          document.getElementById('lockSection').style.display = 'none';
+          document.getElementById('formSection').style.display = 'block';
+          localStorage.removeItem('lastBookingTime'); // Giải phóng khóa
+        } else {
+          let m = Math.floor(seconds / 60);
+          let s = seconds % 60;
+          timerDisplay.innerText = (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+        }
+      }, 1000);
+    }
+
+    function getTicket() {
+      const nameInput = document.getElementById('cusName').value.trim();
+      const phoneInput = document.getElementById('cusPhone').value.trim();
+      const btn = document.getElementById('submitBtn');
+
+      if (nameInput === "" || phoneInput === "") {
+        alert("Vui lòng nhập đầy đủ Họ tên và Số điện thoại!");
+        return;
+      }
+
+      btn.innerText = "Đang kiểm tra...";
+      btn.disabled = true;
+
+      const requestUrl = API_URL + "?name=" + encodeURIComponent(nameInput) + "&phone=" + encodeURIComponent(phoneInput);
+
+      fetch(requestUrl)
+        .then(response => response.json())
+        .then(data => {
+          if (data.error === "cooldown") {
+            // Trường hợp lách luật bằng ẩn danh nhưng trùng Tên/SĐT trên hệ thống Sheets
+            alert(data.message);
+            btn.innerText = "NHẬN SỐ THỨ TỰ";
+            btn.disabled = false;
+          } else {
+            console.log(data);
+            // Thành công: Ghi đè thời gian bốc số hiện tại vào bộ nhớ máy khách
+            localStorage.setItem('lastBookingTime', Date.now());
+
+            document.getElementById('formSection').style.display = 'none';
+            document.getElementById('resultSection').style.display = 'block';
+
+            let ticketStr = data.ticket < 10 ? "0" + data.ticket : data.ticket;
+            document.getElementById('displayTicket').innerText = ticketStr;
+            document.getElementById('displayName').innerText = nameInput;
+          }
+        })
+        .catch(error => {
+          alert("Hệ thống quá tải hoặc mất kết nối, vui lòng thử lại!");
+          btn.innerText = "NHẬN SỐ THỨ TỰ";
+          btn.disabled = false;
+        });
+    }
+  </script>
+</body>
+
+</html>
