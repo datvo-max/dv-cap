@@ -94,7 +94,7 @@ function clearData() {
 }
 
 function parseCCCD(qrText) {
-  const parts = qrText.split('|');
+  const parts = qrText.split('|').slice(0,7);
   if (parts.length >= 6) {
     return {
       "Số CCCD": parts[0] || "",
