@@ -93,20 +93,30 @@ function clearData() {
   }
 }
 
+// HÀM PHÂN TÍCH VÀ NHẬN DIỆN LOẠI THẺ
 function parseCCCD(qrText) {
-  const parts = qrText.split('|');
+  const cleanText = qrText.trim();
+  const parts = cleanText.split('|');
+
   if (parts.length >= 6) {
+    const loaiThe = parts.length > 7 ? "Thẻ Căn cước" : "Căn cước công dân";
+
     return {
+      "Loại Thẻ": loaiThe,
       "Số CCCD": parts[0] || "",
       "CMND Cũ": parts[1] || "",
       "Họ và Tên": parts[2] || "",
       "Ngày Sinh": parts[3] || "",
       "Giới Tính": parts[4] || "",
       "Địa Chỉ": parts[5] || "",
-      "Ngày Cấp": parts[6] || ""
+      "Ngày Cấp": parts[6] || "",
+      // ĐẶT TÊN CHÍNH XÁC CHO 3 TRƯỜNG THÔNG TIN CỦA THẺ MỚI
+      "Họ Tên Vợ/Chồng": parts[7] || "",
+      "Họ Tên Cha": parts[8] || "",
+      "Họ Tên Mẹ": parts[9] || ""
     };
   } else {
-    return { "Dữ liệu": qrText };
+    return { "Dữ liệu": cleanText };
   }
 }
 
@@ -189,31 +199,42 @@ function processImageFile(file, event) {
 // ==========================================
 // 3. GIAO DIỆN & XUẤT FILE
 // ==========================================
+// HÀM CẬP NHẬT BẢNG HIỂN THỊ
 function updateTable() {
   const tbody = document.getElementById('table-body');
   tbody.innerHTML = "";
 
   scannedData.forEach((item, index) => {
     const tr = document.createElement('tr');
+
     if (item["Số CCCD"]) {
+      const badgeColor = item["Loại Thẻ"] === "Thẻ Mới" ? "#28a745" : "#6c757d";
+      const badgeHtml = `<span style="background-color: ${badgeColor}; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold;">${item["Loại Thẻ"]}</span>`;
+
       tr.innerHTML = `
                 <td>${index + 1}</td>
+                <td>${badgeHtml}</td>
                 <td>${item["Số CCCD"]}</td>
+                <td>${item["CMND Cũ"]}</td>
                 <td>${item["Họ và Tên"]}</td>
                 <td>${item["Ngày Sinh"]}</td>
                 <td>${item["Giới Tính"]}</td>
                 <td>${item["Địa Chỉ"]}</td>
+                <td>${item["Ngày Cấp"]}</td>
+                <!-- HIỂN THỊ DỮ LIỆU LÊN BẢNG -->
+                <td>${item["Họ Tên Vợ/Chồng"]}</td>
+                <td>${item["Họ Tên Cha"]}</td>
+                <td>${item["Họ Tên Mẹ"]}</td>
             `;
     } else {
       tr.innerHTML = `
                 <td>${index + 1}</td>
-                <td colspan="5" style="color: #666; font-style: italic;">${item["Dữ liệu"]}</td>
+                <td colspan="12" style="color: #666; font-style: italic;">${item["Dữ liệu"]}</td>
             `;
     }
     tbody.appendChild(tr);
   });
 
-  // CẬP NHẬT BỘ ĐẾM HIỂN THỊ
   const countElement = document.getElementById('total-count');
   if (countElement) {
     countElement.innerText = scannedData.length;
@@ -253,52 +274,84 @@ function showToast(message, type = 'success') {
 }
 
 // ==========================================
-// CHỨC NĂNG NHẬN DỮ LIỆU TỪ MÁY QUÉT CẦM TAY (PC/LAPTOP)
+// CHỨC NĂNG NHẬN DỮ LIỆU TỪ MÁY QUÉT CẦM TAY (PC/LAPTOP) - BẢN TRỰC QUAN
 // ==========================================
 let isDeviceScannerActive = false;
-let scanBuffer = "";
-let scanTimeout = null;
+let scannerInput = null;
+
+function setupHiddenInput() {
+  if (!document.getElementById('scanner-hidden-input')) {
+    scannerInput = document.createElement('input');
+    scannerInput.type = 'text';
+    scannerInput.id = 'scanner-hidden-input';
+
+    // Giữ ô nhập thật tàng hình
+    scannerInput.style.position = 'absolute';
+    scannerInput.style.opacity = '0';
+    scannerInput.style.left = '-9999px';
+    document.body.appendChild(scannerInput);
+
+    // LẮNG NGHE SỰ KIỆN 1: Bắt phím Enter chốt sổ
+    scannerInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        let qrText = scannerInput.value.trim();
+
+        if (qrText !== "") {
+          processDeviceData(qrText);
+        }
+
+        // Dọn dẹp dữ liệu ở cả 2 ô sau khi quét xong
+        scannerInput.value = "";
+        document.getElementById('scanner-display').value = "";
+      }
+    });
+
+    // LẮNG NGHE SỰ KIỆN 2: Phản chiếu ký tự ngay lập tức lên màn hình (Tính năng mới)
+    scannerInput.addEventListener('input', function () {
+      document.getElementById('scanner-display').value = scannerInput.value;
+    });
+
+    // Kéo con trỏ chuột về nếu lỡ click ra ngoài
+    document.addEventListener('click', function () {
+      if (isDeviceScannerActive) {
+        scannerInput.focus();
+      }
+    });
+  }
+}
 
 function toggleDeviceScanner() {
+  setupHiddenInput();
   const btn = document.getElementById('device-btn');
+  const displayContainer = document.getElementById('scanner-display-container');
+  const displayBox = document.getElementById('scanner-display');
+
   isDeviceScannerActive = !isDeviceScannerActive;
 
   if (isDeviceScannerActive) {
     btn.innerText = "Đang Nhận QR... (Bấm Dừng)";
     btn.classList.add('active');
-    showToast("Đã bật nhận dữ liệu. Dùng súng quét mã bắn trực tiếp vào thẻ!", "success");
+
+    // Hiện khung trực quan
+    displayContainer.style.display = 'block';
+
+    scannerInput.value = "";
+    displayBox.value = "";
+    scannerInput.focus();
+
+    showToast("Sẵn sàng! Dữ liệu sẽ hiển thị trong khung viền tím.", "success");
   } else {
     btn.innerText = "Nhận Từ Máy Quét (PC)";
     btn.classList.remove('active');
-    scanBuffer = "";
+
+    // Ẩn khung trực quan đi cho gọn
+    displayContainer.style.display = 'none';
+
+    scannerInput.blur();
     showToast("Đã tắt chế độ nhận từ máy quét.", "warning");
   }
 }
-
-// Lắng nghe tín hiệu từ máy quét mã vạch toàn màn hình
-document.addEventListener('keydown', function (event) {
-  if (!isDeviceScannerActive) return;
-
-  // Máy quét luôn gửi phím Enter khi kết thúc chuỗi mã
-  if (event.key === 'Enter') {
-    if (scanBuffer.trim() !== "") {
-      processDeviceData(scanBuffer.trim());
-    }
-    scanBuffer = ""; // Xóa bộ đệm chuẩn bị cho thẻ tiếp theo
-    return;
-  }
-
-  // Bỏ qua các phím điều khiển (Shift, Ctrl, Alt...)
-  if (event.key.length === 1) {
-    scanBuffer += event.key;
-  }
-
-  // Reset bộ đệm nếu ngắt quãng quá 500ms (Tránh việc vô tình gõ phím ngoài ý muốn)
-  clearTimeout(scanTimeout);
-  scanTimeout = setTimeout(() => {
-    scanBuffer = "";
-  }, 500);
-});
 
 function processDeviceData(qrText) {
   const personData = parseCCCD(qrText);
@@ -307,10 +360,8 @@ function processDeviceData(qrText) {
     scannedData.push(personData);
     saveData();
     updateTable();
-    // Thông báo Toast thành công (không làm gián đoạn luồng làm việc)
     showToast(`✅ Đã thêm: ${personData["Họ và Tên"]}`, 'success');
   } else {
-    // Thông báo Toast thất bại
     showToast(`❌ Lỗi: Mã QR không hợp lệ!`, 'error');
   }
 }
