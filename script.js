@@ -125,3 +125,31 @@ function exportExcel() {
     XLSX.utils.book_append_sheet(workbook, worksheet, "DanhSachCCCD");
     XLSX.writeFile(workbook, "Danh_Sach_CCCD.xlsx");
 }
+
+// Hàm quét QR từ ảnh tĩnh (Chụp bằng camera gốc của điện thoại)
+function scanImage(event) {
+    if (event.target.files.length === 0) return;
+    const file = event.target.files[0];
+
+    // Khởi tạo thư viện nếu chưa có
+    if (!html5QrCode) {
+        html5QrCode = new Html5Qrcode("reader");
+    }
+
+    // Đọc mã QR trực tiếp từ file ảnh
+    html5QrCode.scanFile(file, true)
+        .then(decodedText => {
+            const personData = parseCCCD(decodedText);
+            scannedData.push(personData);
+
+            updateTable();
+            alert("Đã quét thành công: " + (personData["Họ và Tên"] || "Mã QR khác"));
+
+            // Reset lại input để có thể bấm chụp tiếp ảnh thứ 2
+            event.target.value = "";
+        })
+        .catch(err => {
+            alert("Không tìm thấy mã QR trong ảnh. Vui lòng đưa máy sát hơn để camera lấy nét nét chữ!");
+            event.target.value = "";
+        });
+}
