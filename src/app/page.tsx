@@ -20,7 +20,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-gray-50 p-4 font-sans text-gray-800">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         <div >
           <Image
             src={logoImg}
@@ -31,8 +31,8 @@ export default function Home() {
           />
           <h2 className="text-xl font-bold mb-4">Công an phường Tân An</h2>
         </div>
-        <h2 className="text-2xl font-bold text-center mb-4">Hệ Thống Quét Mã Căn Cước</h2>
-        <h4 className="text-center text-sm">Phiên bản: 2.1.0</h4>
+        <h2 className="text-2xl font-bold text-center mb-4">Hệ Thống Quét QR Căn Cước</h2>
+        <h4 className="text-center text-sm">Phiên bản: 2.1.1</h4>
 
         <div className="text-center mb-6">
           <h3 className="text-lg font-semibold text-gray-600">
@@ -64,7 +64,10 @@ export default function Home() {
           onScannerChange={app.handleScannerChange}
         />
 
-        <DataTable data={app.data} />
+        <DataTable
+          data={app.data}
+          onDeleteRow={app.deleteRecord}
+        />
       </div>
 
       {app.toastMsg && (

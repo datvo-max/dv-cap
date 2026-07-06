@@ -42,7 +42,7 @@ export default function ControlPanel({
 
       {/* NÚT TẢI ẢNH / CHỤP THỦ CÔNG */}
       <label className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-bold rounded-lg transition cursor-pointer flex items-center justify-center m-0">
-        Tải Ảnh / Chụp Thủ Công
+        Tải Ảnh Lên
         <input
           type="file"
           accept="image/*"

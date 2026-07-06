@@ -1,49 +1,101 @@
+// src/components/DataTable.tsx
+import React, { useState } from "react";
 import { CCCDRecord } from "@/types/cccd";
 
-export default function DataTable({ data }: { data: CCCDRecord[] }) {
+interface DataTableProps {
+  data: CCCDRecord[];
+  onDeleteRow: (id: string) => void;
+}
+
+export default function DataTable({ data, onDeleteRow }: DataTableProps) {
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  if (data.length === 0) {
+    return (
+      <div className="bg-white p-8 rounded-xl shadow-sm border text-center text-gray-400 font-medium">
+        📂 Chưa có dữ liệu được quét. Vui lòng bật camera hoặc sử dụng máy quét vật lý.
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-x-auto">
-      <table className="w-full whitespace-nowrap text-sm text-left">
-        <thead className="bg-gray-100 text-gray-700">
-          <tr>
-            <th className="p-3 border-b">STT</th>
-            <th className="p-3 border-b">Loại Thẻ</th>
-            <th className="p-3 border-b">Số CCCD</th>
-            <th className="p-3 border-b">Họ và Tên</th>
-            <th className="p-3 border-b">Ngày Sinh</th>
-            <th className="p-3 border-b">Giới Tính</th>
-            <th className="p-3 border-b">Địa Chỉ</th>
-            <th className="p-3 border-b">Vợ/Chồng</th>
-            <th className="p-3 border-b">Cha</th>
-            <th className="p-3 border-b">Mẹ</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((row, idx) => (
-            <tr key={row.id} className="border-b hover:bg-gray-50">
-              <td className="p-3">{idx + 1}</td>
-              <td className="p-3">
-                <span className={`px-2 py-1 text-xs font-bold text-white rounded-full ${row.type === 'Thẻ Căn cước' ? 'bg-green-500' : 'bg-gray-500'}`}>
-                  {row.type}
-                </span>
-              </td>
-              <td className="p-3 font-medium">{row.idNumber}</td>
-              <td className="p-3">{row.fullName}</td>
-              <td className="p-3">{row.dob}</td>
-              <td className="p-3">{row.gender}</td>
-              <td className="p-3 max-w-xs truncate" title={row.address}>{row.address}</td>
-              <td className="p-3">{row.spouseName}</td>
-              <td className="p-3">{row.fatherName}</td>
-              <td className="p-3">{row.motherName}</td>
-            </tr>
-          ))}
-          {data.length === 0 && (
+    <div className="bg-white rounded-xl shadow-sm border overflow-hidden w-full">
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm text-left border-collapse text-gray-600 whitespace-nowrap">
+          <thead className="bg-gray-50 text-gray-700 font-bold border-b border-gray-200">
             <tr>
-              <td colSpan={10} className="p-6 text-center text-gray-500 italic">Chưa có dữ liệu. Hãy quét thẻ để bắt đầu.</td>
+              <th className="p-3.5 text-center w-12">STT</th>
+              <th className="p-3.5">Số CCCD</th>
+              <th className="p-3.5">Họ và Tên</th>
+              <th className="p-3.5">Ngày Sinh</th>
+              <th className="p-3.5">Giới Tính</th>
+              <th className="p-3.5 max-w-xs overflow-hidden text-ellipsis">Địa Chỉ Thường Trú</th>
+              <th className="p-3.5">Ngày Cấp</th>
+              <th className="p-3.5">Vợ/Chồng</th>
+              <th className="p-3.5">Họ Tên Cha</th>
+              <th className="p-3.5">Họ Tên Mẹ</th>
+
+              <th className="p-3.5 text-center w-24 sticky right-0 bg-gray-50 shadow-[-4px_0_10px_rgba(0,0,0,0.02)]">Thao tác</th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-gray-100 font-medium">
+            {data.map((item, index) => (
+              <tr key={item.id} className="hover:bg-gray-50/70 transition-colors">
+                <td className="p-3.5 text-center text-gray-400 font-normal">{index + 1}</td>
+                <td className="p-3.5 font-bold text-blue-900">{item.idNumber}</td>
+                <td className="p-3.5 font-bold text-gray-900">{item.fullName}</td>
+                <td className="p-3.5 text-gray-700">{item.dob}</td>
+                <td className="p-3.5 text-gray-700">{item.gender}</td>
+                <td className="p-3.5 max-w-xs overflow-hidden text-ellipsis text-gray-500 font-normal" title={item.address}>
+                  {item.address}
+                </td>
+                <td className="p-3.5 text-gray-700">{item.issueDate}</td>
+
+                {/* HIỂN THỊ DỮ LIỆU 3 CỘT MỚI */}
+                <td className="p-3.5 text-gray-600">{item.spouseName || "-"}</td>
+                <td className="p-3.5 text-gray-600">{item.fatherName || "-"}</td>
+                <td className="p-3.5 text-gray-600">{item.motherName || "-"}</td>
+
+                {/* CỘT THAO TÁC CÓ THÊM HIỆU ỨNG STICKY ĐỂ KHÔNG BỊ KHUẤT KHI CUỘN NGANG */}
+                <td className="p-3.5 text-center relative sticky right-0 bg-white group-hover:bg-gray-50/70 shadow-[-4px_0_10px_rgba(0,0,0,0.02)] transition-colors">
+                  <div className="flex items-center justify-center">
+                    <button
+                      onClick={() => setConfirmDeleteId(item.id)}
+                      className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Xóa hồ sơ này"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+
+                    {confirmDeleteId === item.id && (
+                      <div className="absolute right-12 z-40 bg-white border border-gray-200 rounded-lg shadow-xl p-2.5 flex items-center gap-2 animate-in fade-in slide-in-from-right-2 duration-150">
+                        <span className="text-xs font-bold text-gray-700 whitespace-nowrap">Xóa hàng này?</span>
+                        <button
+                          onClick={() => {
+                            onDeleteRow(item.id);
+                            setConfirmDeleteId(null);
+                          }}
+                          className="px-2 py-1 text-xs font-bold text-white bg-red-600 rounded hover:bg-red-700 transition"
+                        >
+                          Có
+                        </button>
+                        <button
+                          onClick={() => setConfirmDeleteId(null)}
+                          className="px-2 py-1 text-xs font-bold text-gray-600 bg-gray-100 rounded hover:bg-gray-200 transition"
+                        >
+                          Không
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

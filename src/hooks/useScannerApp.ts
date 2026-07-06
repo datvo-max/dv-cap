@@ -79,21 +79,7 @@ export function useScannerApp() {
   };
 
   // --- Logic Camera ---
-  // 👉 3. THAY ĐỔI TRONG HÀM START WEBCAM
-  // const startWebcam = async () => {
-  //   setIsWebCamActive(true);
-  //   if (!html5QrCodeRef.current) html5QrCodeRef.current = new Html5Qrcode("reader");
-  //   try {
-  //     await html5QrCodeRef.current.start(
-  //       { facingMode: "environment" },
-  //       { fps: 10, qrbox: { width: 250, height: 250 } },
-  //       handleCameraScan, // <--- THAY ĐỔI: Sử dụng hàm bọc mới thay cho handleScanSuccess
-  //       () => { }
-  //     );
-  //   } catch (err) {
-  //     showToast("Lỗi mở camera!", "error");
-  //   }
-  // };
+
   const startWebcam = async () => {
     setIsWebCamActive(true);
 
@@ -171,7 +157,7 @@ export function useScannerApp() {
       const newState = !prev;
       if (newState) {
         setTimeout(() => scannerInputRef.current?.focus(), 100);
-        showToast("Sẵn sàng! Dùng súng quét mã bắn trực tiếp.", "success");
+        showToast("Sẵn sàng! Đưa mã QR vào trước máy quét.", "success");
       } else {
         scannerInputRef.current?.blur();
         showToast("Đã tắt máy quét PC.", "warning");
@@ -218,11 +204,22 @@ export function useScannerApp() {
       });
 
       // Thành công
-      showToast("✅ Đã xuất file Excel thành công!", "success");
+      showToast("✅ Đã xử lý file Excel thành công!", "success");
     } catch (error) {
       showToast("❌ Có lỗi xảy ra khi xuất file!", "error");
     } finally {
       setIsExporting(false);
+    }
+  };
+
+  const deleteRecord = (id: string) => {
+    const recordToDelete = data.find(item => item.id === id);
+
+    // Lọc bỏ bản ghi có ID trùng khớp
+    setData((prev) => prev.filter((item) => item.id !== id));
+
+    if (recordToDelete) {
+      showToast(`🗑️ Đã xóa hồ sơ của: ${recordToDelete.fullName}`, "success");
     }
   };
 
@@ -247,6 +244,7 @@ export function useScannerApp() {
     handleExportExcel,
     scannerDisplayValue, // dùng để hiển thị
     handleScannerChange, // dùng để hiển thị
-    isFlashActive
+    isFlashActive,
+    deleteRecord
   };
 }
