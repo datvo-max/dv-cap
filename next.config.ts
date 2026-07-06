@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   // allowedDevOrigins: ['192.168.31.246'],
   output: 'export',
 
-  // Tắt tính năng tối ưu ảnh mặc định của máy chủ Next.js vì GitHub Pages không hỗ trợ
+  // // Tắt tính năng tối ưu ảnh mặc định của máy chủ Next.js vì GitHub Pages không hỗ trợ
   images: {
     unoptimized: true,
   },

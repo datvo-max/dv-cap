@@ -9,6 +9,11 @@ import DataTable from "@/components/DataTable";
 import ScannerSection from "@/components/ScannerSection";
 import Toast from "@/components/Toast";
 
+import Image from "next/image";
+import logoImg from "./../../public/Logo-BCA.png"
+
+
+
 export default function Home() {
   // Lấy ra mọi thứ từ "bộ não" đã thiết lập ở Custom Hook
   const app = useScannerApp();
@@ -16,7 +21,18 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gray-50 p-4 font-sans text-gray-800">
       <div className="max-w-6xl mx-auto">
+        <div >
+          <Image
+            src={logoImg}
+            width={60}
+            height={50}
+            alt="Logo Công an"
+            className="rounded-lg shadow-md"
+          />
+          <h2 className="text-xl font-bold mb-4">Công an phường Tân An</h2>
+        </div>
         <h2 className="text-2xl font-bold text-center mb-4">Hệ Thống Quét Mã Căn Cước</h2>
+        <h4 className="text-center text-sm">Phiên bản: 2.0.1</h4>
 
         <div className="text-center mb-6">
           <h3 className="text-lg font-semibold text-gray-600">
