@@ -32,7 +32,7 @@ export default function Home() {
           <h2 className="text-xl font-bold mb-4">Công an phường Tân An</h2>
         </div>
         <h2 className="text-2xl font-bold text-center mb-4">Hệ Thống Quét Mã Căn Cước</h2>
-        <h4 className="text-center text-sm">Phiên bản: 2.0.1</h4>
+        <h4 className="text-center text-sm">Phiên bản: 2.1.0</h4>
 
         <div className="text-center mb-6">
           <h3 className="text-lg font-semibold text-gray-600">
@@ -57,6 +57,11 @@ export default function Home() {
           isDeviceScannerActive={app.isDeviceScannerActive}
           scannerInputRef={app.scannerInputRef}
           onScannerInput={app.handleScannerInput}
+
+
+          isFlashActive={app.isFlashActive}
+          scannerDisplayValue={app.scannerDisplayValue} // hiển thị
+          onScannerChange={app.handleScannerChange}
         />
 
         <DataTable data={app.data} />

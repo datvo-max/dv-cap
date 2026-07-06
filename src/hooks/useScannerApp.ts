@@ -12,8 +12,14 @@ export function useScannerApp() {
   const [toastMsg, setToastMsg] = useState<{ msg: string; type: "success" | "error" | "warning" | "info" } | null>(null);
   const [modalConfig, setModalConfig] = useState({ isOpen: false, message: "" });
 
+  const [scannerDisplayValue, setScannerDisplayValue] = useState("");
+
   const [exportProgress, setExportProgress] = useState<number | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+
+  // 👉 1. THÊM STATE FLASH VÀ REF KHÓA CAMERA
+  const [isFlashActive, setIsFlashActive] = useState(false);
+  const isCameraPaused = useRef(false); // Dùng ref để khóa lập tức, tránh độ trễ của State
 
   const scannerInputRef = useRef<HTMLInputElement>(null);
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
@@ -47,21 +53,76 @@ export function useScannerApp() {
     }
   };
 
+  // 👉  BỌC LOGIC QUÉT CAMERA (XỬ LÝ TRỄ VÀ FLASH)
+  const handleCameraScan = (decodedText: string) => {
+    // Nếu đang trong thời gian tạm ngưng 1-3s thì bỏ qua không xử lý
+    if (isCameraPaused.current) return;
+
+    // Kích hoạt khóa camera ngay lập tức
+    isCameraPaused.current = true;
+
+    // Kích hoạt hiệu ứng chớp sáng máy ảnh
+    setIsFlashActive(true);
+    // Tắt trạng thái kích hoạt sau 100ms để tạo hiệu ứng mờ dần (transition ở UI)
+    setTimeout(() => setIsFlashActive(false), 100);
+
+    // Đẩy dữ liệu vào danh sách
+    handleScanSuccess(decodedText);
+
+    // ⏱️ TẠM NGƯNG 2 GIÂY TRƯỚC KHI CHO PHÉP QUÉT THẺ TIẾP THEO
+    setTimeout(() => {
+      isCameraPaused.current = false;
+    }, 2000); // Bạn có thể sửa thành 1000 (1s) hoặc 3000 (3s) tùy thực tế
+
+
+
+  };
+
   // --- Logic Camera ---
+  // 👉 3. THAY ĐỔI TRONG HÀM START WEBCAM
+  // const startWebcam = async () => {
+  //   setIsWebCamActive(true);
+  //   if (!html5QrCodeRef.current) html5QrCodeRef.current = new Html5Qrcode("reader");
+  //   try {
+  //     await html5QrCodeRef.current.start(
+  //       { facingMode: "environment" },
+  //       { fps: 10, qrbox: { width: 250, height: 250 } },
+  //       handleCameraScan, // <--- THAY ĐỔI: Sử dụng hàm bọc mới thay cho handleScanSuccess
+  //       () => { }
+  //     );
+  //   } catch (err) {
+  //     showToast("Lỗi mở camera!", "error");
+  //   }
+  // };
   const startWebcam = async () => {
     setIsWebCamActive(true);
-    if (!html5QrCodeRef.current) html5QrCodeRef.current = new Html5Qrcode("reader");
-    try {
-      await html5QrCodeRef.current.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        handleScanSuccess,
-        () => { }
-      );
-    } catch (err) {
-      showToast("Lỗi mở camera!", "error");
-    }
+
+    // 💡 GIẢI PHÁP CHO ĐIỆN THOẠI: Chờ 150ms để DOM kịp hiển thị khung #reader
+    setTimeout(async () => {
+      if (!html5QrCodeRef.current) {
+        html5QrCodeRef.current = new Html5Qrcode("reader");
+      }
+
+      try {
+        // Kiểm tra xem camera đã đang chạy hay chưa trước khi ra lệnh start
+        if (!html5QrCodeRef.current.isScanning) {
+          await html5QrCodeRef.current.start(
+            { facingMode: "environment" }, // Ưu tiên camera sau của điện thoại
+            {
+              fps: 10,
+              qrbox: { width: 250, height: 250 }
+            },
+            handleCameraScan, // Gọi qua hàm chốt chặn thời gian và hiệu ứng flash
+            () => { } // Bỏ qua lỗi bắt trượt mã ở từng khung hình
+          );
+        }
+      } catch (err) {
+        console.error("Lỗi phần cứng camera:", err);
+        showToast("Lỗi mở camera! Vui lòng thử lại hoặc kiểm tra quyền truy cập.", "error");
+      }
+    }, 150); // 150ms là tỷ lệ vàng để mọi dòng điện thoại kịp hoàn thành chu kỳ render
   };
+
 
   const stopWebcam = async () => {
     if (html5QrCodeRef.current?.isScanning) await html5QrCodeRef.current.stop();
@@ -123,7 +184,11 @@ export function useScannerApp() {
     if (e.key === "Enter" && e.currentTarget.value) {
       handleScanSuccess(e.currentTarget.value);
       e.currentTarget.value = "";
+      setScannerDisplayValue(""); // Xóa dữ liệu trên màn hình
     }
+  };
+  const handleScannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setScannerDisplayValue(e.target.value);
   };
 
   // --- Logic Xóa dữ liệu (Modal) ---
@@ -169,8 +234,8 @@ export function useScannerApp() {
     toastMsg,
     modalConfig,
     scannerInputRef,
-    exportProgress, // <--- Trả ra ngoài
-    isExporting,    // <--- Trả ra ngoài
+    exportProgress, // <---
+    isExporting,    // <--- 
     startWebcam,
     stopWebcam,
     handleFileUpload,
@@ -179,6 +244,9 @@ export function useScannerApp() {
     requestClearData,
     confirmClearData,
     closeModal,
-    handleExportExcel, // <--- Trả ra ngoài
+    handleExportExcel,
+    scannerDisplayValue, // dùng để hiển thị
+    handleScannerChange, // dùng để hiển thị
+    isFlashActive
   };
 }
