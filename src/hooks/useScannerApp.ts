@@ -119,24 +119,58 @@ export function useScannerApp() {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
+
     showToast("Đang phân tích ảnh...", "warning");
 
     const fileScanner = new Html5Qrcode("file-scanner");
-    let successCount = 0, failCount = 0;
+    let failCount = 0; // Không cần biến successCount nữa vì đã có newRecords.length
     const newRecords: CCCDRecord[] = [];
 
+    // Chạy vòng lặp phân tích từng ảnh
     for (let i = 0; i < files.length; i++) {
       try {
         const text = await fileScanner.scanFile(files[i], false);
         const record = parseCCCD(text);
-        if (record.idNumber) { newRecords.push(record); successCount++; }
-        else { failCount++; }
-      } catch (err) { failCount++; }
+
+        if (record.idNumber) {
+          newRecords.push(record);
+        } else {
+          failCount++;
+        }
+      } catch (err) {
+        failCount++;
+      }
     }
 
-    if (newRecords.length > 0) setData((prev) => [...prev, ...newRecords]);
-    if (successCount > 0) showToast(`✅ Quét thành công ${successCount} ảnh!`, "success");
-    if (failCount > 0) showToast(`⚠️ ${failCount} ảnh không nhận diện được.`, "warning");
+    // Xử lý dữ liệu sau khi quét xong
+    if (newRecords.length > 0) {
+      setData((prev) => [...prev, ...newRecords]);
+
+      // Trích xuất danh sách Tên từ các bản ghi thành công
+      const namesList = newRecords.map(record => record.fullName);
+      let successMessage = "";
+
+      // Logic hiển thị tên thông minh để không làm vỡ giao diện Toast
+      if (namesList.length <= 3) {
+        successMessage = `✅ Đã thêm: ${namesList.join(", ")}`;
+      } else {
+        const firstThree = namesList.slice(0, 3).join(", ");
+        const remainingCount = namesList.length - 3;
+        successMessage = `✅ Đã thêm: ${firstThree} và ${remainingCount} người khác.`;
+      }
+
+      showToast(successMessage, "success");
+    }
+
+    // Báo lỗi nếu có ảnh mờ/không hợp lệ
+    if (failCount > 0) {
+      // Dùng setTimeout nhỏ để Toast lỗi không bị đè mất bởi Toast thành công (nếu quét trộn lẫn cả ảnh đúng và ảnh sai)
+      setTimeout(() => {
+        showToast(`⚠️ Có ${failCount} ảnh bị mờ hoặc không nhận diện được.`, "warning");
+      }, newRecords.length > 0 ? 1500 : 0);
+    }
+
+    // Reset input file để có thể chọn lại chính file đó ở lần sau
     e.target.value = "";
   };
 

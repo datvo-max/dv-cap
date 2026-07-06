@@ -32,7 +32,7 @@ export default function Home() {
           <h2 className="text-xl font-bold mb-4">Công an phường Tân An</h2>
         </div>
         <h2 className="text-2xl font-bold text-center mb-4">Hệ Thống Quét QR Căn Cước</h2>
-        <h4 className="text-center text-sm">Phiên bản: 2.1.1</h4>
+        <h4 className="text-center text-sm">Phiên bản: 2.1.2</h4>
 
         <div className="text-center mb-6">
           <h3 className="text-lg font-semibold text-gray-600">
