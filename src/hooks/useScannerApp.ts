@@ -45,12 +45,25 @@ export function useScannerApp() {
 
   const handleScanSuccess = (decodedText: string) => {
     const record = parseCCCD(decodedText);
-    if (record.idNumber) {
-      setData((prev) => [...prev, record]);
-      showToast(`✅ Đã thêm: ${record.fullName}`, "success");
-    } else {
+
+    // Kiểm tra định dạng mã QR có hợp lệ không
+    if (!record.idNumber) {
       showToast(`❌ Lỗi: Mã QR không hợp lệ!`, "error");
+      return;
     }
+
+    // 🔥 CHỐT CHẶN: Kiểm tra xem Số CCCD này đã tồn tại trong mảng data chưa
+    const isDuplicate = data.some((item) => item.idNumber === record.idNumber);
+
+    if (isDuplicate) {
+      // Bắn Toast cảnh báo trùng theo đúng yêu cầu của bạn
+      showToast(`⚠️ Thông tin ${record.fullName} đã tồn tại`, "warning");
+      return; // Dừng lại, không nạp vào state nữa
+    }
+
+    // Nếu không trùng thì tiến hành lưu bình thường
+    setData((prev) => [...prev, record]);
+    showToast(`✅ Đã thêm: ${record.fullName}`, "success");
   };
 
   // 👉  BỌC LOGIC QUÉT CAMERA (XỬ LÝ TRỄ VÀ FLASH)
@@ -103,7 +116,7 @@ export function useScannerApp() {
           );
         }
       } catch (err) {
-        console.error("Lỗi phần cứng camera:", err);
+        console.warn("Lỗi phần cứng camera:", err);
         showToast("Lỗi mở camera! Vui lòng thử lại hoặc kiểm tra quyền truy cập.", "error");
       }
     }, 150); // 150ms là tỷ lệ vàng để mọi dòng điện thoại kịp hoàn thành chu kỳ render
@@ -115,7 +128,7 @@ export function useScannerApp() {
     setIsWebCamActive(false);
   };
 
-  // --- Logic File Upload ---
+  // 2. CẬP NHẬT LUỒNG TẢI FILE ẢNH LÊN (HỖ TRỢ KIỂM TRA TRÙNG LẶP HÀNG LOẠT)
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -123,17 +136,27 @@ export function useScannerApp() {
     showToast("Đang phân tích ảnh...", "warning");
 
     const fileScanner = new Html5Qrcode("file-scanner");
-    let failCount = 0; // Không cần biến successCount nữa vì đã có newRecords.length
+    let failCount = 0;
     const newRecords: CCCDRecord[] = [];
+    const duplicateNames: string[] = []; // Mảng lưu tên những người bị trùng để báo sau
 
-    // Chạy vòng lặp phân tích từng ảnh
+    // Tạo nhanh một Set chứa các ID hiện có để tối ưu tốc độ tra cứu trong vòng lặp
+    const existingIds = new Set(data.map(item => item.idNumber));
+
     for (let i = 0; i < files.length; i++) {
       try {
         const text = await fileScanner.scanFile(files[i], false);
         const record = parseCCCD(text);
 
         if (record.idNumber) {
-          newRecords.push(record);
+          // Kiểm tra trùng với dữ liệu đã lưu HOẶC trùng ngay với ảnh trong chính lô hàng đang up lên
+          const isAlreadyExists = existingIds.has(record.idNumber) || newRecords.some(r => r.idNumber === record.idNumber);
+
+          if (isAlreadyExists) {
+            duplicateNames.push(record.fullName); // Ghi nhận tên bị trùng
+          } else {
+            newRecords.push(record); // Hợp lệ thì đưa vào danh sách chờ nạp
+          }
         } else {
           failCount++;
         }
@@ -142,15 +165,13 @@ export function useScannerApp() {
       }
     }
 
-    // Xử lý dữ liệu sau khi quét xong
+    // A. Nạp dữ liệu mới không trùng lặp vào bảng
     if (newRecords.length > 0) {
       setData((prev) => [...prev, ...newRecords]);
 
-      // Trích xuất danh sách Tên từ các bản ghi thành công
       const namesList = newRecords.map(record => record.fullName);
       let successMessage = "";
 
-      // Logic hiển thị tên thông minh để không làm vỡ giao diện Toast
       if (namesList.length <= 3) {
         successMessage = `✅ Đã thêm: ${namesList.join(", ")}`;
       } else {
@@ -158,19 +179,32 @@ export function useScannerApp() {
         const remainingCount = namesList.length - 3;
         successMessage = `✅ Đã thêm: ${firstThree} và ${remainingCount} người khác.`;
       }
-
       showToast(successMessage, "success");
     }
 
-    // Báo lỗi nếu có ảnh mờ/không hợp lệ
-    if (failCount > 0) {
-      // Dùng setTimeout nhỏ để Toast lỗi không bị đè mất bởi Toast thành công (nếu quét trộn lẫn cả ảnh đúng và ảnh sai)
+    // B. Bắn thông báo cho những người bị TRÙNG LẶP dữ liệu
+    if (duplicateNames.length > 0) {
+      // Dùng setTimeout để tạo khoảng trễ giúp Toast không bị đè nhau
       setTimeout(() => {
-        showToast(`⚠️ Có ${failCount} ảnh bị mờ hoặc không nhận diện được.`, "warning");
+        if (duplicateNames.length <= 2) {
+          // Nếu chỉ trùng 1-2 người thì bắn chi tiết từng người theo form bạn muốn
+          duplicateNames.forEach(name => {
+            showToast(`⚠️ Thông tin ${name} đã tồn tại`, "warning");
+          });
+        } else {
+          // Nếu up một đống ảnh trùng thì gom lại báo tổng số lượng cho gọn gàng
+          showToast(`⚠️ Có ${duplicateNames.length} hồ sơ bị trùng lặp và đã bị bỏ qua.`, "warning");
+        }
       }, newRecords.length > 0 ? 1500 : 0);
     }
 
-    // Reset input file để có thể chọn lại chính file đó ở lần sau
+    // C. Báo lỗi ảnh mờ/không nhận diện được
+    if (failCount > 0) {
+      setTimeout(() => {
+        showToast(`❌ Có ${failCount} ảnh bị mờ hoặc không nhận diện được.`, "error");
+      }, (newRecords.length > 0 || duplicateNames.length > 0) ? 3000 : 0);
+    }
+
     e.target.value = "";
   };
 
