@@ -67,7 +67,7 @@ export default function ReturnDataTable({ onReturnCard }: ReturnDataTableProps) 
 
       <div className="overflow-x-auto min-h-100">
         <table className="w-full text-xs text-left border-collapse text-gray-600 whitespace-nowrap relative">
-          <thead className="bg-gray-100 text-gray-700 font-bold sticky top-20 z-10 shadow-sm">
+          <thead className="bg-gray-100 text-gray-700 font-bold stick z-10 shadow-sm">
             <tr>
               <th className="px-3 py-3 text-center w-12 border-b border-gray-200">STT</th>
               <th className="px-3 py-3 border-b border-gray-200">Vị trí</th>

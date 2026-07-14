@@ -182,7 +182,7 @@ export default function Home() {
                 <div className={`relative ${returnApp.isWebCamActive ? 'block' : 'hidden'}`}>
                   {/* Hiệu ứng nháy Flash */}
                   <div className={`absolute inset-0 bg-white z-50 pointer-events-none transition-opacity duration-100 ${returnApp.isFlashActive ? 'opacity-100' : 'opacity-0'}`}></div>
-                  <div id="return-reader" className="w-full bg-black rounded-lg overflow-hidden h-64 border-2 border-gray-300 shadow-inner"></div>
+                  <div id="return-reader" className="w-full bg-black rounded-lg overflow-hidden h-64 min-h-62 border-2 border-gray-300 shadow-inner"></div>
                 </div>
 
                 {/* 📊 KHỐI 3: XUẤT BÁO CÁO EXCEL */}
