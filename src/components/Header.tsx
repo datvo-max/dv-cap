@@ -16,7 +16,7 @@ export default function Header() {
           Tân An
         </h1>
         <span className="text-sm font-medium text-gray-500 hidden md:block">
-          Quét QR căn cước - Lập danh sách - Trả thẻ - Phiên bản: 3.0.6
+          Quét QR căn cước - Lập danh sách - Trả thẻ - Phiên bản: 3.0.7
         </span>
       </div>
 
@@ -25,6 +25,7 @@ export default function Header() {
           <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
           <span className="text-xs font-bold text-green-700">Tốt</span>
         </div>
+        <span className="text-xs text-gray-500">Phiên bản: 3.0.7</span>
       </div>
 
     </header>

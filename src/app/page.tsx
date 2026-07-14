@@ -152,10 +152,25 @@ export default function Home() {
                 {/* Nút Đóng Camera */}
                 <button
                   onClick={returnApp.stopWebcam}
-                  className="w-full py-4 rounded-xl font-bold text-base bg-red-50 text-red-700 border-2 border-red-300 hover:bg-red-100 hover:text-red-800 transition-all shadow-md flex items-center justify-center gap-2"
+                  className="w-full py-4 rounded-xl font-bold text-base bg-red-50 text-red-700 border-2 border-red-300 hover:bg-red-100 hover:text-red-800 transition-all shadow-md flex items-center justify-center gap-2.5 group"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
-                  ĐÓNG CAMERA & QUAY LẠI BẢNG ĐIỀU KHIỂN
+                  {/* SVG Chuẩn: stroke 2 (để sắc nét), shrink-0 (chống bóp méo), group-hover: xoay nhẹ cho đẹp */}
+                  <svg
+                    className="w-6 h-6 shrink-0 transition-transform duration-300 group-hover:rotate-90"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    ></path>
+                  </svg>
+
+                  <span>ĐÓNG CAMERA & QUAY LẠI BẢNG ĐIỀU KHIỂN</span>
                 </button>
 
               </div>
