@@ -182,31 +182,18 @@ export default function Home() {
                 </div>
 
 
-                {/* 📺 KHU VỰC HIỂN THỊ CAMERA (Đồng bộ CSS với Phân hệ 1) */}
-                <div className="relative">
-                  {/* Hiệu ứng nháy Flash */}
-                  <div className={`absolute inset-0 bg-white z-50 pointer-events-none transition-opacity duration-100 ${returnApp.isFlashActive ? 'opacity-100' : 'opacity-0'}`}></div>
+                <div className="relative w-full max-w-md rounded-lg overflow-hidden shadow-md bg-black">
+                  {/* Khung chứa Camera */}
+                  <div id="return-section" className={`w-full ${returnApp.isWebCamActive ? 'block' : 'hidden'}`}></div>
 
-                  {/* Dùng transition h-0 -> h-72 thay vì hidden để trình duyệt tính đúng kích thước */}
+                  {/* Lớp chớp sáng máy ảnh */}
                   <div
-                    id="return-reader"
-                    className={`w-full bg-black rounded-lg overflow-hidden transition-all duration-300 ${returnApp.isWebCamActive
-                      ? 'h-72 mb-4 opacity-100 border-2 border-gray-300 shadow-inner'
-                      : 'h-0 opacity-0 border-0'
+                    className={`absolute inset-0 bg-white pointer-events-none z-30 transition-opacity ease-out ${returnApp.isFlashActive ? "opacity-100 duration-0" : "opacity-0 duration-500"
                       }`}
-                  ></div>
+                  />
                 </div>
 
-                <div className={`relative ${returnApp.isWebCamActive ? 'block mb-4' : 'hidden'}`}>
-                  {/* Hiệu ứng nháy Flash */}
-                  <div className={`absolute inset-0 bg-white z-50 pointer-events-none transition-opacity duration-100 ${returnApp.isFlashActive ? 'opacity-100' : 'opacity-0'}`}></div>
 
-                  {/* BỎ HOÀN TOÀN CÁC CLASS ÉP CHIỀU CAO (h-0, h-72), ĐỂ THƯ VIỆN TỰ TÍNH TỶ LỆ */}
-                  <div
-                    id="return-reader"
-                    className="w-full bg-black rounded-lg overflow-hidden border-2 border-gray-300 shadow-inner"
-                  ></div>
-                </div>
 
                 {/* 📊 KHỐI 3: XUẤT BÁO CÁO EXCEL */}
                 <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
