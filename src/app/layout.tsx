@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Quét thẻ QR Căn cước",
-  description: "Hỗ trợ quét thẻ, lập danh sách thẻ căn cước, căn cước công dân",
+  title: "Quét QR | Lập Danh sách | Trả thẻ Căn cước",
+  description: "Hỗ trợ quét QR thẻ, lập danh sách thẻ căn cước, căn cước công dân, trả thẻ cho công dân, xuất file excel",
 };
 
 export default function RootLayout({

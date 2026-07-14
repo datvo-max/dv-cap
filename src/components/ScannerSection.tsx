@@ -1,6 +1,7 @@
 import React from "react";
 
 interface ScannerSectionProps {
+  scannerId?: string;
   isWebCamActive: boolean;
   isDeviceScannerActive: boolean;
   scannerDisplayValue: string; // dữ liệu hiển thị trên ô
@@ -11,6 +12,7 @@ interface ScannerSectionProps {
 }
 
 export default function ScannerSection({
+  scannerId = "reader",
   isWebCamActive, isDeviceScannerActive,
   scannerInputRef, scannerDisplayValue,
   onScannerInput, onScannerChange, isFlashActive
@@ -21,7 +23,7 @@ export default function ScannerSection({
 
       <div className="relative w-full max-w-md rounded-lg overflow-hidden shadow-md bg-black">
         {/* Khung chứa Camera */}
-        <div id="reader" className={`w-full ${isWebCamActive ? 'block' : 'hidden'}`}></div>
+        <div id={scannerId} className={`w-full ${isWebCamActive ? 'block' : 'hidden'}`}></div>
 
         {/* Lớp chớp sáng máy ảnh */}
         <div

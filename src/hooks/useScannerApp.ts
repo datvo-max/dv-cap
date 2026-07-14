@@ -1,5 +1,5 @@
 // src/hooks/useScannerApp.ts
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 import { CCCDRecord } from "@/types/cccd";
 import { parseCCCD } from "@/utils/cccdParser";
@@ -9,7 +9,6 @@ export function useScannerApp() {
   const [data, setData] = useState<CCCDRecord[]>([]);
   const [isWebCamActive, setIsWebCamActive] = useState(false);
   const [isDeviceScannerActive, setIsDeviceScannerActive] = useState(false);
-  const [toastMsg, setToastMsg] = useState<{ msg: string; type: "success" | "error" | "warning" | "info" } | null>(null);
   const [modalConfig, setModalConfig] = useState({ isOpen: false, message: "" });
 
   const [scannerDisplayValue, setScannerDisplayValue] = useState("");
@@ -34,14 +33,23 @@ export function useScannerApp() {
     localStorage.setItem("cccd_data", JSON.stringify(data));
   }, [data]);
 
-  // Cập nhật hàm showToast để hỗ trợ loại 'info'
-  const showToast = (msg: string, type: "success" | "error" | "warning" | "info") => {
-    setToastMsg({ msg, type });
+  // Khai báo mảng chứa danh sách Toast (Xếp chồng)
+  interface ToastItem {
+    id: number;
+    msg: string;
+    type: "success" | "error" | "warning" | "info";
+  }
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
+
+  // Hàm showToast đã nâng cấp cho dạng mảng
+  const showToast = useCallback((msg: string, type: "success" | "error" | "warning" | "info") => {
+    const id = Date.now() + Math.random();
+    setToasts((prev) => [...prev, { id, msg, type }]);
+
     setTimeout(() => {
-      setToastMsg(null);
-      setExportProgress(null); // Reset progress khi đóng toast
+      setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 3000);
-  };
+  }, []);
 
   const handleScanSuccess = (decodedText: string) => {
     const record = parseCCCD(decodedText);
@@ -56,9 +64,8 @@ export function useScannerApp() {
     const isDuplicate = data.some((item) => item.idNumber === record.idNumber);
 
     if (isDuplicate) {
-      // Bắn Toast cảnh báo trùng theo đúng yêu cầu của bạn
       showToast(`⚠️ Thông tin ${record.fullName} đã tồn tại`, "warning");
-      return; // Dừng lại, không nạp vào state nữa
+      return;
     }
 
     // Nếu không trùng thì tiến hành lưu bình thường
@@ -68,67 +75,54 @@ export function useScannerApp() {
 
   // 👉  BỌC LOGIC QUÉT CAMERA (XỬ LÝ TRỄ VÀ FLASH)
   const handleCameraScan = (decodedText: string) => {
-    // Nếu đang trong thời gian tạm ngưng 1-3s thì bỏ qua không xử lý
     if (isCameraPaused.current) return;
 
-    // Kích hoạt khóa camera ngay lập tức
     isCameraPaused.current = true;
-
-    // Kích hoạt hiệu ứng chớp sáng máy ảnh
     setIsFlashActive(true);
-    // Tắt trạng thái kích hoạt sau 100ms để tạo hiệu ứng mờ dần (transition ở UI)
+
     setTimeout(() => setIsFlashActive(false), 100);
 
-    // Đẩy dữ liệu vào danh sách
     handleScanSuccess(decodedText);
 
-    // ⏱️ TẠM NGƯNG 2 GIÂY TRƯỚC KHI CHO PHÉP QUÉT THẺ TIẾP THEO
     setTimeout(() => {
       isCameraPaused.current = false;
-    }, 2000); // Bạn có thể sửa thành 1000 (1s) hoặc 3000 (3s) tùy thực tế
-
-
-
+    }, 2000);
   };
 
   // --- Logic Camera ---
-
   const startWebcam = async () => {
     setIsWebCamActive(true);
 
-    // 💡 GIẢI PHÁP CHO ĐIỆN THOẠI: Chờ 150ms để DOM kịp hiển thị khung #reader
     setTimeout(async () => {
       if (!html5QrCodeRef.current) {
         html5QrCodeRef.current = new Html5Qrcode("reader");
       }
 
       try {
-        // Kiểm tra xem camera đã đang chạy hay chưa trước khi ra lệnh start
         if (!html5QrCodeRef.current.isScanning) {
           await html5QrCodeRef.current.start(
-            { facingMode: "environment" }, // Ưu tiên camera sau của điện thoại
+            { facingMode: "environment" },
             {
               fps: 10,
               qrbox: { width: 250, height: 250 }
             },
-            handleCameraScan, // Gọi qua hàm chốt chặn thời gian và hiệu ứng flash
-            () => { } // Bỏ qua lỗi bắt trượt mã ở từng khung hình
+            handleCameraScan,
+            () => { }
           );
         }
       } catch (err) {
         console.warn("Lỗi phần cứng camera:", err);
         showToast("Lỗi mở camera! Vui lòng thử lại hoặc kiểm tra quyền truy cập.", "error");
       }
-    }, 150); // 150ms là tỷ lệ vàng để mọi dòng điện thoại kịp hoàn thành chu kỳ render
+    }, 150);
   };
-
 
   const stopWebcam = async () => {
     if (html5QrCodeRef.current?.isScanning) await html5QrCodeRef.current.stop();
     setIsWebCamActive(false);
   };
 
-  // 2. CẬP NHẬT LUỒNG TẢI FILE ẢNH LÊN (HỖ TRỢ KIỂM TRA TRÙNG LẶP HÀNG LOẠT)
+  // 2. CẬP NHẬT LUỒNG TẢI FILE ẢNH LÊN
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -138,9 +132,8 @@ export function useScannerApp() {
     const fileScanner = new Html5Qrcode("file-scanner");
     let failCount = 0;
     const newRecords: CCCDRecord[] = [];
-    const duplicateNames: string[] = []; // Mảng lưu tên những người bị trùng để báo sau
+    const duplicateNames: string[] = [];
 
-    // Tạo nhanh một Set chứa các ID hiện có để tối ưu tốc độ tra cứu trong vòng lặp
     const existingIds = new Set(data.map(item => item.idNumber));
 
     for (let i = 0; i < files.length; i++) {
@@ -149,13 +142,12 @@ export function useScannerApp() {
         const record = parseCCCD(text);
 
         if (record.idNumber) {
-          // Kiểm tra trùng với dữ liệu đã lưu HOẶC trùng ngay với ảnh trong chính lô hàng đang up lên
           const isAlreadyExists = existingIds.has(record.idNumber) || newRecords.some(r => r.idNumber === record.idNumber);
 
           if (isAlreadyExists) {
-            duplicateNames.push(record.fullName); // Ghi nhận tên bị trùng
+            duplicateNames.push(record.fullName);
           } else {
-            newRecords.push(record); // Hợp lệ thì đưa vào danh sách chờ nạp
+            newRecords.push(record);
           }
         } else {
           failCount++;
@@ -165,7 +157,6 @@ export function useScannerApp() {
       }
     }
 
-    // A. Nạp dữ liệu mới không trùng lặp vào bảng
     if (newRecords.length > 0) {
       setData((prev) => [...prev, ...newRecords]);
 
@@ -182,23 +173,18 @@ export function useScannerApp() {
       showToast(successMessage, "success");
     }
 
-    // B. Bắn thông báo cho những người bị TRÙNG LẶP dữ liệu
     if (duplicateNames.length > 0) {
-      // Dùng setTimeout để tạo khoảng trễ giúp Toast không bị đè nhau
       setTimeout(() => {
         if (duplicateNames.length <= 2) {
-          // Nếu chỉ trùng 1-2 người thì bắn chi tiết từng người theo form bạn muốn
           duplicateNames.forEach(name => {
             showToast(`⚠️ Thông tin ${name} đã tồn tại`, "warning");
           });
         } else {
-          // Nếu up một đống ảnh trùng thì gom lại báo tổng số lượng cho gọn gàng
           showToast(`⚠️ Có ${duplicateNames.length} hồ sơ bị trùng lặp và đã bị bỏ qua.`, "warning");
         }
       }, newRecords.length > 0 ? 1500 : 0);
     }
 
-    // C. Báo lỗi ảnh mờ/không nhận diện được
     if (failCount > 0) {
       setTimeout(() => {
         showToast(`❌ Có ${failCount} ảnh bị mờ hoặc không nhận diện được.`, "error");
@@ -221,26 +207,28 @@ export function useScannerApp() {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     if (isMobile) return showToast("📱 Tính năng này chỉ dành cho PC!", "warning");
 
-    setIsDeviceScannerActive((prev) => {
-      const newState = !prev;
-      if (newState) {
-        setTimeout(() => scannerInputRef.current?.focus(), 100);
-        showToast("Sẵn sàng! Đưa mã QR vào trước máy quét.", "success");
-      } else {
-        scannerInputRef.current?.blur();
-        showToast("Đã tắt máy quét PC.", "warning");
-      }
-      return newState;
-    });
+    // Tách bạch logic ra ngoài hàm cập nhật State
+    if (!isDeviceScannerActive) {
+      // Bật máy quét
+      setIsDeviceScannerActive(true);
+      setTimeout(() => scannerInputRef.current?.focus(), 100);
+      showToast("Sẵn sàng! Đưa mã QR vào trước máy quét.", "success");
+    } else {
+      // Tắt máy quét
+      setIsDeviceScannerActive(false);
+      scannerInputRef.current?.blur();
+      showToast("Đã tắt máy quét PC.", "warning");
+    }
   };
 
   const handleScannerInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && e.currentTarget.value) {
       handleScanSuccess(e.currentTarget.value);
       e.currentTarget.value = "";
-      setScannerDisplayValue(""); // Xóa dữ liệu trên màn hình
+      setScannerDisplayValue("");
     }
   };
+
   const handleScannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setScannerDisplayValue(e.target.value);
   };
@@ -254,36 +242,34 @@ export function useScannerApp() {
   };
   const closeModal = () => setModalConfig({ isOpen: false, message: "" });
 
-
+  // --- Logic Xuất Excel ---
   const handleExportExcel = async () => {
     if (data.length === 0) {
       return showToast("Chưa có dữ liệu để xuất!", "warning");
     }
 
     setIsExporting(true);
-    showToast("Đang chuẩn bị file Excel...", "info");
-    setExportProgress(0);
+    setExportProgress(0); // Kích hoạt thanh Progress Bar
 
     try {
-      // Gọi hàm export bất đồng bộ
       await exportToExcel(data, (percent) => {
-        setExportProgress(percent);
-        setToastMsg({ msg: `Đang xuất Excel... ${percent}%`, type: "info" });
+        setExportProgress(percent); // Chỉ truyền phần trăm vào đây, không gọi setToastMsg nữa
       });
 
-      // Thành công
       showToast("✅ Đã xử lý file Excel thành công!", "success");
     } catch (error) {
       showToast("❌ Có lỗi xảy ra khi xuất file!", "error");
     } finally {
-      setIsExporting(false);
+      // Đợi 1 giây để người dùng kịp nhìn thấy 100% rồi mới ẩn thanh tiến trình
+      setTimeout(() => {
+        setIsExporting(false);
+        setExportProgress(null);
+      }, 1000);
     }
   };
 
   const deleteRecord = (id: string) => {
     const recordToDelete = data.find(item => item.id === id);
-
-    // Lọc bỏ bản ghi có ID trùng khớp
     setData((prev) => prev.filter((item) => item.id !== id));
 
     if (recordToDelete) {
@@ -291,16 +277,15 @@ export function useScannerApp() {
     }
   };
 
-  // Cập nhật object return ở cuối file
   return {
     data,
     isWebCamActive,
     isDeviceScannerActive,
-    toastMsg,
+    toasts,              // Đã xuất đúng mảng toasts ra ngoài
     modalConfig,
     scannerInputRef,
-    exportProgress, // <---
-    isExporting,    // <--- 
+    exportProgress,
+    isExporting,
     startWebcam,
     stopWebcam,
     handleFileUpload,
@@ -310,8 +295,8 @@ export function useScannerApp() {
     confirmClearData,
     closeModal,
     handleExportExcel,
-    scannerDisplayValue, // dùng để hiển thị
-    handleScannerChange, // dùng để hiển thị
+    scannerDisplayValue,
+    handleScannerChange,
     isFlashActive,
     deleteRecord
   };

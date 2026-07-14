@@ -1,12 +1,12 @@
-// src/utils/exportExcel.ts
+// src/utils/exportReturnExcel.ts
 import * as XLSX from 'xlsx-js-style';
-import { CCCDRecord } from '../types/cccd';
+import { CardRecord } from '@/lib/db';
 
-// Hàm ngắt nhịp để trình duyệt kịp cập nhật giao diện (Progress Bar)
 const yieldToMain = () => new Promise(resolve => setTimeout(resolve, 10));
 
-export const exportToExcel = async (
-  data: CCCDRecord[],
+export const exportReturnExcel = async (
+  data: CardRecord[],
+  type: 'all' | 'returned' | 'pending',
   onProgress: (percent: number) => void
 ): Promise<void> => {
   if (data.length === 0) throw new Error("Chưa có dữ liệu để xuất!");
@@ -14,20 +14,15 @@ export const exportToExcel = async (
   onProgress(10);
   await yieldToMain();
 
-  // 1. Chuẩn bị dữ liệu (Chiếm 30% tiến trình)
+  // 1. Chuẩn bị dữ liệu
   const dataToExport = data.map((item, index) => ({
     "STT": index + 1,
-    "Loại Thẻ": item.type,
+    "Vị Trí Hộp": `Hộp số ${item.zone}`,
     "Số CCCD": item.idNumber,
-    "Số CMND Cũ": item.oldIdNumber,
     "Họ và Tên": item.fullName,
-    "Ngày Sinh": item.dob,
-    "Giới Tính": item.gender,
-    "Địa Chỉ": item.address,
-    "Ngày Cấp": item.issueDate,
-    "Số định danh đã huỷ": item.canceledIdNumber,
-    "Họ Tên Cha": item.fatherName,
-    "Họ Tên Mẹ": item.motherName
+    "Ngày Nạp": item.importDate,
+    "Trạng Thái": item.status === 'returned' ? 'Đã trả' : 'Chưa trả',
+    "Thời Gian Trả": item.returnedAt || '-'
   }));
 
   const ws = XLSX.utils.json_to_sheet(dataToExport);
@@ -37,12 +32,16 @@ export const exportToExcel = async (
 
   // 2. Thiết lập độ rộng cột
   ws['!cols'] = [
-    { wch: 6 }, { wch: 12 }, { wch: 16 }, { wch: 14 }, { wch: 25 },
-    { wch: 12 }, { wch: 10 }, { wch: 45 }, { wch: 12 }, { wch: 25 },
-    { wch: 25 }, { wch: 25 }
+    { wch: 6 },  // STT
+    { wch: 15 }, // Vị Trí Hộp
+    { wch: 16 }, // Số CCCD
+    { wch: 25 }, // Họ và Tên
+    { wch: 15 }, // Ngày Nạp
+    { wch: 15 }, // Trạng Thái
+    { wch: 25 }  // Thời Gian Trả
   ];
 
-  // 3. Định dạng Style (Đây là bước nặng nhất, chạy vòng lặp lớn)
+  // 3. Định dạng Style (Vòng lặp nặng ngắt nhịp)
   const range = XLSX.utils.decode_range(ws['!ref'] || "A1:A1");
   const totalRows = range.e.r - range.s.r + 1;
 
@@ -63,9 +62,8 @@ export const exportToExcel = async (
       };
     }
 
-    // Cập nhật progress bar mỗi khi xử lý được 100 dòng, hoặc khi hoàn thành
     if (R % 100 === 0 || R === range.e.r) {
-      const currentProgress = 40 + Math.floor((R / totalRows) * 40); // Từ 40% -> 80%
+      const currentProgress = 40 + Math.floor((R / totalRows) * 40);
       onProgress(currentProgress);
       await yieldToMain();
     }
@@ -76,13 +74,16 @@ export const exportToExcel = async (
 
   // 4. Khởi tạo file và tải xuống
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, ws, "DanhSachCCCD");
+  XLSX.utils.book_append_sheet(workbook, ws, "DanhSachTraThe");
 
   onProgress(95);
   await yieldToMain();
 
-  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-  XLSX.writeFile(workbook, `Danh_Sach_CCCD_${dateStr}.xlsx`);
+  // Đặt tên file linh hoạt theo nút bấm
+  let filename = 'Tong_So_The_Can_Cuoc.xlsx';
+  if (type === 'returned') filename = 'Danh_Sach_Da_Tra.xlsx';
+  if (type === 'pending') filename = 'Danh_Sach_Con_Lai.xlsx';
 
+  XLSX.writeFile(workbook, filename);
   onProgress(100);
 };

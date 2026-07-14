@@ -9,10 +9,13 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "dexie": "^4.4.4",
+    "dexie-react-hooks": "^4.4.0",
     "html5-qrcode": "^2.3.8",
     "next": "16.2.10",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.2/xlsx-0.20.2.tgz",
     "xlsx-js-style": "^1.2.0"
   },
   "devDependencies": {
@@ -24,5 +27,9 @@
     "eslint-config-next": "16.2.10",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "allowScripts": {
+    "sharp@0.34.5": true,
+    "unrs-resolver@1.12.2": true
   }
 }

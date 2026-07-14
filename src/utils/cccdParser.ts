@@ -23,7 +23,7 @@ export const parseCCCD = (qrText: string): CCCDRecord => {
       gender: parts[4] || "",
       address: parts[5] || "",
       issueDate: parts[6] || "",
-      spouseName: parts[7] || "",
+      canceledIdNumber: parts[7] || "",
       fatherName: parts[8] || "",
       motherName: parts[9] || "",
       rawText: qrText.trim(),
@@ -34,6 +34,6 @@ export const parseCCCD = (qrText: string): CCCDRecord => {
     id: generateId(),
     type: "Không hợp lệ",
     idNumber: "", oldIdNumber: "", fullName: "", dob: "", gender: "",
-    address: "", issueDate: "", spouseName: "", fatherName: "", motherName: ""
+    address: "", issueDate: "", canceledIdNumber: "", fatherName: "", motherName: ""
   };
 };

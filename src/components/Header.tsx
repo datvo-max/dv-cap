@@ -16,7 +16,7 @@ export default function Header() {
           Tân An
         </h1>
         <span className="text-sm font-medium text-gray-500 hidden md:block">
-          Quét QR căn cước - Lập danh sách - Phiên bản: 2.2.0
+          Quét QR căn cước - Lập danh sách - Trả thẻ - Phiên bản: 3.0.0
         </span>
       </div>
 

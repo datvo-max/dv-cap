@@ -1,7 +1,8 @@
 // src/types/cccd.ts
 
+
 export interface CCCDRecord {
-  id: string; // Tạo ID ngẫu nhiên để làm key cho React
+  id: string;
   type: "Căn cước công dân" | "Thẻ Căn cước" | "Không hợp lệ";
   idNumber: string;
   oldIdNumber: string;
@@ -10,7 +11,9 @@ export interface CCCDRecord {
   gender: string;
   address: string;
   issueDate: string;
-  spouseName: string;
+
+  canceledIdNumber: string;
+
   fatherName: string;
   motherName: string;
   rawText?: string;
