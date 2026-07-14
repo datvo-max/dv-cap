@@ -25,6 +25,8 @@ export function useCardReturnApp() {
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
   const isCameraPaused = useRef(false);
 
+  const [modalConfig, setModalConfig] = useState({ isOpen: false, message: "" });
+
   // Khai báo mảng chứa danh sách Toast
   interface ToastItem {
     id: number;
@@ -311,7 +313,7 @@ export function useCardReturnApp() {
       } catch (err) {
         showToast("Lỗi mở camera!", "error");
       }
-    }, 150);
+    }, 250);
   };
 
   const stopWebcam = async () => {
@@ -321,6 +323,29 @@ export function useCardReturnApp() {
     setIsWebCamActive(false);
   };
 
+  // ==========================================
+  // 5. LOGIC XÓA DỮ LIỆU KHO THẺ
+  // ==========================================
+  const requestClearData = () => {
+    setModalConfig({
+      isOpen: true,
+      message: "Hành động này sẽ xóa sạch toàn bộ dữ liệu trong Kho thẻ (IndexedDB) và không thể khôi phục!"
+    });
+  };
+
+  const confirmClearData = async () => {
+    try {
+      // Lệnh xóa trắng toàn bộ dữ liệu trong bảng cards của IndexedDB
+      await db.cards.clear();
+      showToast("🗑️ Đã xóa sạch dữ liệu kho thẻ!", "warning");
+    } catch (error) {
+      showToast("❌ Có lỗi xảy ra khi xóa dữ liệu!", "error");
+    } finally {
+      setModalConfig({ isOpen: false, message: "" });
+    }
+  };
+
+  const closeModal = () => setModalConfig({ isOpen: false, message: "" });
 
 
   return {
@@ -343,5 +368,9 @@ export function useCardReturnApp() {
     cameraActionRef,
     handleImportScannerInput,
     handleReturnScannerInput,
+    modalConfig, // <----- Modal
+    requestClearData,
+    confirmClearData,
+    closeModal
   };
 }

@@ -34,6 +34,11 @@ export default function Home() {
   const activeToasts = activeTab === 'nhap-lieu' ? app.toasts : returnApp.toasts;
   const activeProgress = activeTab === 'nhap-lieu' ? app.exportProgress : returnApp.exportProgress;
 
+  // Xác định đang trên phân hệ nào để sử dụng modal
+  const activeModalConfig = activeTab === 'nhap-lieu' ? app.modalConfig : returnApp.modalConfig;
+  const activeConfirmClear = activeTab === 'nhap-lieu' ? app.confirmClearData : returnApp.confirmClearData;
+  const activeCloseModal = activeTab === 'nhap-lieu' ? app.closeModal : returnApp.closeModal;
+
   return (
     <main className="min-h-screen bg-gray-50 font-sans text-gray-800 pb-10">
       <Header />
@@ -176,13 +181,20 @@ export default function Home() {
                   </button>
                 </div>
 
-                {/* ... (Các phần Camera và Xuất Excel bên dưới giữ nguyên) ... */}
 
-                {/* 📺 KHU VỰC HIỂN THỊ CAMERA (Dùng chung cho cả 2 khối) */}
-                <div className={`relative ${returnApp.isWebCamActive ? 'block' : 'hidden'}`}>
+                {/* 📺 KHU VỰC HIỂN THỊ CAMERA (Đồng bộ CSS với Phân hệ 1) */}
+                <div className="relative">
                   {/* Hiệu ứng nháy Flash */}
                   <div className={`absolute inset-0 bg-white z-50 pointer-events-none transition-opacity duration-100 ${returnApp.isFlashActive ? 'opacity-100' : 'opacity-0'}`}></div>
-                  <div id="return-reader" className="w-full bg-black rounded-lg overflow-hidden h-64 min-h-62 border-2 border-gray-300 shadow-inner"></div>
+
+                  {/* Dùng transition h-0 -> h-72 thay vì hidden để trình duyệt tính đúng kích thước */}
+                  <div
+                    id="return-reader"
+                    className={`w-full bg-black rounded-lg overflow-hidden transition-all duration-300 ${returnApp.isWebCamActive
+                      ? 'h-72 mb-4 opacity-100 border-2 border-gray-300 shadow-inner'
+                      : 'h-0 opacity-0 border-0'
+                      }`}
+                  ></div>
                 </div>
 
                 {/* 📊 KHỐI 3: XUẤT BÁO CÁO EXCEL */}
@@ -192,6 +204,12 @@ export default function Home() {
                     <button onClick={() => returnApp.handleExportExcel('pending')} className="bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold py-1.5 px-2 rounded text-[11px] border border-orange-200 transition-colors">Xuất Còn lại</button>
                     <button onClick={() => returnApp.handleExportExcel('returned')} className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold py-1.5 px-2 rounded text-[11px] border border-emerald-200 transition-colors">Xuất Đã trả</button>
                     <button onClick={() => returnApp.handleExportExcel('all')} className="col-span-2 bg-white hover:bg-gray-100 text-gray-700 font-bold py-1.5 px-2 rounded text-[11px] border border-gray-300 transition-colors">⬇ Tải Toàn bộ Kho</button>
+                    <button
+                      onClick={returnApp.requestClearData}
+                      className="col-span-2 bg-red-50 hover:bg-red-100 text-red-700 font-bold py-1.5 px-2 rounded text-[11px] border border-red-200 transition-colors shadow-sm mt-1"
+                    >
+                      🗑️ Xóa Toàn Bộ Dữ Liệu Kho
+                    </button>
                   </div>
                 </div>
 
@@ -210,8 +228,15 @@ export default function Home() {
 
       <Toast toasts={activeToasts} progress={activeProgress} />
 
-      {/* Modal chỉ cần dùng cho chức năng Nhập liệu cũ (vì trả thẻ không có nút Xóa toàn bộ) */}
-      <ConfirmModal isOpen={app.modalConfig.isOpen} title="Cảnh báo xóa dữ liệu" message={app.modalConfig.message} onConfirm={app.confirmClearData} onCancel={app.closeModal} />
+
+
+      <ConfirmModal
+        isOpen={activeModalConfig.isOpen}
+        title="Cảnh báo xóa dữ liệu"
+        message={activeModalConfig.message}
+        onConfirm={activeConfirmClear}
+        onCancel={activeCloseModal}
+      />
     </main>
   );
 }
