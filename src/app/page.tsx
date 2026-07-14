@@ -50,7 +50,7 @@ export default function Home() {
                 : "text-gray-500 hover:text-blue-600 hover:bg-blue-50"
                 }`}
             >
-              📥 PHÂN HỆ 1: LẬP DANH SÁCH (CẤP MỚI)
+              📥 PHÂN HỆ 1: QUÉT QR & LẬP DANH SÁCH
             </button>
             <button
               onClick={() => setActiveTab('tra-the')}
@@ -72,8 +72,8 @@ export default function Home() {
             <DashboardReport />
 
             <div className="flex flex-col lg:flex-row gap-6 items-start">
-              <div className="w-full lg:w-1/4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm lg:sticky lg:top-4 space-y-4">
-                <h4 className="text-sm font-bold text-gray-700 border-b pb-2 mb-2">Bàn Điều Khiển Quét</h4>
+              <div className="w-full lg:w-1/4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm lg:sticky lg:top-24 space-y-4">
+                <h4 className="text-sm font-bold text-gray-700 border-b pb-2 mb-2">Bảng Điều Khiển Quét</h4>
                 <ControlPanel
                   isDeviceScannerActive={app.isDeviceScannerActive}
                   isWebCamActive={app.isWebCamActive}
@@ -121,7 +121,7 @@ export default function Home() {
 
               {/* BẢNG ĐIỀU KHIỂN RIÊNG CHO TRẢ THẺ (Đã thiết kế lại UI/UX) */}
               {/* Đã thay space-y-5 bằng flex flex-col gap-5 để ép khoảng cách */}
-              <div className="w-full lg:w-1/4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm lg:sticky lg:top-4 flex flex-col gap-5">
+              <div className="w-full lg:w-1/4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm lg:sticky lg:top-24 flex flex-col gap-5">
                 <h4 className="text-sm font-bold text-gray-700 border-b pb-2">Bàn Điều Hành Kho Thẻ</h4>
 
                 {/* 📥 KHỐI 1: NẠP DỮ LIỆU */}
