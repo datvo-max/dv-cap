@@ -197,6 +197,17 @@ export default function Home() {
                   ></div>
                 </div>
 
+                <div className={`relative ${returnApp.isWebCamActive ? 'block mb-4' : 'hidden'}`}>
+                  {/* Hiệu ứng nháy Flash */}
+                  <div className={`absolute inset-0 bg-white z-50 pointer-events-none transition-opacity duration-100 ${returnApp.isFlashActive ? 'opacity-100' : 'opacity-0'}`}></div>
+
+                  {/* BỎ HOÀN TOÀN CÁC CLASS ÉP CHIỀU CAO (h-0, h-72), ĐỂ THƯ VIỆN TỰ TÍNH TỶ LỆ */}
+                  <div
+                    id="return-reader"
+                    className="w-full bg-black rounded-lg overflow-hidden border-2 border-gray-300 shadow-inner"
+                  ></div>
+                </div>
+
                 {/* 📊 KHỐI 3: XUẤT BÁO CÁO EXCEL */}
                 <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
                   <p className="text-[11px] font-bold text-gray-500 uppercase mb-2">Xuất báo cáo</p>
