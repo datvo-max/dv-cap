@@ -32,7 +32,7 @@ export default function DataTable({ data, onDeleteRow }: DataTableProps) {
               <th className="px-3 py-2">Giới Tính</th>
               <th className="px-3 py-2 max-w-xs overflow-hidden text-ellipsis">Địa Chỉ Thường Trú</th>
               <th className="px-3 py-2">Ngày Cấp</th>
-              <th className="px-3 py-2">Vợ / Chồng</th>
+              <th className="px-3 py-2">Số ĐDCN Đã Huỷ</th>
               <th className="px-3 py-2">Họ Tên Cha</th>
               <th className="px-3 py-2">Họ Tên Mẹ</th>
               <th className="px-3 py-2 text-center w-16 sticky right-0 bg-gray-50 shadow-[-4px_0_10px_rgba(0,0,0,0.02)]">Thao tác</th>
@@ -51,7 +51,7 @@ export default function DataTable({ data, onDeleteRow }: DataTableProps) {
                   {item.address}
                 </td>
                 <td className="px-3 py-1.5 text-gray-700">{item.issueDate}</td>
-                <td className="px-3 py-1.5 text-gray-600">{item.spouseName || "-"}</td>
+                <td className="px-3 py-1.5 text-gray-600">{item.canceledIdNumber || "-"}</td>
                 <td className="px-3 py-1.5 text-gray-600">{item.fatherName || "-"}</td>
                 <td className="px-3 py-1.5 text-gray-600">{item.motherName || "-"}</td>
 
@@ -69,19 +69,19 @@ export default function DataTable({ data, onDeleteRow }: DataTableProps) {
 
                     {confirmDeleteId === item.id && (
                       <div className="absolute right-10 z-40 bg-white border border-gray-200 rounded-lg shadow-xl p-2 flex items-center gap-1.5 animate-in fade-in slide-in-from-right-2 duration-150">
-                        <span className="text-[10px] font-bold text-gray-700 whitespace-nowrap">Xóa?</span>
+                        <span className="text-[12px] font-bold text-gray-700 whitespace-nowrap">Xóa?</span>
                         <button
                           onClick={() => {
                             onDeleteRow(item.id);
                             setConfirmDeleteId(null);
                           }}
-                          className="px-1.5 py-0.5 text-[10px] font-bold text-white bg-red-600 rounded hover:bg-red-700 transition"
+                          className="px-1.5 py-0.5 text-[12px] font-bold text-white bg-red-600 rounded hover:bg-red-700 transition"
                         >
                           Có
                         </button>
                         <button
                           onClick={() => setConfirmDeleteId(null)}
-                          className="px-1.5 py-0.5 text-[10px] font-bold text-gray-600 bg-gray-100 rounded hover:bg-gray-200 transition"
+                          className="px-1.5 py-0.5 text-[12px] font-bold text-gray-600 bg-gray-100 rounded hover:bg-gray-200 transition"
                         >
                           Không
                         </button>
