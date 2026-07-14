@@ -48,7 +48,7 @@ export default function ScannerSection({
           <p className="text-purple-600 font-bold mb-2 animate-pulse">Đang chờ tín hiệu từ máy quét phần cứng...</p>
           <textarea
             readOnly
-            className="w-full h-20 bg-gray-100 border border-gray-300 rounded p-2 text-sm font-mono text-gray-700 resize-none pointer-events-none"
+            className="break-all w-full h-20 bg-gray-100 border border-gray-300 rounded p-2 text-sm font-mono text-gray-700 resize-none pointer-events-none"
             placeholder="Dữ liệu sẽ hiển thị ở đây..."
             value={scannerDisplayValue}
           />
