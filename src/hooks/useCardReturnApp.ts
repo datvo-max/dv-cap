@@ -299,13 +299,13 @@ export function useCardReturnApp() {
           await html5QrCodeRef.current.start(
             { facingMode: "environment" },
             {
-              fps: 10, qrbox:
-                (viewfinderWidth, viewfinderHeight) => {
-                  // Lấy 75% của chiều nào ngắn hơn (để đảm bảo luôn là hình vuông hoàn hảo)
-                  const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-                  const qrboxSize = Math.floor(minEdge * 0.75);
-                  return { width: qrboxSize, height: qrboxSize };
-                }
+              fps: 10, qrbox: { width: 250, height: 250 }
+              // (viewfinderWidth, viewfinderHeight) => {
+              //   // Lấy 75% của chiều nào ngắn hơn (để đảm bảo luôn là hình vuông hoàn hảo)
+              //   const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+              //   const qrboxSize = Math.floor(minEdge * 0.75);
+              //   return { width: qrboxSize, height: qrboxSize };
+              // }
             },
             handleCameraScan,
             () => { }

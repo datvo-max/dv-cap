@@ -182,9 +182,11 @@ export default function Home() {
                 </div>
 
 
-                <div className="relative w-full max-w-md rounded-lg overflow-hidden shadow-md bg-black">
-                  {/* Khung chứa Camera */}
-                  <div id="return-section" className={`w-full ${returnApp.isWebCamActive ? 'block' : 'hidden'}`}></div>
+
+                <div className={`relative w-full rounded-lg overflow-hidden shadow-md bg-black ${returnApp.isWebCamActive ? 'mb-4' : 'hidden'}`}>
+
+                  {/* Khung chứa Camera (Để trống hoàn toàn chiều cao, chỉ dùng w-full) */}
+                  <div id="return-reader" className="w-full"></div>
 
                   {/* Lớp chớp sáng máy ảnh */}
                   <div
