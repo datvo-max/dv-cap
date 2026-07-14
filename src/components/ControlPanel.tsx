@@ -26,13 +26,14 @@ export default function ControlPanel({
       >
         {isDeviceScannerActive ? "Đang Nhận QR... (Bấm Dừng)" : "Nhận Từ Máy Quét (PC)"}
       </button>
-      <button
-        onClick={onExportExcel}
-        disabled={isExporting}
-        className={`px-4 py-2 font-bold rounded-lg transition text-white ${isExporting ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}`}
-      >
-        {isExporting ? "Đang Xử Lý..." : "Xuất Excel"}
-      </button>
+      {!isDeviceScannerActive && !isWebCamActive &&
+        <button
+          onClick={onExportExcel}
+          disabled={isExporting}
+          className={`px-4 py-2 font-bold rounded-lg transition text-white ${isExporting ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}`}
+        >
+          {isExporting ? "Đang Xử Lý..." : "Xuất Excel"}
+        </button>}
 
       {!isWebCamActive ? (
         <button onClick={onStartWebcam} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition">Mở Camera Web</button>
@@ -41,18 +42,23 @@ export default function ControlPanel({
       )}
 
       {/* NÚT TẢI ẢNH / CHỤP THỦ CÔNG */}
-      <label className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-bold rounded-lg transition cursor-pointer flex items-center justify-center m-0">
-        Tải Ảnh Lên
-        <input
-          type="file"
-          accept="image/*"
-          multiple
-          onChange={onFileUpload}
-          className="hidden"
-        />
-      </label>
+      {!isDeviceScannerActive && !isWebCamActive &&
+        <label className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-bold rounded-lg transition cursor-pointer flex items-center justify-center m-0">
+          Tải Ảnh Lên
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={onFileUpload}
+            className="hidden"
+          />
+        </label>}
 
-      <button onClick={onClearData} className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition">Xóa Dữ Liệu</button>
+      {!isDeviceScannerActive && !isWebCamActive &&
+        <button
+          onClick={onClearData}
+          className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition">
+          Xóa Dữ Liệu</button>}
     </div>
   );
 }

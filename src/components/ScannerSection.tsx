@@ -45,10 +45,11 @@ export default function ScannerSection({
 
       {isDeviceScannerActive && (
         <div className="w-full max-w-md p-4 bg-white border-2 border-dashed border-purple-500 rounded-lg text-center mt-4 shadow-sm">
-          <p className="text-purple-600 font-bold mb-2 animate-pulse">Đang chờ tín hiệu từ máy quét phần cứng...</p>
+          <p className="text-purple-600 font-bold mb-2 animate-pulse">Đang chờ tín hiệu từ máy quét...</p>
           <textarea
             readOnly
-            className="break-all w-full h-20 bg-gray-100 border border-gray-300 rounded p-2 text-sm font-mono text-gray-700 resize-none pointer-events-none"
+            rows={5}
+            className="break-all w-full bg-gray-100 border border-gray-300 rounded p-2 text-sm font-mono text-gray-700 resize-none pointer-events-none"
             placeholder="Dữ liệu sẽ hiển thị ở đây..."
             value={scannerDisplayValue}
           />

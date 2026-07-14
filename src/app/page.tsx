@@ -170,7 +170,7 @@ export default function Home() {
                     ></path>
                   </svg>
 
-                  <span>ĐÓNG CAMERA & QUAY LẠI BẢNG ĐIỀU KHIỂN</span>
+                  <span>ĐÓNG CAMERA</span>
                 </button>
 
               </div>
