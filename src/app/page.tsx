@@ -1,55 +1,66 @@
 // src/app/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useScannerApp } from "@/hooks/useScannerApp";
 import { useCardReturnApp } from "@/hooks/useCardReturnApp";
 
 import Header from "@/components/Header";
 import Toast from "@/components/Toast";
 import ConfirmModal from "@/components/ConfirmModal";
-import ScannerSection from "@/components/ScannerSection";
 
-// --- COMPONENTS CỦA PHÂN HỆ 1 (NHẬP LIỆU) ---
+// --- COMPONENTS CỦA PHÂN HỆ 1 ---
 import DashboardReport from "@/components/DashboardReport";
 import ControlPanel from "@/components/ControlPanel";
+import ScannerSection from "@/components/ScannerSection";
 import DataTable from "@/components/DataTable";
+
+// --- COMPONENTS CỦA PHÂN HỆ 2 ---
 import ReturnDashboard from "@/components/ReturnDashboard";
 import ReturnDataTable from "@/components/ReturnDataTable";
-
-// --- COMPONENTS CỦA PHÂN HỆ 2 (TRẢ THẺ) ---
-// ⚠️ Lưu ý: Bạn cần lưu code bảng Dexie ở câu trước thành 2 file mới này nhé!
-// import ReturnDashboard from "@/components/ReturnDashboard";
-// import ReturnDataTable from "@/components/ReturnDataTable";
+import ReturnScannerSection from "@/components/ReturnScannerSection";
+import ReturnControlPanel from "@/components/ReturnControlPanel";
 
 export default function Home() {
-  // Trạng thái quản lý Tab hiện tại
   const [activeTab, setActiveTab] = useState<'nhap-lieu' | 'tra-the'>('nhap-lieu');
 
-  // Khởi tạo 2 "bộ não" chạy song song
   const app = useScannerApp();
   const returnApp = useCardReturnApp();
 
-  // Xác định mảng Toasts và Tiến trình Excel của Tab nào đang được kích hoạt
   const activeToasts = activeTab === 'nhap-lieu' ? app.toasts : returnApp.toasts;
   const activeProgress = activeTab === 'nhap-lieu' ? app.exportProgress : returnApp.exportProgress;
 
-  // Xác định đang trên phân hệ nào để sử dụng modal
   const activeModalConfig = activeTab === 'nhap-lieu' ? app.modalConfig : returnApp.modalConfig;
   const activeConfirmClear = activeTab === 'nhap-lieu' ? app.confirmClearData : returnApp.confirmClearData;
   const activeCloseModal = activeTab === 'nhap-lieu' ? app.closeModal : returnApp.closeModal;
+
+  const [isMounted, setIsMounted] = useState(false);
+  // 1. Đọc trạng thái lưu trữ khi trang vừa tải xong
+  useEffect(() => {
+    setIsMounted(true);
+    const savedTab = localStorage.getItem('cccd_active_tab') as 'nhap-lieu' | 'tra-the' | null;
+    if (savedTab) {
+      setActiveTab(savedTab);
+    }
+  }, []);
+
+  // 2. Hàm xử lý chuyển Tab kết hợp lưu LocalStorage
+  const handleTabChange = (tab: 'nhap-lieu' | 'tra-the') => {
+    setActiveTab(tab);
+    localStorage.setItem('cccd_active_tab', tab);
+  };
 
   return (
     <main className="min-h-screen bg-gray-50 font-sans text-gray-800 pb-10">
       <Header />
 
-      <div className="max-w-[1700px] mx-auto px-4">
+      {isMounted && <div className="max-w-[1700px] mx-auto px-4">
 
         {/* THANH ĐIỀU HƯỚNG TAB */}
         <div className="flex justify-center mb-8">
           <div className="bg-white p-1.5 rounded-xl inline-flex shadow-sm border border-gray-200">
             <button
-              onClick={() => setActiveTab('nhap-lieu')}
+              onClick={() => handleTabChange('nhap-lieu')}
               className={`px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 ${activeTab === 'nhap-lieu'
                 ? "bg-blue-600 text-white shadow-md transform scale-105"
                 : "text-gray-500 hover:text-blue-600 hover:bg-blue-50"
@@ -58,7 +69,7 @@ export default function Home() {
               📥 PHÂN HỆ 1: QUÉT QR & LẬP DANH SÁCH
             </button>
             <button
-              onClick={() => setActiveTab('tra-the')}
+              onClick={() => handleTabChange('tra-the')}
               className={`px-8 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 ${activeTab === 'tra-the'
                 ? "bg-indigo-600 text-white shadow-md transform scale-105"
                 : "text-gray-500 hover:text-indigo-600 hover:bg-indigo-50"
@@ -70,12 +81,11 @@ export default function Home() {
         </div>
 
         {/* ======================================================== */}
-        {/* NỘI DUNG TAB 1: GIỮ NGUYÊN 100% CẤU TRÚC HIỆN TẠI CỦA BẠN */}
+        {/* NỘI DUNG TAB 1 */}
         {/* ======================================================== */}
         {activeTab === 'nhap-lieu' && (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
             <DashboardReport />
-
             <div className="flex flex-col lg:flex-row gap-6 items-start">
               <div className="w-full lg:w-1/4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm lg:sticky lg:top-24 space-y-4">
                 <h4 className="text-sm font-bold text-gray-700 border-b pb-2 mb-2">Bảng Điều Khiển Quét</h4>
@@ -114,185 +124,57 @@ export default function Home() {
           </div>
         )}
 
-
         {/* ======================================================== */}
-        {/* NỘI DUNG TAB 2: PHÂN HỆ QUẢN LÝ KHO THẺ MỚI */}
+        {/* NỘI DUNG TAB 2 (Đã Tái Cấu Trúc) */}
         {/* ======================================================== */}
         {activeTab === 'tra-the' && (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
 
-            {/* ======================================================== */}
-            {/* CHẾ ĐỘ 1: FOCUS MODE CAMERA (Chỉ hiển thị khi đang bật máy ảnh) */}
-            {/* ======================================================== */}
-            <div className={returnApp.isWebCamActive ? 'block' : 'hidden'}>
-              <div className="max-w-2xl mx-auto flex flex-col gap-6 mb-10 mt-4">
+            {/* Chế độ 1: Camera (Chỉ hiện khi mở Camera) */}
+            <ReturnScannerSection
+              isWebCamActive={returnApp.isWebCamActive}
+              cameraActionRef={returnApp.cameraActionRef}
+              isFlashActive={returnApp.isFlashActive}
+              onStopWebcam={returnApp.stopWebcam}
+            />
 
-                {/* Khung Tiêu Đề Động (Xanh dương cho Nạp / Xanh lá cho Trả) */}
-                <div className={`p-5 rounded-2xl border-2 shadow-sm text-center ${returnApp.cameraActionRef.current === 'import' ? 'bg-blue-50 border-blue-300' : 'bg-green-50 border-green-300'}`}>
-                  <h2 className={`text-2xl font-black uppercase tracking-wide ${returnApp.cameraActionRef.current === 'import' ? 'text-blue-800' : 'text-green-800'}`}>
-                    {returnApp.cameraActionRef.current === 'import'
-                      ? "📥 Quét mã QR để Nạp thẻ vào Kho"
-                      : "📤 Quét mã QR để Trả thẻ cho Công dân"}
-                  </h2>
-                  <p className="text-sm mt-2 font-medium text-gray-600">
-                    Đưa mã QR trên mặt trước Thẻ Căn cước vào chính giữa khung hình
-                  </p>
-                </div>
-
-                {/* KHUNG CAMERA CHUẨN KỸ THUẬT */}
-                {/* Nguyên tắc: Chỉ dùng w-full. Gắn block/hidden TRỰC TIẾP lên div chứa ID #return-reader */}
-                <div className={`relative w-full rounded-2xl overflow-hidden shadow-xl border-4 ${returnApp.cameraActionRef.current === 'import' ? 'border-blue-400' : 'border-green-400'} ${returnApp.isWebCamActive ? 'bg-black' : ''}`}>
-
-                  <div id="return-reader" className={`w-full ${returnApp.isWebCamActive ? 'block' : 'hidden'}`}></div>
-
-                  {/* Lớp chớp sáng máy ảnh */}
-                  <div className={`absolute inset-0 bg-white pointer-events-none z-30 transition-opacity ease-out ${returnApp.isFlashActive ? "opacity-100 duration-0" : "opacity-0 duration-500"}`} />
-                </div>
-
-                {/* Nút Đóng Camera */}
-                <button
-                  onClick={returnApp.stopWebcam}
-                  className="w-full py-4 rounded-xl font-bold text-base bg-red-50 text-red-700 border-2 border-red-300 hover:bg-red-100 hover:text-red-800 transition-all shadow-md flex items-center justify-center gap-2.5 group"
-                >
-                  {/* SVG Chuẩn: stroke 2 (để sắc nét), shrink-0 (chống bóp méo), group-hover: xoay nhẹ cho đẹp */}
-                  <svg
-                    className="w-6 h-6 shrink-0 transition-transform duration-300 group-hover:rotate-90"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M6 18L18 6M6 6l12 12"
-                    ></path>
-                  </svg>
-
-                  <span>ĐÓNG CAMERA</span>
-                </button>
-
-              </div>
-            </div>
-
-
-            {/* ======================================================== */}
-            {/* CHẾ ĐỘ 2: BẢNG LÀM VIỆC BÌNH THƯỜNG (Bị ẩn hoàn toàn khi Camera mở) */}
-            {/* ======================================================== */}
+            {/* Chế độ 2: Dashboard bình thường (Chỉ hiện khi Camera tắt) */}
             <div className={returnApp.isWebCamActive ? 'hidden' : 'block'}>
               <ReturnDashboard />
 
               <div className="flex flex-col lg:flex-row gap-6 items-start mt-6">
 
-                {/* BẢNG ĐIỀU KHIỂN BÊN TRÁI */}
+                {/* Bảng Điều Khiển (Trái) */}
                 <div className="w-full lg:w-1/4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm lg:sticky lg:top-24 flex flex-col gap-5">
                   <h4 className="text-sm font-bold text-gray-700 border-b pb-2">Bàn Điều Hành Kho Thẻ</h4>
-
-                  {/* 📥 KHỐI 1: NẠP DỮ LIỆU (Màu Xanh Dương) */}
-                  <div className="bg-blue-50/40 p-3 rounded-lg border border-blue-100 flex flex-col gap-3">
-                    <p className="text-[11px] font-bold text-blue-700 uppercase flex items-center gap-1.5 mb-1">
-                      <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                      Thêm thẻ vào kho
-                    </p>
-
-                    <button className="w-full relative flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition-colors text-xs shadow-sm">
-                      Nạp từ file Excel (Danh sách)
-                      <input type="file" accept=".xlsx, .xls" onChange={returnApp.handleImportExcel} className="absolute inset-0 opacity-0 cursor-pointer" />
-                    </button>
-
-                    <input
-                      ref={returnApp.importInputRef}
-                      onKeyDown={returnApp.handleImportScannerInput}
-                      placeholder="🔫 Click vào đây khi quét thẻ để thêm ..."
-                      className="w-full pl-3 pr-3 py-2 border border-blue-200 rounded-md text-xs focus:ring-2 focus:ring-blue-500 outline-none"
-                      title="Nạp lẻ bằng máy quét phần cứng"
-                    />
-
-                    {/* Nút được làm gọn lại vì không cần check trạng thái đóng/mở tại đây nữa */}
-                    <button
-                      onClick={() => returnApp.startWebcam('import')}
-                      className="w-full py-2 rounded-md font-bold text-xs border transition-colors shadow-sm bg-white text-blue-700 border-blue-300 hover:bg-blue-50"
-                    >
-                      📸 Mở Camera Để Thêm Thẻ Thủ Công
-                    </button>
-                  </div>
-
-                  {/* 📤 KHỐI 2: TRẢ THẺ (Màu Xanh Lá) */}
-                  <div className="bg-green-50/40 p-3 rounded-lg border border-green-100 flex flex-col gap-3">
-                    <p className="text-[11px] font-bold text-green-700 uppercase flex items-center gap-1.5 mb-1">
-                      <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                      Xác nhận trả thẻ
-                    </p>
-
-                    <input
-                      ref={returnApp.returnInputRef}
-                      onKeyDown={returnApp.handleReturnScannerInput}
-                      placeholder="🔫 Click vào đây khi quét thẻ để trả ..."
-                      className="w-full pl-3 pr-3 py-2 border border-green-200 rounded-md text-xs focus:ring-2 focus:ring-green-500 outline-none"
-                      title="Trả thẻ bằng máy quét phần cứng"
-                    />
-
-                    <button
-                      onClick={() => returnApp.startWebcam('return')}
-                      className="w-full py-2 rounded-md font-bold text-xs border transition-colors shadow-sm bg-white text-green-700 border-green-300 hover:bg-green-50"
-                    >
-                      📸 Mở Camera Trả Thẻ
-                    </button>
-                  </div>
-
-                  {/* 📊 KHỐI 3: XUẤT BÁO CÁO EXCEL */}
-                  <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                    <p className="text-[11px] font-bold text-gray-500 uppercase mb-2">Tải báo cáo (Dang Sách)</p>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button onClick={() => returnApp.handleExportExcel('pending')} className="bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold py-1.5 px-2 rounded text-[11px] border border-orange-200 transition-colors">⬇ Tải xuống Còn lại</button>
-                      <button onClick={() => returnApp.handleExportExcel('returned')} className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold py-1.5 px-2 rounded text-[11px] border border-emerald-200 transition-colors">⬇ Tải xuống Đã trả</button>
-                      <button onClick={() => returnApp.handleExportExcel('all')} className="col-span-2 bg-white hover:bg-gray-100 text-gray-700 font-bold py-1.5 px-2 rounded text-[11px] border border-gray-300 transition-colors">⬇ Tải xuống Toàn bộ Kho</button>
-
-                    </div>
-                  </div>
-                  <div className="bg-purple-50/40 p-3 rounded-lg border border-purple-200 mt-4">
-                    <p className="text-[11px] font-bold text-purple-700 uppercase mb-2">Quản trị Hệ thống (Sao Lưu / Khôi Phục / Reset)</p>
-                    <div className="grid grid-cols-2 gap-2">
-
-                      <button
-                        onClick={returnApp.handleBackupDatabase}
-                        className="bg-white hover:bg-purple-50 text-purple-700 font-bold py-2 px-2 rounded text-xs border border-purple-300 transition-colors shadow-sm"
-                      >
-                        💾 Tải File Sao Lưu
-                      </button>
-
-                      <label className="bg-white hover:bg-purple-50 text-purple-700 font-bold py-2 px-2 rounded text-xs border border-purple-300 transition-colors shadow-sm cursor-pointer text-center">
-                        🔄 Nạp File Khôi Phục
-                        <input type="file" accept=".json" onChange={returnApp.handleRestoreDatabase} className="hidden" />
-                      </label>
-                      <button
-                        onClick={returnApp.requestClearData}
-                        className="col-span-2 bg-red-50 hover:bg-red-100 text-red-700 font-bold py-1.5 px-2 rounded text-[11px] border border-red-200 transition-colors shadow-sm mt-1"
-                      >
-                        🗑️ Xóa Toàn Bộ Dữ Liệu Kho
-                      </button>
-                    </div>
-                  </div>
-
+                  <ReturnControlPanel
+                    onImportExcel={returnApp.handleImportExcel}
+                    importInputRef={returnApp.importInputRef}
+                    onImportScannerInput={returnApp.handleImportScannerInput}
+                    onStartWebcam={returnApp.startWebcam}
+                    returnInputRef={returnApp.returnInputRef}
+                    onReturnScannerInput={returnApp.handleReturnScannerInput}
+                    onExportExcel={returnApp.handleExportExcel}
+                    onBackupDatabase={returnApp.handleBackupDatabase}
+                    onRestoreDatabase={returnApp.handleRestoreDatabase}
+                    onRequestClearData={returnApp.requestClearData}
+                  />
                 </div>
 
-                {/* BẢNG DỮ LIỆU BÊN PHẢI */}
+                {/* Bảng Dữ Liệu (Phải) */}
                 <div className="w-full lg:w-3/4">
                   <ReturnDataTable onReturnCard={returnApp.processReturnCard} />
                 </div>
+
               </div>
             </div>
 
           </div>
         )}
 
-
-      </div>
+      </div>}
 
       <Toast toasts={activeToasts} progress={activeProgress} />
-
-
 
       <ConfirmModal
         isOpen={activeModalConfig.isOpen}

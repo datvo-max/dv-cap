@@ -76,6 +76,8 @@ export default function ReturnDataTable({ onReturnCard }: ReturnDataTableProps) 
               <th className="px-3 py-3 border-b border-gray-200">Họ và Tên</th>
               <th className="px-3 py-3 border-b border-gray-200">Ngày Sinh</th>
               <th className="px-3 py-3 max-w-xs border-b border-gray-200">Địa Chỉ</th>
+              <th className="px-3 py-3 border-b border-gray-200">Họ tên cha</th>
+              <th className="px-3 py-3 border-b border-gray-200">Họ tên mẹ</th>
               <th className="px-3 py-3 text-center w-28 sticky right-0 bg-gray-100 shadow-[-4px_0_10px_rgba(0,0,0,0.02)] border-b border-gray-200">Thao tác</th>
             </tr>
           </thead>
@@ -110,12 +112,17 @@ export default function ReturnDataTable({ onReturnCard }: ReturnDataTableProps) 
 
                     <td className="px-3 py-2.5 font-bold text-blue-900">{item.idNumber}</td>
                     <td className="px-3 py-2.5 font-bold text-gray-900">{item.fullName}</td>
-                    <td className="px-3 py-2.5 text-gray-700">{item.dob}</td>
+                    <td className="px-3 py-2.5 text-gray-700">
+                      {item.dob?.length === 8
+                        ? item.dob.replace(/(\d{2})(\d{2})(\d{4})/, "$1-$2-$3")
+                        : (item.dob || "-")}
+                    </td>
                     <td className="px-3 py-2.5 max-w-50 overflow-hidden text-ellipsis text-gray-500 font-normal" title={item.address}>
                       {item.address}
                     </td>
-
-                    <td className="px-3 py-2.5 text-center relative sticky right-0 bg-white group-hover:bg-indigo-50/40 shadow-[-4px_0_10px_rgba(0,0,0,0.02)] transition-colors">
+                    <td className="px-3 py-2.5 text-gray-700">{item.fatherName}</td>
+                    <td className="px-3 py-2.5 text-gray-700">{item.motherName}</td>
+                    <td className="px-3 py-2.5 text-center sticky right-0 bg-white group-hover:bg-indigo-50/40 shadow-[-4px_0_10px_rgba(0,0,0,0.02)] transition-colors">
                       <div className="flex items-center justify-center">
                         {!isReturned ? (
                           <button

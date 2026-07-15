@@ -45,7 +45,11 @@ export default function DataTable({ data, onDeleteRow }: DataTableProps) {
                 <td className="px-3 py-1.5 text-center text-gray-400 font-normal">{index + 1}</td>
                 <td className="px-3 py-1.5 font-bold text-blue-900">{item.idNumber}</td>
                 <td className="px-3 py-1.5 font-bold text-gray-900">{item.fullName}</td>
-                <td className="px-3 py-1.5 text-gray-700">{item.dob}</td>
+                <td className="px-3 py-1.5 text-gray-700">
+                  {item.dob?.length === 8
+                    ? item.dob.replace(/(\d{2})(\d{2})(\d{4})/, "$1-$2-$3")
+                    : (item.dob || "-")}
+                </td>
                 <td className="px-3 py-1.5 text-gray-700">{item.gender}</td>
                 <td className="px-3 py-1.5 max-w-xs overflow-hidden text-ellipsis text-gray-500 font-normal" title={item.address}>
                   {item.address}

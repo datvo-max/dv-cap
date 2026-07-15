@@ -17,10 +17,14 @@ export const exportReturnExcel = async (
   // 1. Chuẩn bị dữ liệu
   const dataToExport = data.map((item, index) => ({
     "STT": index + 1,
-    "Vị Trí Hộp": `Hộp số ${item.zone}`,
+    // "Vị Trí Hộp": `Hộp số ${item.zone}`,
     "Số CCCD": item.idNumber,
     "Họ và Tên": item.fullName,
-    "Ngày Nạp": item.importDate,
+    "Ngày Sinh": item.dob,
+    "Địa Chỉ": item.address,
+    "Họ Tên Cha": item.fatherName,
+    "Họ Tên Mẹ": item.motherName,
+    "Ngày Nhận": item.importDate,
     "Trạng Thái": item.status === 'returned' ? 'Đã trả' : 'Chưa trả',
     "Thời Gian Trả": item.returnedAt || '-'
   }));
@@ -33,9 +37,13 @@ export const exportReturnExcel = async (
   // 2. Thiết lập độ rộng cột
   ws['!cols'] = [
     { wch: 6 },  // STT
-    { wch: 15 }, // Vị Trí Hộp
+    // { wch: 15 }, // Vị Trí Hộp
     { wch: 16 }, // Số CCCD
     { wch: 25 }, // Họ và Tên
+    { wch: 10 }, // Ngày sinh
+    { wch: 35 }, // Địa chỉ
+    { wch: 25 }, // Họ tên Cha
+    { wch: 25 }, // Họ tên Mẹ
     { wch: 15 }, // Ngày Nạp
     { wch: 15 }, // Trạng Thái
     { wch: 25 }  // Thời Gian Trả
@@ -80,9 +88,10 @@ export const exportReturnExcel = async (
   await yieldToMain();
 
   // Đặt tên file linh hoạt theo nút bấm
-  let filename = 'Tong_So_The_Can_Cuoc.xlsx';
-  if (type === 'returned') filename = 'Danh_Sach_Da_Tra.xlsx';
-  if (type === 'pending') filename = 'Danh_Sach_Con_Lai.xlsx';
+  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  let filename = `TanAn_Tong_So_The_Can_Cuoc_${dateStr}.xlsx`;
+  if (type === 'returned') filename = `TanAn_Danh_Sach_Da_Tra_${dateStr}.xlsx`;
+  if (type === 'pending') filename = `TanAn_Danh_Sach_Con_Lai_${dateStr}.xlsx`;
 
   XLSX.writeFile(workbook, filename);
   onProgress(100);

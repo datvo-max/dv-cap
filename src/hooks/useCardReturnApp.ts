@@ -4,7 +4,6 @@ import { Html5Qrcode } from "html5-qrcode";
 import XLSX from "xlsx";
 import { exportReturnExcel } from "@/utils/exportReturnToExcel";
 import { parseCCCD } from "@/utils/cccdParser";
-import 'dexie-export-import';
 
 
 
@@ -196,7 +195,7 @@ export function useCardReturnApp() {
         if (newRecords.length > 0) {
           // Ghi hàng loạt vào IndexedDB
           await db.cards.bulkAdd(newRecords);
-          showToast(`✅ Đã nạp thành công ${successCount} thẻ vào hệ thống!`, "success");
+          showToast(`✅ Đã thêm thành công ${successCount} thẻ vào hệ thống!`, "success");
         } else {
           showToast(`⚠️ Không có thẻ mới nào được nạp (hoặc bị trùng toàn bộ).`, "warning");
         }
@@ -205,7 +204,7 @@ export function useCardReturnApp() {
       }
       e.target.value = ""; // Reset input
     };
-    reader.readAsBinaryString(file);
+    reader.readAsArrayBuffer(file);
   };
 
   // ==========================================
@@ -334,6 +333,7 @@ export function useCardReturnApp() {
   // 6. Back up database
   const handleBackupDatabase = async () => {
     try {
+      await import('dexie-export-import');
       showToast("Đang tạo file sao lưu hệ thống...", "info");
 
       // 1. Nén toàn bộ DB thành file JSON (định dạng Blob)
@@ -358,6 +358,7 @@ export function useCardReturnApp() {
     if (!file) return;
 
     try {
+      await import('dexie-export-import');
       showToast("Đang khôi phục hệ thống...", "warning");
 
       // Đọc và nạp dữ liệu từ file JSON vào hệ thống Dexie
