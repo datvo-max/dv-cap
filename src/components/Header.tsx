@@ -4,7 +4,7 @@ import logoImg from "../../public/Logo-BCA.png";
 
 export default function Header() {
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200 p-4 flex justify-between items-center mb-6 sticky top-0 z-50">
+    <header className="bg-white shadow-sm border-b border-gray-200 p-2 flex justify-between items-center mb-6 sticky top-0 z-50">
       <div className="flex items-center gap-4">
         <Image
           src={logoImg}
@@ -15,12 +15,12 @@ export default function Header() {
           Tân An
         </h1>
         <span className="text-sm font-medium text-gray-500 hidden md:block">
-          Quét QR căn cước - Lập danh sách - Trả thẻ
+          Quét QR | Lập danh sách - Trả thẻ Căn cước
         </span>
       </div>
 
       <div className="flex items-center gap-3">
-        <span className="text-xs text-gray-500">Phiên bản: 3.0.8</span>
+        <span className="text-xs text-gray-500">Phiên bản: 3.1.0</span>
         <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-full">
           <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
           <span className="text-xs font-bold text-green-700">Tốt</span>

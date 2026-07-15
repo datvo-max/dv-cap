@@ -4,36 +4,27 @@ import { Html5Qrcode } from "html5-qrcode";
 import { CCCDRecord } from "@/types/cccd";
 import { parseCCCD } from "@/utils/cccdParser";
 import { exportToExcel } from "@/utils/exportToExcel";
+import { db, ScannedRecord } from "@/lib/db";
+import { useLiveQuery } from "dexie-react-hooks";
 
 export function useScannerApp() {
-  const [data, setData] = useState<CCCDRecord[]>([]);
+  // Thay thế LocalStorage bằng useLiveQuery của Dexie.
+  // Giao diện sẽ TỰ ĐỘNG cập nhật (re-render) bất cứ khi nào bảng scannedCards có thay đổi.
+  const rawData = useLiveQuery(() => db.scannedCards.orderBy('id').reverse().toArray());
+  // Đảm bảo data luôn là mảng, kể cả khi IndexedDB đang tải
+  const data = rawData || [];
+
   const [isWebCamActive, setIsWebCamActive] = useState(false);
   const [isDeviceScannerActive, setIsDeviceScannerActive] = useState(false);
   const [modalConfig, setModalConfig] = useState({ isOpen: false, message: "" });
-
   const [scannerDisplayValue, setScannerDisplayValue] = useState("");
-
   const [exportProgress, setExportProgress] = useState<number | null>(null);
   const [isExporting, setIsExporting] = useState(false);
-
-  // 👉 1. THÊM STATE FLASH VÀ REF KHÓA CAMERA
   const [isFlashActive, setIsFlashActive] = useState(false);
-  const isCameraPaused = useRef(false); // Dùng ref để khóa lập tức, tránh độ trễ của State
-
+  const isCameraPaused = useRef(false);
   const scannerInputRef = useRef<HTMLInputElement>(null);
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
 
-  // Load / Save dữ liệu LocalStorage
-  useEffect(() => {
-    const saved = localStorage.getItem("cccd_data");
-    if (saved) setData(JSON.parse(saved));
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("cccd_data", JSON.stringify(data));
-  }, [data]);
-
-  // Khai báo mảng chứa danh sách Toast (Xếp chồng)
   interface ToastItem {
     id: number;
     msg: string;
@@ -41,45 +32,52 @@ export function useScannerApp() {
   }
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
-  // Hàm showToast đã nâng cấp cho dạng mảng
   const showToast = useCallback((msg: string, type: "success" | "error" | "warning" | "info") => {
     const id = Date.now() + Math.random();
     setToasts((prev) => [...prev, { id, msg, type }]);
-
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 3000);
   }, []);
 
-  const handleScanSuccess = (decodedText: string) => {
+  // ==========================================
+  // XỬ LÝ QUÉT VÀ LƯU VÀO INDEXEDDB
+  // ==========================================
+  const handleScanSuccess = async (decodedText: string) => {
     const record = parseCCCD(decodedText);
 
-    // Kiểm tra định dạng mã QR có hợp lệ không
     if (!record.idNumber) {
       showToast(`❌ Lỗi: Mã QR không hợp lệ!`, "error");
       return;
     }
 
-    // 🔥 CHỐT CHẶN: Kiểm tra xem Số CCCD này đã tồn tại trong mảng data chưa
-    const isDuplicate = data.some((item) => item.idNumber === record.idNumber);
+    try {
+      // 1. Kiểm tra trùng lặp trực tiếp từ Database
+      const existingCount = await db.scannedCards.where('idNumber').equals(record.idNumber).count();
 
-    if (isDuplicate) {
-      showToast(`⚠️ Thông tin ${record.fullName} đã tồn tại`, "warning");
-      return;
+      if (existingCount > 0) {
+        showToast(`⚠️ Thông tin ${record.fullName} đã tồn tại`, "warning");
+        return;
+      }
+
+      // 2. Thêm vào Database
+      const { id, ...recordData } = record;
+      await db.scannedCards.add({
+        ...recordData,
+        scannedAt: new Date().toLocaleString('vi-VN') // Lưu dấu thời gian quét
+      });
+
+      showToast(`✅ Đã thêm: ${record.fullName}`, "success");
+    } catch (error) {
+      console.error("Lỗi ghi IndexedDB:", error);
+      showToast("❌ Không thể lưu vào cơ sở dữ liệu!", "error");
     }
-
-    // Nếu không trùng thì tiến hành lưu bình thường
-    setData((prev) => [...prev, record]);
-    showToast(`✅ Đã thêm: ${record.fullName}`, "success");
   };
 
-  // 👉  BỌC LOGIC QUÉT CAMERA (XỬ LÝ TRỄ VÀ FLASH)
   const handleCameraScan = (decodedText: string) => {
     if (isCameraPaused.current) return;
-
     isCameraPaused.current = true;
     setIsFlashActive(true);
-
     setTimeout(() => setIsFlashActive(false), 100);
 
     handleScanSuccess(decodedText);
@@ -89,23 +87,17 @@ export function useScannerApp() {
     }, 2000);
   };
 
-  // --- Logic Camera ---
   const startWebcam = async () => {
     setIsWebCamActive(true);
-
     setTimeout(async () => {
       if (!html5QrCodeRef.current) {
         html5QrCodeRef.current = new Html5Qrcode("reader");
       }
-
       try {
         if (!html5QrCodeRef.current.isScanning) {
           await html5QrCodeRef.current.start(
             { facingMode: "environment" },
-            {
-              fps: 10,
-              qrbox: { width: 250, height: 250 }
-            },
+            { fps: 10, qrbox: { width: 250, height: 250 } },
             handleCameraScan,
             () => { }
           );
@@ -122,19 +114,23 @@ export function useScannerApp() {
     setIsWebCamActive(false);
   };
 
-  // 2. CẬP NHẬT LUỒNG TẢI FILE ẢNH LÊN
+  // ==========================================
+  // XỬ LÝ ĐỌC FILE ẢNH VÀO INDEXEDDB
+  // ==========================================
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
     showToast("Đang phân tích ảnh...", "warning");
-
     const fileScanner = new Html5Qrcode("file-scanner");
     let failCount = 0;
-    const newRecords: CCCDRecord[] = [];
+    // Use a loose type here because parsed records may include id as string
+    // while the ScannedRecord type expects a numeric id (auto-generated by IndexedDB).
+    const newRecords: any[] = [];
     const duplicateNames: string[] = [];
 
-    const existingIds = new Set(data.map(item => item.idNumber));
+    // Lấy trước toàn bộ ID đang có trong DB để đối chiếu cho nhanh
+    const existingIds = new Set((await db.scannedCards.toArray()).map(c => c.idNumber));
 
     for (let i = 0; i < files.length; i++) {
       try {
@@ -147,7 +143,10 @@ export function useScannerApp() {
           if (isAlreadyExists) {
             duplicateNames.push(record.fullName);
           } else {
-            newRecords.push(record);
+            newRecords.push({
+              ...record,
+              scannedAt: new Date().toLocaleString('vi-VN')
+            });
           }
         } else {
           failCount++;
@@ -158,43 +157,37 @@ export function useScannerApp() {
     }
 
     if (newRecords.length > 0) {
-      setData((prev) => [...prev, ...newRecords]);
+      // Ghi hàng loạt (Bulk Insert) vào IndexedDB rất nhanh
+      await db.scannedCards.bulkAdd(newRecords);
 
       const namesList = newRecords.map(record => record.fullName);
-      let successMessage = "";
+      let successMessage = namesList.length <= 3
+        ? `✅ Đã thêm: ${namesList.join(", ")}`
+        : `✅ Đã thêm: ${namesList.slice(0, 3).join(", ")} và ${namesList.length - 3} người khác.`;
 
-      if (namesList.length <= 3) {
-        successMessage = `✅ Đã thêm: ${namesList.join(", ")}`;
-      } else {
-        const firstThree = namesList.slice(0, 3).join(", ");
-        const remainingCount = namesList.length - 3;
-        successMessage = `✅ Đã thêm: ${firstThree} và ${remainingCount} người khác.`;
-      }
       showToast(successMessage, "success");
     }
 
     if (duplicateNames.length > 0) {
       setTimeout(() => {
         if (duplicateNames.length <= 2) {
-          duplicateNames.forEach(name => {
-            showToast(`⚠️ Thông tin ${name} đã tồn tại`, "warning");
-          });
+          duplicateNames.forEach(name => showToast(`⚠️ Thông tin ${name} đã tồn tại`, "warning"));
         } else {
-          showToast(`⚠️ Có ${duplicateNames.length} hồ sơ bị trùng lặp và đã bị bỏ qua.`, "warning");
+          showToast(`⚠️ Có ${duplicateNames.length} hồ sơ bị trùng lặp.`, "warning");
         }
       }, newRecords.length > 0 ? 1500 : 0);
     }
 
     if (failCount > 0) {
       setTimeout(() => {
-        showToast(`❌ Có ${failCount} ảnh bị mờ hoặc không nhận diện được.`, "error");
+        showToast(`❌ Có ${failCount} ảnh bị mờ không nhận diện được.`, "error");
       }, (newRecords.length > 0 || duplicateNames.length > 0) ? 3000 : 0);
     }
 
     e.target.value = "";
   };
 
-  // --- Logic Máy quét PC ---
+
   useEffect(() => {
     const handleGlobalClick = () => {
       if (isDeviceScannerActive && scannerInputRef.current) scannerInputRef.current.focus();
@@ -207,14 +200,11 @@ export function useScannerApp() {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     if (isMobile) return showToast("📱 Tính năng này chỉ dành cho PC!", "warning");
 
-    // Tách bạch logic ra ngoài hàm cập nhật State
     if (!isDeviceScannerActive) {
-      // Bật máy quét
       setIsDeviceScannerActive(true);
       setTimeout(() => scannerInputRef.current?.focus(), 100);
       showToast("Sẵn sàng! Đưa mã QR vào trước máy quét.", "success");
     } else {
-      // Tắt máy quét
       setIsDeviceScannerActive(false);
       scannerInputRef.current?.blur();
       showToast("Đã tắt máy quét PC.", "warning");
@@ -233,34 +223,52 @@ export function useScannerApp() {
     setScannerDisplayValue(e.target.value);
   };
 
-  // --- Logic Xóa dữ liệu (Modal) ---
-  const requestClearData = () => setModalConfig({ isOpen: true, message: "Hành động này không thể khôi phục!" });
-  const confirmClearData = () => {
-    setData([]);
-    showToast("🗑️ Đã xóa sạch dữ liệu!", "warning");
-    setModalConfig({ isOpen: false, message: "" });
+
+  // ==========================================
+  // XÓA DỮ LIỆU INDEXEDDB
+  // ==========================================
+  const requestClearData = () => setModalConfig({ isOpen: true, message: "Hành động này sẽ xóa sạch danh sách cấp mới (IndexedDB) và không thể khôi phục!" });
+
+  const confirmClearData = async () => {
+    try {
+      await db.scannedCards.clear();
+      showToast("🗑️ Đã xóa sạch dữ liệu!", "warning");
+    } catch (error) {
+      showToast("❌ Lỗi khi xóa dữ liệu!", "error");
+    } finally {
+      setModalConfig({ isOpen: false, message: "" });
+    }
   };
   const closeModal = () => setModalConfig({ isOpen: false, message: "" });
+
+  const deleteRecord = async (id: number) => { // Thay string bằng number vì ID IndexedDB là số
+    try {
+      const recordToDelete = await db.scannedCards.get(id);
+      if (recordToDelete) {
+        await db.scannedCards.delete(id);
+        showToast(`🗑️ Đã xóa hồ sơ của: ${recordToDelete.fullName}`, "success");
+      }
+    } catch (error) {
+      showToast("❌ Có lỗi khi xóa hồ sơ!", "error");
+    }
+  };
 
   // --- Logic Xuất Excel ---
   const handleExportExcel = async () => {
     if (data.length === 0) {
       return showToast("Chưa có dữ liệu để xuất!", "warning");
     }
-
     setIsExporting(true);
-    setExportProgress(0); // Kích hoạt thanh Progress Bar
-
+    setExportProgress(0);
     try {
-      await exportToExcel(data, (percent) => {
-        setExportProgress(percent); // Chỉ truyền phần trăm vào đây, không gọi setToastMsg nữa
+      // Ép kiểu data hiện tại (ScannedRecord) về chuẩn mảng CCCDRecord để truyền cho hàm export
+      await exportToExcel(data as unknown as CCCDRecord[], (percent) => {
+        setExportProgress(percent);
       });
-
       showToast("✅ Đã xử lý file Excel thành công!", "success");
     } catch (error) {
       showToast("❌ Có lỗi xảy ra khi xuất file!", "error");
     } finally {
-      // Đợi 1 giây để người dùng kịp nhìn thấy 100% rồi mới ẩn thanh tiến trình
       setTimeout(() => {
         setIsExporting(false);
         setExportProgress(null);
@@ -268,20 +276,11 @@ export function useScannerApp() {
     }
   };
 
-  const deleteRecord = (id: string) => {
-    const recordToDelete = data.find(item => item.id === id);
-    setData((prev) => prev.filter((item) => item.id !== id));
-
-    if (recordToDelete) {
-      showToast(`🗑️ Đã xóa hồ sơ của: ${recordToDelete.fullName}`, "success");
-    }
-  };
-
   return {
     data,
     isWebCamActive,
     isDeviceScannerActive,
-    toasts,              // Đã xuất đúng mảng toasts ra ngoài
+    toasts,
     modalConfig,
     scannerInputRef,
     exportProgress,

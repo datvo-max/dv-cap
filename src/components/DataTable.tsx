@@ -1,14 +1,14 @@
 // src/components/DataTable.tsx
-import React, { useState } from "react";
-import { CCCDRecord } from "@/types/cccd";
+import { ScannedRecord } from "@/lib/db";
+import { useState } from "react";
 
 interface DataTableProps {
-  data: CCCDRecord[];
-  onDeleteRow: (id: string) => void;
+  data: ScannedRecord[];
+  onDeleteRow: (id: number) => void;
 }
 
 export default function DataTable({ data, onDeleteRow }: DataTableProps) {
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | undefined>(undefined);
 
   if (data.length === 0) {
     return (
@@ -26,7 +26,7 @@ export default function DataTable({ data, onDeleteRow }: DataTableProps) {
           <thead className="bg-gray-50 text-gray-700 font-bold border-b border-gray-200">
             <tr>
               <th className="px-3 py-2 text-center w-10">STT</th>
-              <th className="px-3 py-2">Số CCCD</th>
+              <th className="px-3 py-2">Số ĐDCN</th>
               <th className="px-3 py-2">Họ và Tên</th>
               <th className="px-3 py-2">Ngày Sinh</th>
               <th className="px-3 py-2">Giới Tính</th>
@@ -72,15 +72,15 @@ export default function DataTable({ data, onDeleteRow }: DataTableProps) {
                         <span className="text-[12px] font-bold text-gray-700 whitespace-nowrap">Xóa?</span>
                         <button
                           onClick={() => {
-                            onDeleteRow(item.id);
-                            setConfirmDeleteId(null);
+                            onDeleteRow(item.id!);
+                            setConfirmDeleteId(undefined);
                           }}
                           className="px-1.5 py-0.5 text-[12px] font-bold text-white bg-red-600 rounded hover:bg-red-700 transition"
                         >
                           Có
                         </button>
                         <button
-                          onClick={() => setConfirmDeleteId(null)}
+                          onClick={() => setConfirmDeleteId(undefined)}
                           className="px-1.5 py-0.5 text-[12px] font-bold text-gray-600 bg-gray-100 rounded hover:bg-gray-200 transition"
                         >
                           Không

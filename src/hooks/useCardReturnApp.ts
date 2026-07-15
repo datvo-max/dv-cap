@@ -4,6 +4,9 @@ import { Html5Qrcode } from "html5-qrcode";
 import XLSX from "xlsx";
 import { exportReturnExcel } from "@/utils/exportReturnToExcel";
 import { parseCCCD } from "@/utils/cccdParser";
+import 'dexie-export-import';
+
+
 
 export function useCardReturnApp() {
 
@@ -328,6 +331,49 @@ export function useCardReturnApp() {
     });
   };
 
+  // 6. Back up database
+  const handleBackupDatabase = async () => {
+    try {
+      showToast("Đang tạo file sao lưu hệ thống...", "info");
+
+      // 1. Nén toàn bộ DB thành file JSON (định dạng Blob)
+      const blob = await db.export();
+
+      // 2. Tạo đường link ảo để ép trình duyệt tải file xuống
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `KhoThe_Backup_${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+
+      URL.revokeObjectURL(url); // Dọn dẹp bộ nhớ
+      showToast("✅ Đã xuất file sao lưu dữ liệu thành công!", "success");
+    } catch (error) {
+      console.error("Lỗi backup:", error);
+      showToast("❌ Có lỗi xảy ra khi sao lưu dữ liệu!", "error");
+    }
+  };
+  const handleRestoreDatabase = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      showToast("Đang khôi phục hệ thống...", "warning");
+
+      // Đọc và nạp dữ liệu từ file JSON vào hệ thống Dexie
+      await db.import(file, {
+        // Tùy chọn này rất quan trọng: Xoá sạch dữ liệu kho thẻ cũ (nếu có) trên máy mới trước khi đè dữ liệu này vào để đảm bảo tính đồng bộ 100% với máy A.
+        clearTablesBeforeImport: true,
+      });
+
+      showToast("✅ Đã khôi phục toàn bộ kho thẻ thành công!", "success");
+      e.target.value = ""; // Reset lại input để có thể chọn lại đúng file đó lần sau
+    } catch (error) {
+      console.error("Lỗi restore:", error);
+      showToast("❌ Lỗi khi đọc file sao lưu. Vui lòng kiểm tra lại!", "error");
+    }
+  };
+
   const confirmClearData = async () => {
     try {
       // Lệnh xóa trắng toàn bộ dữ liệu trong bảng cards của IndexedDB
@@ -366,6 +412,8 @@ export function useCardReturnApp() {
     modalConfig, // <----- Modal
     requestClearData,
     confirmClearData,
-    closeModal
+    closeModal,
+    handleBackupDatabase,
+    handleRestoreDatabase
   };
 }

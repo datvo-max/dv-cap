@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "dexie": "^4.4.4",
+    "dexie-export-import": "^4.4.0",
     "dexie-react-hooks": "^4.4.0",
     "html5-qrcode": "^2.3.8",
     "next": "16.2.10",
