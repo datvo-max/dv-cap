@@ -113,10 +113,30 @@ export default function Home() {
 
               <div className="w-full lg:w-3/4">
                 <div className="flex justify-between items-center mb-3">
-                  <h4 className="text-sm font-bold text-gray-700">Danh Sách Bản Ghi Hồ Sơ</h4>
-                  <span className="text-xs bg-blue-50 text-blue-700 font-bold px-2 py-1 rounded-full border border-blue-200">
-                    Tổng cộng: {app.data.length} người
-                  </span>
+                  <h4 className="text-sm font-bold text-gray-700">Danh Sách Bản Ghi</h4>
+
+                  {/* Nhóm Cụm chức năng bên phải: Nút Sắp xếp & Bộ đếm */}
+                  <div className="flex items-center gap-2.5">
+
+                    {/* Nút Đảo chiều sắp xếp */}
+                    <button
+                      onClick={() => app.setSortOrder(app.sortOrder === 'asc' ? 'desc' : 'asc')}
+                      className="flex items-center gap-1.5  p-1.5 text-xs font-semibold rounded-lg border transition-colors bg-white hover:bg-gray-50 text-gray-600 border-gray-300 shadow-sm"
+                      title="Thay đổi thứ tự hiển thị"
+                    >
+                      {/* Icon thay đổi tương ứng theo trạng thái */}
+                      {app.sortOrder === 'asc' ? (
+                        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path></svg>
+                      ) : (
+                        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4"></path></svg>
+                      )}
+                      {app.sortOrder === 'asc' ? 'Mặc định (Mới xếp sau)' : 'Mới xếp lên đầu'}
+                    </button>
+
+                    <span className="text-xs bg-blue-50 text-blue-700 font-bold inline-block  p-1.5 rounded-lg border border-blue-200 shadow-sm">
+                      Tổng cộng: {app.data.length} người
+                    </span>
+                  </div>
                 </div>
                 <DataTable data={app.data} onDeleteRow={app.deleteRecord} />
               </div>
@@ -125,7 +145,7 @@ export default function Home() {
         )}
 
         {/* ======================================================== */}
-        {/* NỘI DUNG TAB 2 (Đã Tái Cấu Trúc) */}
+        {/* NỘI DUNG TAB 2 */}
         {/* ======================================================== */}
         {activeTab === 'tra-the' && (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -146,7 +166,7 @@ export default function Home() {
 
                 {/* Bảng Điều Khiển (Trái) */}
                 <div className="w-full lg:w-1/4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm lg:sticky lg:top-24 flex flex-col gap-5">
-                  <h4 className="text-sm font-bold text-gray-700 border-b pb-2">Bàn Điều Hành Kho Thẻ</h4>
+                  <h4 className="text-sm font-bold text-gray-700 border-b pb-2">Bảng Công cụ</h4>
                   <ReturnControlPanel
                     onImportExcel={returnApp.handleImportExcel}
                     importInputRef={returnApp.importInputRef}
@@ -163,7 +183,7 @@ export default function Home() {
 
                 {/* Bảng Dữ Liệu (Phải) */}
                 <div className="w-full lg:w-3/4">
-                  <ReturnDataTable onReturnCard={returnApp.processReturnCard} />
+                  <ReturnDataTable onReturnCard={returnApp.processReturnCard} onUndoReturn={returnApp.undoReturnCard} />
                 </div>
 
               </div>

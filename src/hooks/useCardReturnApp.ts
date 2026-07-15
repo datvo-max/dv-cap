@@ -374,6 +374,38 @@ export function useCardReturnApp() {
       showToast("❌ Lỗi khi đọc file sao lưu. Vui lòng kiểm tra lại!", "error");
     }
   };
+  // ==========================================
+  // LOGIC HOÀN TÁC TRẠNG THÁI TRẢ THẺ
+  // ==========================================
+  const undoReturnCard = async (id: number) => {
+    try {
+      const card = await db.cards.get(id);
+
+      if (!card) {
+        showToast("❌ Không tìm thấy hồ sơ thẻ này!", "error");
+        return;
+      }
+
+      if (card.status === 'pending') {
+        showToast("⚠️ Thẻ này vẫn đang ở trong kho mà!", "warning");
+        return;
+      }
+
+      // Cập nhật ngược lại trạng thái IndexedDB
+      await db.cards.update(id, {
+        status: 'pending',
+        returnedAt: undefined // Xóa thời gian trả thẻ
+      });
+
+      showToast(`🔄 Đã khôi phục thẻ của ${card.fullName} về kho (Hộp ${card.zone})`, "info");
+    } catch (error) {
+      console.error("Lỗi hoàn tác:", error);
+      showToast("❌ Có lỗi xảy ra khi hoàn tác!", "error");
+    }
+  };
+
+
+  // Confirm Modal
 
   const confirmClearData = async () => {
     try {
@@ -415,6 +447,7 @@ export function useCardReturnApp() {
     confirmClearData,
     closeModal,
     handleBackupDatabase,
-    handleRestoreDatabase
+    handleRestoreDatabase,
+    undoReturnCard
   };
 }

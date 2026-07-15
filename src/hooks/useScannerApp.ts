@@ -10,7 +10,18 @@ import { useLiveQuery } from "dexie-react-hooks";
 export function useScannerApp() {
   // Thay thế LocalStorage bằng useLiveQuery của Dexie.
   // Giao diện sẽ TỰ ĐỘNG cập nhật (re-render) bất cứ khi nào bảng scannedCards có thay đổi.
-  const rawData = useLiveQuery(() => db.scannedCards.orderBy('id').reverse().toArray());
+  // 'asc' = Mới xếp sau (Mặc định), 'desc' = Mới xếp đầu
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+  // Gắn sortOrder vào mảng dependency để Dexie tự động truy vấn lại khi đổi chế độ
+  const rawData = useLiveQuery(
+    () => {
+      const query = db.scannedCards.orderBy('id');
+      return sortOrder === 'desc' ? query.reverse().toArray() : query.toArray();
+    },
+    [sortOrder]
+  );
+
   // Đảm bảo data luôn là mảng, kể cả khi IndexedDB đang tải
   const data = rawData || [];
 
@@ -297,6 +308,8 @@ export function useScannerApp() {
     scannerDisplayValue,
     handleScannerChange,
     isFlashActive,
-    deleteRecord
+    deleteRecord,
+    sortOrder,     // <---
+    setSortOrder
   };
 }

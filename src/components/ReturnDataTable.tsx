@@ -4,12 +4,14 @@ import React, { useState, useMemo, useEffect } from "react";
 import { db } from "@/lib/db";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useDebounce } from "@/hooks/useDebounce";
+import { removeVietnameseTones } from "@/utils/removeVietnameseTones";
 
 interface ReturnDataTableProps {
   onReturnCard: (idNumber: string) => void;
+  onUndoReturn: (id: number) => void;
 }
 
-export default function ReturnDataTable({ onReturnCard }: ReturnDataTableProps) {
+export default function ReturnDataTable({ onReturnCard, onUndoReturn }: ReturnDataTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
@@ -24,17 +26,26 @@ export default function ReturnDataTable({ onReturnCard }: ReturnDataTableProps) 
 
   const allCards = useLiveQuery(() => db.cards.orderBy('zone').toArray());
 
-  // 1. Lọc dữ liệu tổng
   const filteredData = useMemo(() => {
     if (!allCards) return [];
     if (!debouncedSearchTerm) return allCards;
 
-    const lowerTerm = debouncedSearchTerm.toLowerCase().trim();
-    return allCards.filter(item =>
-      item.fullName.toLowerCase().includes(lowerTerm) ||
-      item.idNumber.includes(lowerTerm) ||
-      item.zone.toString() === lowerTerm.replace("hộp ", "").replace("hop ", "").trim()
-    );
+    // 1. Chuyển từ khóa gõ vào thành chữ thường và xóa sạch dấu tiếng Việt
+    const normalizedSearchTerm = removeVietnameseTones(debouncedSearchTerm.toLowerCase().trim());
+
+    return allCards.filter(item => {
+      // 2. Lấy tên công dân trong DB, chuyển chữ thường và xóa dấu
+      const normalizedFullName = removeVietnameseTones(item.fullName.toLowerCase());
+
+      // 3. Tiến hành so sánh
+      return (
+        normalizedFullName.includes(normalizedSearchTerm) ||
+        item.idNumber.includes(normalizedSearchTerm) ||
+        // Lưu ý: Vì từ khóa đã bị xóa dấu ở bước 1, chữ "hộp" chắc chắn đã thành "hop", 
+        // nên chúng ta chỉ cần replace "hop " là đủ để tra cứu chính xác hộp số mấy.
+        item.zone.toString() === normalizedSearchTerm.replace("hop ", "").trim()
+      );
+    });
   }, [allCards, debouncedSearchTerm]);
 
   // 2. Tính toán các thông số phân trang
@@ -136,6 +147,20 @@ export default function ReturnDataTable({ onReturnCard }: ReturnDataTableProps) 
                           <span className="text-[10px] text-gray-400 italic" title={`Đã trả lúc: ${item.returnedAt}`}>
                             Đã xử lý
                           </span>
+                        )}
+                        {/* Nếu trạng thái là 'returned' (Đã trả) thì hiện nút Hoàn tác */}
+                        {item.status === 'returned' && (
+                          <button
+                            onClick={() => {
+                              if (item.id !== undefined) {
+                                onUndoReturn(item.id);
+                              }
+                            }}
+                            title="Khôi phục thẻ này về kho"
+                            className="ml-2 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 p-0.5 rounded-md font-medium text-xs border border-amber-200 transition-colors shadow-sm"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
+                          </button>
                         )}
                       </div>
                     </td>
