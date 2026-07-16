@@ -12,6 +12,9 @@ interface ReturnControlPanelProps {
   onBackupDatabase: () => void;
   onRestoreDatabase: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onRequestClearData: () => void;
+  // MỚI: Quản lý trạng thái checkbox không ảnh
+  isNoPhotoImport: boolean;
+  onToggleNoPhotoImport: (val: boolean) => void;
 }
 
 export default function ReturnControlPanel(props: ReturnControlPanelProps) {
@@ -36,6 +39,16 @@ export default function ReturnControlPanel(props: ReturnControlPanelProps) {
           className="w-full pl-3 pr-3 py-2 border border-blue-200 rounded-md text-xs focus:ring-2 focus:ring-blue-500 outline-none"
           title="Nạp lẻ bằng máy quét phần cứng"
         />
+        {/* MỚI: Checkbox đánh dấu thẻ không ảnh */}
+        <label className="flex items-center gap-2 cursor-pointer bg-blue-100/50 p-1.5 rounded border border-blue-200 hover:bg-blue-100 transition-colors">
+          <input
+            type="checkbox"
+            checked={props.isNoPhotoImport}
+            onChange={(e) => props.onToggleNoPhotoImport(e.target.checked)}
+            className="w-3.5 h-3.5 text-blue-600 rounded focus:ring-blue-500 border-gray-300"
+          />
+          <span className="text-[10px] font-bold text-blue-800">Đánh dấu: Thẻ không ảnh</span>
+        </label>
 
         <button
           onClick={() => props.onStartWebcam('import')}

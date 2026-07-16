@@ -22,7 +22,7 @@ export default function Toast({ toasts, progress }: ToastContainerProps) {
 
   return (
     // z-50 đảm bảo luôn nằm trên cùng, pointer-events-none để không chặn click chuột vào nền
-    <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-3 pointer-events-none">
+    <div className=" fixed bottom-5 right-5 z-1000 flex flex-col gap-3 pointer-events-none">
 
       {/* 1. Lặp qua mảng để render các Toast thông báo xếp chồng */}
       {toasts.map((toast) => (

@@ -15,12 +15,12 @@ export default function Header() {
           Tân An
         </h1>
         <span className="text-sm font-medium text-gray-500 hidden md:block">
-          Quét QR | Lập danh sách - Trả thẻ Căn cước
+          Quản lý Thẻ căn cước
         </span>
       </div>
 
       <div className="flex items-center gap-3">
-        <span className="text-xs text-gray-500">Phiên bản: 3.1.2</span>
+        <span className="text-xs text-gray-500">Phiên bản: 3.2.0</span>
         <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-full">
           <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
           <span className="text-xs font-bold text-green-700">Tốt</span>

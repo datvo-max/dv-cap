@@ -9,9 +9,10 @@ import { removeVietnameseTones } from "@/utils/removeVietnameseTones";
 interface ReturnDataTableProps {
   onReturnCard: (idNumber: string) => void;
   onUndoReturn: (id: number) => void;
+  onEditCard: (id: number) => void; // MỚI: Thêm prop gọi Modal sửa
 }
 
-export default function ReturnDataTable({ onReturnCard, onUndoReturn }: ReturnDataTableProps) {
+export default function ReturnDataTable({ onReturnCard, onUndoReturn, onEditCard }: ReturnDataTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
@@ -41,9 +42,10 @@ export default function ReturnDataTable({ onReturnCard, onUndoReturn }: ReturnDa
       return (
         normalizedFullName.includes(normalizedSearchTerm) ||
         item.idNumber.includes(normalizedSearchTerm) ||
+        (item.phoneNumber && item.phoneNumber.includes(normalizedSearchTerm)) ||
         // Lưu ý: Vì từ khóa đã bị xóa dấu ở bước 1, chữ "hộp" chắc chắn đã thành "hop", 
         // nên chúng ta chỉ cần replace "hop " là đủ để tra cứu chính xác hộp số mấy.
-        item.zone.toString() === normalizedSearchTerm.replace("hop ", "").trim()
+        item.zone.toString().toLowerCase() === normalizedSearchTerm.replace("hop ", "").trim()
       );
     });
   }, [allCards, debouncedSearchTerm]);
@@ -110,7 +112,7 @@ export default function ReturnDataTable({ onReturnCard, onUndoReturn }: ReturnDa
                     <td className="px-3 py-2.5 text-center text-gray-400 font-normal">{actualIndex}</td>
 
                     <td className="px-3 py-2.5 font-bold text-indigo-700">
-                      Hộp {item.zone}
+                      {String(item.zone).includes('Hộp') ? item.zone : `Hộp ${item.zone}`}
                     </td>
 
                     <td className="px-3 py-2.5">
@@ -122,7 +124,11 @@ export default function ReturnDataTable({ onReturnCard, onUndoReturn }: ReturnDa
                     </td>
 
                     <td className="px-3 py-2.5 font-bold text-blue-900">{item.idNumber}</td>
-                    <td className="px-3 py-2.5 font-bold text-gray-900">{item.fullName}</td>
+                    <td className="px-3 py-2.5 font-bold text-gray-900">
+                      {item.fullName}
+                      {/* MỚI: Hiển thị badge nhỏ nếu thẻ không ảnh */}
+                      {item.isNoPhoto && <span className="ml-1.5 px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded text-[9px] font-bold">K.Ảnh</span>}
+                    </td>
                     <td className="px-3 py-2.5 text-gray-700">
                       {item.dob?.length === 8
                         ? item.dob.replace(/(\d{2})(\d{2})(\d{4})/, "$1-$2-$3")
@@ -134,7 +140,7 @@ export default function ReturnDataTable({ onReturnCard, onUndoReturn }: ReturnDa
                     <td className="px-3 py-2.5 text-gray-700">{item.fatherName}</td>
                     <td className="px-3 py-2.5 text-gray-700">{item.motherName}</td>
                     <td className="px-3 py-2.5 text-center sticky right-0 bg-white group-hover:bg-indigo-50/40 shadow-[-4px_0_10px_rgba(0,0,0,0.02)] transition-colors">
-                      <div className="flex items-center justify-center">
+                      <div className="flex items-center justify-end">
                         {!isReturned ? (
                           <button
                             onClick={() => onReturnCard(item.idNumber)}
@@ -144,10 +150,11 @@ export default function ReturnDataTable({ onReturnCard, onUndoReturn }: ReturnDa
                             Xác nhận trả
                           </button>
                         ) : (
-                          <span className="text-[10px] text-gray-400 italic" title={`Đã trả lúc: ${item.returnedAt}`}>
+                          <span className="text-[10px] text-gray-400 italic" title={`Đã trả lúc: ${item.returnedAt ? new Date(item.returnedAt).toLocaleString('vi-VN') : 'Không rõ'}`}>
                             Đã xử lý
                           </span>
                         )}
+
                         {/* Nếu trạng thái là 'returned' (Đã trả) thì hiện nút Hoàn tác */}
                         {item.status === 'returned' && (
                           <button
@@ -157,11 +164,19 @@ export default function ReturnDataTable({ onReturnCard, onUndoReturn }: ReturnDa
                               }
                             }}
                             title="Khôi phục thẻ này về kho"
-                            className="ml-2 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 p-0.5 rounded-md font-medium text-xs border border-amber-200 transition-colors shadow-sm"
+                            className="ml-2 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 p-1 rounded-md font-medium text-xs border border-amber-200 transition-colors shadow-sm"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
                           </button>
                         )}
+                        {/* MỚI: Nút Edit hình Cây viết */}
+                        <button
+                          onClick={() => { if (item.id !== undefined) onEditCard(item.id); }}
+                          title="Chỉnh sửa (SĐT / Không ảnh)"
+                          className="ml-2 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800 p-1 rounded-md border border-blue-200 transition-colors shadow-sm"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -170,13 +185,13 @@ export default function ReturnDataTable({ onReturnCard, onUndoReturn }: ReturnDa
             )}
           </tbody>
         </table>
-      </div>
+      </div >
 
       {/* FOOTER PHÂN TRANG */}
-      <div className="p-3 border-t border-gray-100 bg-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4 text-[11px] text-gray-600 font-medium">
+      < div className="p-3 border-t border-gray-100 bg-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4 text-[11px] text-gray-600 font-medium" >
 
         {/* Bộ chọn số lượng hiển thị */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" >
           <span>Hiển thị:</span>
           <select
             value={itemsPerPage}
@@ -191,15 +206,16 @@ export default function ReturnDataTable({ onReturnCard, onUndoReturn }: ReturnDa
             <option value={100}>100</option>
           </select>
           <span>dòng / trang</span>
-        </div>
+        </div >
 
         {/* Thông tin tổng quát */}
         <div>
-          Đang xem <span className="font-bold text-gray-800">{totalItems === 0 ? 0 : startIndex + 1}</span> - <span className="font-bold text-gray-800">{Math.min(startIndex + itemsPerPage, totalItems)}</span> trong tổng số <span className="font-bold text-indigo-700">{totalItems}</span> thẻ
-        </div>
+          Đang xem <span className="font-bold text-gray-800" > {totalItems === 0 ? 0 : startIndex + 1
+          }</span > - <span className="font-bold text-gray-800">{Math.min(startIndex + itemsPerPage, totalItems)}</span> trong tổng số < span className="font-bold text-indigo-700" > {totalItems}</span > thẻ
+        </div >
 
         {/* Nút điều hướng */}
-        <div className="flex items-center gap-1.5">
+        < div className="flex items-center gap-1.5" >
           <button
             onClick={() => setCurrentPage(1)}
             disabled={currentPage === 1}
@@ -237,9 +253,9 @@ export default function ReturnDataTable({ onReturnCard, onUndoReturn }: ReturnDa
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
           </button>
-        </div>
+        </div >
 
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }

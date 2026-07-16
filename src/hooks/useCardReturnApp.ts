@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { db } from "@/lib/db";
+import { CardRecord, db } from "@/lib/db";
 import { Html5Qrcode } from "html5-qrcode";
 import XLSX from "xlsx";
 import { exportReturnExcel } from "@/utils/exportReturnToExcel";
@@ -11,6 +11,13 @@ export function useCardReturnApp() {
 
   // 'import' = Quét để nạp vào kho, 'return' = Quét để trả thẻ
   const [scanMode, setScanMode] = useState<'import' | 'return'>('return');
+
+  // MỚI: Trạng thái Checkbox Thẻ không ảnh lúc nạp
+  const [isNoPhotoImport, setIsNoPhotoImport] = useState(false);
+  const isNoPhotoImportRef = useRef(false);
+  useEffect(() => {
+    isNoPhotoImportRef.current = isNoPhotoImport;
+  }, [isNoPhotoImport]);
 
   // Trạng thái cho Camera & Máy quét phần cứng
   const [isWebCamActive, setIsWebCamActive] = useState(false);
@@ -29,6 +36,12 @@ export function useCardReturnApp() {
 
   const [modalConfig, setModalConfig] = useState({ isOpen: false, message: "" });
 
+  // MỚI: Cấu hình Modal Chỉnh sửa thông tin thẻ (Nút Cây viết)
+  const [editModalConfig, setEditModalConfig] = useState<{ isOpen: boolean; cardId: number | null }>({
+    isOpen: false,
+    cardId: null
+  });
+
   // Khai báo mảng chứa danh sách Toast
   interface ToastItem {
     id: number;
@@ -37,11 +50,8 @@ export function useCardReturnApp() {
   }
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
-  // Viết lại hàm showToast
   const showToast = useCallback((msg: string, type: "success" | "error" | "warning" | "info") => {
     const id = Date.now() + Math.random(); // Tạo ID định danh duy nhất cho mỗi dòng
-
-    // Thêm thông báo mới vào cuối mảng
     setToasts((prev) => [...prev, { id, msg, type }]);
 
     // Cài đặt giờ tự hủy chính xác cho dòng thông báo đó
@@ -66,14 +76,26 @@ export function useCardReturnApp() {
     // Kiểm tra trùng lặp
     const isExist = await db.cards.where('idNumber').equals(record.idNumber).count();
     if (isExist > 0) {
-      showToast(`⚠️ Thẻ của ${record.fullName} đã có trong kho!`, "warning");
+      showToast(`⚠️ Thẻ của ${record.fullName} (${record.idNumber}) đã có trong kho!`, "warning");
       return;
     }
 
-    // Tính toán Hộp/Khay tự động
-    const currentTotalCount = await db.cards.count();
-    const zone = Math.floor(currentTotalCount / 50) + 1;
+
     const today = new Date().toISOString().split('T')[0];
+    const isNoPhoto = isNoPhotoImportRef.current;
+    let zone: number | string;
+
+    // Tính toán Hộp/Khay tự động
+    // Rẽ nhánh logic đếm hộp tự động
+    if (isNoPhoto) {
+      // Đếm số lượng thẻ không ảnh hiện có
+      const noPhotoCount = await db.cards.filter(c => !!c.isNoPhoto).count();
+      zone = `K${Math.floor(noPhotoCount / 50) + 1}`;
+    } else {
+      // Đếm số lượng thẻ bình thường hiện có
+      const normalCount = await db.cards.filter(c => !c.isNoPhoto).count();
+      zone = Math.floor(normalCount / 50) + 1;
+    }
 
     // Ghi vào IndexedDB
     await db.cards.add({
@@ -85,12 +107,13 @@ export function useCardReturnApp() {
       dob: record.dob,
       address: record.address,
       type: "Thẻ Căn cước",
-      oldIdNumber: "-",
+      oldIdNumber: record.oldIdNumber || "-",
       gender: record.gender || "-",
       issueDate: record.issueDate || "-",
       canceledIdNumber: record.canceledIdNumber || "-",
-      fatherName: "-",
-      motherName: "-"
+      fatherName: record.fatherName || "-",
+      motherName: record.motherName || "-",
+      isNoPhoto: isNoPhoto // MỚI: Lưu cờ không ảnh
     });
 
     showToast(`✅ Đã nạp thẻ: ${record.fullName} (Vị trí: Hộp ${zone})`, "success");
@@ -119,10 +142,10 @@ export function useCardReturnApp() {
       return;
     }
 
-    // Cập nhật trạng thái
+    // Cập nhật trạng thái (Dùng Date.now() chuẩn quốc tế)
     await db.cards.update(card.id!, {
       status: 'returned',
-      returnedAt: new Date().toLocaleString('vi-VN')
+      returnedAt: Date.now() // <--- SỬA DÒNG NÀY (Bỏ toLocaleString)
     });
 
     showToast(`✅ Đã trả thẻ: ${card.fullName} (Vị trí: Hộp ${card.zone})`, "success");
@@ -148,10 +171,9 @@ export function useCardReturnApp() {
 
         const today = new Date().toISOString().split('T')[0];
 
-        // Đếm tổng số thẻ hiện có trong DB để tính tiếp số Hộp
-        let currentTotalCount = await db.cards.count();
+        // MỚI: Chỉ đếm thẻ bình thường để xếp Hộp từ Excel
+        let currentTotalCount = await db.cards.filter(c => !c.isNoPhoto).count();
         let successCount = 0;
-
         const newRecords = [];
 
         // Duyệt theo ĐÚNG THỨ TỰ từ trên xuống dưới của file Excel
@@ -166,19 +188,15 @@ export function useCardReturnApp() {
           // Thuật toán tính Hộp: Cứ 50 người thì nhảy 1 hộp (dựa vào tổng số đếm)
           const zone = Math.floor(currentTotalCount / 50) + 1;
 
+
           newRecords.push({
-            // 1. Các trường quản lý kho (Của CardRecord)
             importDate: today,
             status: 'pending' as const,
             zone: zone,
-
-            // 2. Các trường dữ liệu công dân (Của CCCDRecord)
             idNumber: idNumber,
             fullName: row['Họ và Tên'] || row['Ho Ten'] || 'Chưa rõ',
             dob: row['Ngày Sinh'] || row['Ngay Sinh'] || '-',
             address: row['Địa Chỉ'] || row['Dia Chi'] || '-',
-
-            // Các trường điền mặc định để thỏa mãn TypeScript
             type: "Thẻ Căn cước" as const,
             oldIdNumber: "-",
             gender: row['Giới Tính'] || row['Gioi Tinh'] || '-',
@@ -186,6 +204,7 @@ export function useCardReturnApp() {
             canceledIdNumber: "-",
             fatherName: row['Cha'] || row["Họ Tên Cha"] || "-",
             motherName: row['Mẹ'] || row["Me"] || row["Họ Tên Mẹ"] || "-",
+            isNoPhoto: false // Mặc định từ Excel là có ảnh
           });
 
           currentTotalCount++;
@@ -207,15 +226,29 @@ export function useCardReturnApp() {
     reader.readAsArrayBuffer(file);
   };
 
+
   // ==========================================
   // 3. LOGIC XUẤT FILE EXCEL THEO YÊU CẦU
   // ==========================================
-  const handleExportExcel = async (type: 'all' | 'returned' | 'pending') => {
+  // MỚI: State quản lý Modal chọn trường dữ liệu
+  const [exportModalConfig, setExportModalConfig] = useState<{
+    isOpen: boolean;
+    type: 'all' | 'returned' | 'pending' | null;
+  }>({ isOpen: false, type: null });
+
+  // Hàm mở Modal thay vì tải ngay lập tức
+  const openExportModal = (type: 'all' | 'returned' | 'pending') => {
+    setExportModalConfig({ isOpen: true, type });
+  };
+  const closeExportModal = () => setExportModalConfig({ isOpen: false, type: null });
+
+  // Hàm thực thi sau khi đã chọn xong cột
+  const executeExportExcel = async (selectedKeys: string[], type: 'all' | 'returned' | 'pending') => {
     try {
+      closeExportModal(); // Đóng modal ngay khi bấm
       setIsExporting(true);
       setExportProgress(0);
 
-      // Lấy dữ liệu từ IndexedDB
       let dataToExport = [];
       if (type === 'all') {
         dataToExport = await db.cards.toArray();
@@ -230,8 +263,8 @@ export function useCardReturnApp() {
         return;
       }
 
-      // Gọi hàm xuất Excel chuẩn có Progress Bar
-      await exportReturnExcel(dataToExport, type, (percent) => {
+      // Đẩy selectedKeys vào hàm xuất chuẩn
+      await exportReturnExcel(dataToExport, type, selectedKeys, (percent) => {
         setExportProgress(percent);
       });
 
@@ -239,6 +272,7 @@ export function useCardReturnApp() {
       showToast(`✅ Đã tải xuống file: ${typeName}`, "success");
 
     } catch (error) {
+      console.error("Export Error:", error);
       showToast("❌ Có lỗi xảy ra khi xuất file!", "error");
     } finally {
       setTimeout(() => {
@@ -403,6 +437,28 @@ export function useCardReturnApp() {
       showToast("❌ Có lỗi xảy ra khi hoàn tác!", "error");
     }
   };
+  // MỚI: Hàm xử lý lưu thông tin chỉnh sửa (Số điện thoại, trạng thái thẻ)
+  const updateCardDetails = async (id: number, updates: Partial<CardRecord>) => {
+    try {
+      await db.cards.update(id, updates);
+      showToast("✅ Đã cập nhật thông tin thành công!", "success");
+      setEditModalConfig({ isOpen: false, cardId: null });
+    } catch (error) {
+      console.error("Lỗi cập nhật:", error);
+      showToast("❌ Có lỗi xảy ra khi cập nhật thông tin!", "error");
+    }
+  };
+  // MỚI: Hàm xóa thẻ trực tiếp từ Modal Edit
+  const deleteCard = async (id: number) => {
+    try {
+      await db.cards.delete(id);
+      showToast("🗑️ Đã xóa thẻ khỏi hệ thống!", "success");
+      setEditModalConfig({ isOpen: false, cardId: null });
+    } catch (error) {
+      console.error("Lỗi xóa thẻ:", error);
+      showToast("❌ Có lỗi xảy ra khi xóa thẻ!", "error");
+    }
+  };
 
 
   // Confirm Modal
@@ -421,9 +477,14 @@ export function useCardReturnApp() {
 
   const closeModal = () => setModalConfig({ isOpen: false, message: "" });
 
+  // MỚI: Điều khiển Edit Modal
+  const openEditModal = (id: number) => setEditModalConfig({ isOpen: true, cardId: id });
+  const closeEditModal = () => setEditModalConfig({ isOpen: false, cardId: null });
+
 
   return {
     toasts,
+    showToast,
     isWebCamActive,
     isFlashActive,
     scannerDisplayValue,
@@ -431,7 +492,6 @@ export function useCardReturnApp() {
     stopWebcam,
     handleScannerChange,
     handleImportExcel,
-    handleExportExcel,
     processReturnCard,
     isExporting,
     exportProgress,
@@ -448,6 +508,18 @@ export function useCardReturnApp() {
     closeModal,
     handleBackupDatabase,
     handleRestoreDatabase,
-    undoReturnCard
+    undoReturnCard,
+    // Trả ra các Hook mới
+    isNoPhotoImport,
+    setIsNoPhotoImport,
+    editModalConfig,
+    openEditModal,
+    closeEditModal,
+    updateCardDetails,
+    deleteCard,
+    exportModalConfig,
+    openExportModal,
+    closeExportModal,
+    executeExportExcel
   };
 }
