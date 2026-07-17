@@ -134,7 +134,7 @@ export const exportReturnExcel = async (
 
         if (dailyData.length > 0) {
           const wsDaily = await buildSheet(dailyData, 0, sheetDayWeight, currentProgress);
-          XLSX.utils.book_append_sheet(workbook, wsDaily, `Ngay_${dd}_${mm}`);
+          XLSX.utils.book_append_sheet(workbook, wsDaily, `${dd}_${mm}`);
         } else {
           currentProgress += sheetDayWeight;
           onProgress(Math.floor(currentProgress));

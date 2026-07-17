@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { db } from "@/lib/db";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -24,6 +24,21 @@ export default function ReturnDataTable({ onReturnCard, onUndoReturn, onEditCard
   useEffect(() => {
     setCurrentPage(1);
   }, [debouncedSearchTerm]);
+
+  // =====================================
+  // MỚI: TẠO CỘT MỐC VÀ HIỆU ỨNG CUỘN
+  // =====================================
+  const tableTopRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+
+    const yOffset = -80;
+    if (tableTopRef.current) {
+      const y = tableTopRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+  }, [currentPage]);
+  // =====================================
 
   const allCards = useLiveQuery(() => db.cards.orderBy('zone').toArray());
 
@@ -59,7 +74,7 @@ export default function ReturnDataTable({ onReturnCard, onUndoReturn, onEditCard
   const paginatedData = filteredData.slice(startIndex, startIndex + itemsPerPage);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border overflow-hidden w-full flex flex-col">
+    <div ref={tableTopRef} className="bg-white rounded-xl shadow-sm border overflow-hidden w-full flex flex-col">
       {/* THANH TÌM KIẾM */}
       <div className="p-4 border-b border-gray-100 bg-gray-50/50">
         <div className="relative">
@@ -155,20 +170,7 @@ export default function ReturnDataTable({ onReturnCard, onUndoReturn, onEditCard
                           </span>
                         )}
 
-                        {/* Nếu trạng thái là 'returned' (Đã trả) thì hiện nút Hoàn tác */}
-                        {item.status === 'returned' && (
-                          <button
-                            onClick={() => {
-                              if (item.id !== undefined) {
-                                onUndoReturn(item.id);
-                              }
-                            }}
-                            title="Khôi phục thẻ này về kho"
-                            className="ml-2 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 p-1 rounded-md font-medium text-xs border border-amber-200 transition-colors shadow-sm"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
-                          </button>
-                        )}
+
                         {/* MỚI: Nút Edit hình Cây viết */}
                         <button
                           onClick={() => { if (item.id !== undefined) onEditCard(item.id); }}

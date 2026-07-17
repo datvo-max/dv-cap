@@ -15,6 +15,9 @@ interface ReturnControlPanelProps {
   // MỚI: Quản lý trạng thái checkbox không ảnh
   isNoPhotoImport: boolean;
   onToggleNoPhotoImport: (val: boolean) => void;
+  // Chuyển sang hộp mới
+  onForceNextBox: () => void;
+  onOpenMergeModal: () => void;
 }
 
 export default function ReturnControlPanel(props: ReturnControlPanelProps) {
@@ -39,16 +42,25 @@ export default function ReturnControlPanel(props: ReturnControlPanelProps) {
           className="w-full pl-3 pr-3 py-2 border border-blue-200 rounded-md text-xs focus:ring-2 focus:ring-blue-500 outline-none"
           title="Nạp lẻ bằng máy quét phần cứng"
         />
-        {/* MỚI: Checkbox đánh dấu thẻ không ảnh */}
-        <label className="flex items-center gap-2 cursor-pointer bg-blue-100/50 p-1.5 rounded border border-blue-200 hover:bg-blue-100 transition-colors">
-          <input
-            type="checkbox"
-            checked={props.isNoPhotoImport}
-            onChange={(e) => props.onToggleNoPhotoImport(e.target.checked)}
-            className="w-3.5 h-3.5 text-blue-600 rounded focus:ring-blue-500 border-gray-300"
-          />
-          <span className="text-[10px] font-bold text-blue-800">Đánh dấu: Thẻ không ảnh</span>
-        </label>
+        {/* KHU VỰC CÔNG CỤ NẠP */}
+        <div className="flex items-center justify-between gap-2">
+          <label className="flex items-center gap-2 cursor-pointer bg-blue-100/50 p-1.5 rounded border border-blue-200 hover:bg-blue-100 transition-colors flex-1">
+            <input
+              type="checkbox"
+              checked={props.isNoPhotoImport}
+              onChange={(e) => props.onToggleNoPhotoImport(e.target.checked)}
+              className="w-3.5 h-3.5 text-blue-600 rounded focus:ring-blue-500 border-gray-300"
+            />
+            <span className="text-[10px] font-bold text-blue-800">Thẻ không ảnh</span>
+          </label>
+
+          <button
+            onClick={props.onForceNextBox}
+            className="flex items-center justify-center gap-1 bg-white border border-blue-300 text-blue-700 hover:bg-blue-100 transition-colors p-1.5 rounded flex-1 shadow-sm"
+          >
+            <span className="text-[10px] font-bold">📦 Sang hộp mới</span>
+          </button>
+        </div>
 
         <button
           onClick={() => props.onStartWebcam('import')}
@@ -93,7 +105,17 @@ export default function ReturnControlPanel(props: ReturnControlPanelProps) {
 
       {/* ⚙️ KHỐI 4: QUẢN TRỊ HỆ THỐNG */}
       <div className="bg-purple-50/40 p-3 rounded-lg border border-purple-200 mt-4">
-        <p className="text-[11px] font-bold text-purple-700 uppercase mb-2">Quản trị Hệ thống (Sao Lưu / Khôi Phục / Reset)</p>
+        <p className="text-[11px] font-bold text-purple-700 uppercase mb-2">⚙️ Quản trị Hệ thống (Sao Lưu / Khôi Phục / Gộp Hộp)</p>
+
+        {/* Nút Gộp Hộp chễm chệ ở trên cùng khu quản trị */}
+        <button
+          onClick={props.onOpenMergeModal}
+          className="w-full mb-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold py-2 px-2 rounded text-xs border border-indigo-200 transition-colors shadow-sm flex items-center justify-center gap-2"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
+          Gộp Hộp Lưu Trữ (Dồn thẻ)
+        </button>
+
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={props.onBackupDatabase}
@@ -101,7 +123,7 @@ export default function ReturnControlPanel(props: ReturnControlPanelProps) {
           >
             💾 Tải File Sao Lưu
           </button>
-          <label className="bg-white hover:bg-purple-50 text-purple-700 font-bold py-2 px-2 rounded text-xs border border-purple-300 transition-colors shadow-sm cursor-pointer text-center">
+          <label className="bg-white hover:bg-purple-50 text-purple-700 font-bold py-2 px-2 rounded text-xs border border-purple-300 transition-colors shadow-sm cursor-pointer text-center flex items-center justify-center">
             🔄 Nạp File Khôi Phục
             <input type="file" accept=".json" onChange={props.onRestoreDatabase} className="hidden" />
           </label>

@@ -24,6 +24,7 @@ import ReturnControlPanel from "@/components/ReturnControlPanel";
 // --- COMPONENT CỦA PHÂN HỆ 3 (MỚI) ---
 import UnissuedDataTable from "@/components/UnissuedDataTable";
 import ExportConfigModal from "@/components/ExportConfigModal";
+import MergeBoxesModal from "@/components/MergeBoxesModal";
 
 export default function Home() {
   // MỚI: Thêm trạng thái tab 'giay-hen'
@@ -181,6 +182,8 @@ export default function Home() {
                     onRequestClearData={returnApp.requestClearData}
                     isNoPhotoImport={returnApp.isNoPhotoImport}
                     onToggleNoPhotoImport={returnApp.setIsNoPhotoImport}
+                    onForceNextBox={returnApp.handleForceNextBox}
+                    onOpenMergeModal={returnApp.openMergeModal}
                   />
                 </div>
                 <div className="w-full lg:w-3/4">
@@ -222,13 +225,20 @@ export default function Home() {
         onClose={returnApp.closeEditModal}
         onSave={returnApp.updateCardDetails}
         onDelete={returnApp.deleteCard}
-        onShowToast={returnApp.showToast} // <--- BỔ SUNG DÒNG NÀY
+        onShowToast={returnApp.showToast}
+        onUndoReturn={returnApp.undoReturnCard}
       />
       <ExportConfigModal
         isOpen={returnApp.exportModalConfig.isOpen}
         exportType={returnApp.exportModalConfig.type}
         onClose={returnApp.closeExportModal}
         onConfirm={returnApp.executeExportExcel}
+      />
+      <MergeBoxesModal
+        isOpen={returnApp.mergeModalConfig.isOpen}
+        onClose={returnApp.closeMergeModal}
+        onMerge={returnApp.executeMergeBoxes}
+        onShowToast={returnApp.showToast}
       />
     </main>
   );

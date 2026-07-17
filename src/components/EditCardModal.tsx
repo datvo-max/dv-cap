@@ -9,10 +9,11 @@ interface EditCardModalProps {
   onClose: () => void;
   onSave: (id: number, updates: Partial<CardRecord>) => void;
   onDelete: (id: number) => void;
-  onShowToast: (msg: string, type: "success" | "error" | "warning" | "info") => void; // MỚI: Nhận hàm gọi Toast
+  onShowToast: (msg: string, type: "success" | "error" | "warning" | "info") => void;
+  onUndoReturn: (id: number) => void; // MỚI: Truyền hàm hoàn tác vào Modal
 }
 
-export default function EditCardModal({ isOpen, cardId, onClose, onSave, onDelete, onShowToast }: EditCardModalProps) {
+export default function EditCardModal({ isOpen, cardId, onClose, onSave, onDelete, onShowToast, onUndoReturn }: EditCardModalProps) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isNoPhoto, setIsNoPhoto] = useState(false);
   const [cardData, setCardData] = useState<Partial<CardRecord>>({});
@@ -23,6 +24,7 @@ export default function EditCardModal({ isOpen, cardId, onClose, onSave, onDelet
   const scannerInputRef = useRef<HTMLInputElement>(null);
 
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [isConfirmingUndo, setIsConfirmingUndo] = useState(false); // MỚI: State cho pop-up hoàn tác
 
   useEffect(() => {
     async function loadCardData() {
@@ -31,6 +33,7 @@ export default function EditCardModal({ isOpen, cardId, onClose, onSave, onDelet
         setIsScanning(false);
         setScanValue("");
         setIsConfirmingDelete(false);
+        setIsConfirmingUndo(false); // Đóng pop-up cũ khi mở thẻ mới
         const card = await db.cards.get(cardId);
         if (card) {
           setPhoneNumber(card.phoneNumber || "");
@@ -50,16 +53,13 @@ export default function EditCardModal({ isOpen, cardId, onClose, onSave, onDelet
     }, 100);
   };
 
-  // CẬP NHẬT: Thêm async để gọi DB, kiểm tra trùng lặp và dùng Toast
   const handleScanInput = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && scanValue) {
       const parsed = parseCCCD(scanValue);
       if (parsed.idNumber) {
-
-        // KIỂM TRA TRÙNG LẶP (Ngăn chặn lỗi ConstraintError của IndexedDB)
         const existingCard = await db.cards.where('idNumber').equals(parsed.idNumber).first();
         if (existingCard && existingCard.id !== cardId) {
-          onShowToast(`⚠️ Lỗi: Số CCCD ${parsed.idNumber} - ${existingCard.fullName} đã tồn tại trong kho!`, "error");
+          onShowToast(`⚠️ Lỗi: Số CCCD ${parsed.idNumber} đang thuộc về thẻ của ${existingCard.fullName} trong kho!`, "error");
           setScanValue("");
           return;
         }
@@ -166,34 +166,65 @@ export default function EditCardModal({ isOpen, cardId, onClose, onSave, onDelet
         </div>
 
         <div className="bg-gray-50 px-5 py-3 border-t flex justify-between gap-2">
-          <div className="relative">
-            {isConfirmingDelete && (
-              <div className="absolute bottom-full left-0 mb-2 bg-white border border-red-200 shadow-xl rounded-lg p-2 flex items-center gap-2 z-50 animate-in slide-in-from-bottom-2 fade-in duration-200 whitespace-nowrap">
-                <span className="text-xs text-red-600 font-bold px-1">Xóa thẻ này khỏi kho?</span>
+
+          {/* KHU VỰC NÚT BÊN TRÁI: XÓA & HOÀN TÁC */}
+          <div className="flex gap-2">
+            <div className="relative">
+              {isConfirmingDelete && (
+                <div className="absolute bottom-full left-0 mb-2 bg-white border border-red-200 shadow-xl rounded-lg p-2 flex items-center gap-2 z-50 animate-in slide-in-from-bottom-2 fade-in duration-200 whitespace-nowrap">
+                  <span className="text-xs text-red-600 font-bold px-1">Xóa thẻ này khỏi kho?</span>
+                  <button
+                    onClick={() => onDelete(cardId)}
+                    className="px-2 py-1.5 bg-red-500 text-white text-[11px] font-bold rounded shadow-sm hover:bg-red-600"
+                  >Xóa</button>
+                  <button
+                    onClick={() => setIsConfirmingDelete(false)}
+                    className="px-2 py-1.5 bg-gray-100 text-gray-600 text-[11px] font-bold rounded hover:bg-gray-200"
+                  >Hủy</button>
+                  <div className="absolute -bottom-1 left-4 w-2 h-2 bg-white border-b border-r border-red-200 transform rotate-45"></div>
+                </div>
+              )}
+              <button
+                onClick={() => setIsConfirmingDelete(true)}
+                className="px-3 py-2 rounded-md text-sm font-bold text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 transition-colors flex items-center gap-1.5 shadow-sm"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                Xóa
+              </button>
+            </div>
+
+            {/* MỚI: NÚT HOÀN TÁC (Chỉ hiển thị nếu thẻ đang ở trạng thái 'returned') */}
+            {cardData.status === 'returned' && (
+              <div className="relative">
+                {isConfirmingUndo && (
+                  <div className="absolute bottom-full left-0 mb-2 bg-white border border-orange-200 shadow-xl rounded-lg p-2 flex items-center gap-2 z-50 animate-in slide-in-from-bottom-2 fade-in duration-200 whitespace-nowrap">
+                    <span className="text-xs text-orange-600 font-bold px-1">Trả thẻ này lại vào kho?</span>
+                    <button
+                      onClick={() => { onUndoReturn(cardId); onClose(); }}
+                      className="px-2 py-1.5 bg-orange-500 text-white text-[11px] font-bold rounded shadow-sm hover:bg-orange-600"
+                    >Xác nhận</button>
+                    <button
+                      onClick={() => setIsConfirmingUndo(false)}
+                      className="px-2 py-1.5 bg-gray-100 text-gray-600 text-[11px] font-bold rounded hover:bg-gray-200"
+                    >Hủy</button>
+                    <div className="absolute -bottom-1 left-4 w-2 h-2 bg-white border-b border-r border-orange-200 transform rotate-45"></div>
+                  </div>
+                )}
                 <button
-                  onClick={() => onDelete(cardId)}
-                  className="px-2 py-1.5 bg-red-500 text-white text-[11px] font-bold rounded shadow-sm hover:bg-red-600"
-                >Xóa</button>
-                <button
-                  onClick={() => setIsConfirmingDelete(false)}
-                  className="px-2 py-1.5 bg-gray-100 text-gray-600 text-[11px] font-bold rounded hover:bg-gray-200"
-                >Hủy</button>
-                <div className="absolute -bottom-1 left-4 w-2 h-2 bg-white border-b border-r border-red-200 transform rotate-45"></div>
+                  onClick={() => setIsConfirmingUndo(true)}
+                  className="px-3 py-2 rounded-md text-sm font-bold text-orange-600 bg-orange-50 border border-orange-200 hover:bg-orange-100 transition-colors flex items-center gap-1.5 shadow-sm"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
+                  Trả lại kho
+                </button>
               </div>
             )}
-            <button
-              onClick={() => setIsConfirmingDelete(true)}
-              className="px-3 py-2 rounded-md text-sm font-bold text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 transition-colors flex items-center gap-1.5 shadow-sm"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-              Xóa thẻ
-            </button>
           </div>
 
           <div className="flex gap-2">
-            <button onClick={onClose} className="px-4 py-2 rounded-md text-sm font-bold text-gray-600 bg-white border border-gray-300 hover:bg-gray-100 transition-colors">
+            {/* <button onClick={onClose} className="px-4 py-2 rounded-md text-sm font-bold text-gray-600 bg-white border border-gray-300 hover:bg-gray-100 transition-colors">
               Hủy bỏ
-            </button>
+            </button> */}
             <button onClick={handleSave} className="px-4 py-2 rounded-md text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-sm">
               Lưu thay đổi
             </button>
