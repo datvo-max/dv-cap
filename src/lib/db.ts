@@ -62,6 +62,7 @@ export interface UnissuedRecord {
   createdAt: string;
   address?: string;
   phoneNumber?: string;
+  result?: string; // MỚI: Kết quả xử lý (Đã đi làm lại, Đã gửi yêu cầu lại...)
 }
 
 class CardDatabase extends Dexie {

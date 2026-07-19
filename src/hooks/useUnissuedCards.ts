@@ -48,7 +48,8 @@ export function useUnissuedCards() {
         idNumber: formData.idNumber, fullName: formData.fullName,
         appointmentDate: formData.appointmentDate || "-", reason: formData.reason || "Hồ sơ chưa về",
         address: formData.address || "-", phoneNumber: formData.phoneNumber || "-",
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        result: "Chờ xử lý"
       });
 
       setFormData({ idNumber: "", fullName: "", appointmentDate: "", reason: "", address: "", phoneNumber: "" });
@@ -63,13 +64,24 @@ export function useUnissuedCards() {
   const confirmDelete = async (id: number) => {
     await db.unissuedCards.delete(id);
     setConfirmingId(null);
-    showToast("🗑️ Đã xóa giấy hẹn khỏi danh sách!", "success");
+    showToast("🗑️ Đã xóa trường hợp này khỏi danh sách!", "success");
   };
   const cancelDelete = () => setConfirmingId(null);
+
+  const handleUpdateResult = async (id: number, result: string) => {
+    try {
+      await db.unissuedCards.update(id, { result });
+      showToast("✅ Đã cập nhật kết quả xử lý!", "success");
+    } catch (error) {
+      console.error("Lỗi khi cập nhật kết quả:", error);
+      showToast("❌ Có lỗi xảy ra khi cập nhật kết quả!", "error");
+    }
+  };
 
   return {
     records, formData, handleInputChange, handleAddRecord,
     requestDelete, confirmDelete, cancelDelete, confirmingId,
-    toasts // Trả mảng Toasts ra ngoài
+    toasts,
+    handleUpdateResult
   };
 }

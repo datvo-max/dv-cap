@@ -9,8 +9,26 @@ export default function UnissuedDataTable() {
   const {
     records, formData, handleInputChange, handleAddRecord,
     requestDelete, confirmDelete, cancelDelete, confirmingId,
-    toasts
+    toasts,
+    handleUpdateResult
   } = useUnissuedCards();
+
+  const [editingResultId, setEditingResultId] = React.useState<number | null>(null);
+  const [customResultText, setCustomResultText] = React.useState("");
+
+  const suggestedReasons = React.useMemo(() => {
+    const defaults = [
+      "Sinh trắc không đạt",
+      "Vân tay không đạt chuẩn",
+      "Mống mắt không đạt chuẩn",
+      "Hồ sơ chưa về"
+    ];
+    if (!records) return defaults;
+    const dbReasons = records
+      .map(r => r.reason)
+      .filter((r): r is string => !!r && r !== "-");
+    return Array.from(new Set([...defaults, ...dbReasons]));
+  }, [records]);
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-orange-200 overflow-hidden flex flex-col w-full relative">
@@ -26,27 +44,40 @@ export default function UnissuedDataTable() {
           <div className="grid xs:grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3">
             <div>
               <label className="block text-[11px] font-bold text-orange-700 mb-1">Số CCCD (*)</label>
-              <input type="text" name="idNumber" value={formData.idNumber} onChange={handleInputChange} className="w-full px-3 py-2 border border-orange-200 rounded outline-none focus:ring-1 focus:ring-orange-500 text-sm" placeholder="Nhập số..." />
+              <input type="text" name="idNumber" value={formData.idNumber} onChange={handleInputChange} className="w-full px-3 py-2 border border-orange-200 rounded outline-none focus:ring-1 focus:ring-orange-500 text-sm bg-white font-medium" placeholder="Nhập số..." />
             </div>
             <div>
               <label className="block text-[11px] font-bold text-orange-700 mb-1">Họ và Tên (*)</label>
-              <input type="text" name="fullName" value={formData.fullName} onChange={handleInputChange} className="w-full px-3 py-2 border border-orange-200 rounded outline-none focus:ring-1 focus:ring-orange-500 text-sm" placeholder="Nhập tên..." />
+              <input type="text" name="fullName" value={formData.fullName} onChange={handleInputChange} className="w-full px-3 py-2 border border-orange-200 rounded outline-none focus:ring-1 focus:ring-orange-500 text-sm bg-white font-medium" placeholder="Nhập tên..." />
             </div>
             <div>
               <label className="block text-[11px] font-bold text-orange-700 mb-1">Số Điện Thoại</label>
-              <input type="text" name="phoneNumber" value={formData.phoneNumber} onChange={handleInputChange} className="w-full px-3 py-2 border border-orange-200 rounded outline-none focus:ring-1 focus:ring-orange-500 text-sm" placeholder="VD: 098..." />
+              <input type="text" name="phoneNumber" value={formData.phoneNumber} onChange={handleInputChange} className="w-full px-3 py-2 border border-orange-200 rounded outline-none focus:ring-1 focus:ring-orange-500 text-sm bg-white font-medium" placeholder="VD: 098..." />
             </div>
             <div>
               <label className="block text-[11px] font-bold text-orange-700 mb-1">Địa Chỉ</label>
-              <input type="text" name="address" value={formData.address} onChange={handleInputChange} className="w-full px-3 py-2 border border-orange-200 rounded outline-none focus:ring-1 focus:ring-orange-500 text-sm" placeholder="Nhập địa chỉ..." />
+              <input type="text" name="address" value={formData.address} onChange={handleInputChange} className="w-full px-3 py-2 border border-orange-200 rounded outline-none focus:ring-1 focus:ring-orange-500 text-sm bg-white font-medium" placeholder="Nhập địa chỉ..." />
             </div>
             <div>
               <label className="block text-[11px] font-bold text-orange-700 mb-1">Ngày Hẹn</label>
-              <input type="text" name="appointmentDate" value={formData.appointmentDate} onChange={handleInputChange} className="w-full px-3 py-2 border border-orange-200 rounded outline-none focus:ring-1 focus:ring-orange-500 text-sm" placeholder="VD: 15/07/2026" />
+              <input type="text" name="appointmentDate" value={formData.appointmentDate} onChange={handleInputChange} className="w-full px-3 py-2 border border-orange-200 rounded outline-none focus:ring-1 focus:ring-orange-500 text-sm bg-white font-medium" placeholder="VD: 15/07/2026" />
             </div>
             <div>
               <label className="block text-[11px] font-bold text-orange-700 mb-1">Lý do chưa cấp</label>
-              <input type="text" name="reason" value={formData.reason} onChange={handleInputChange} className="w-full px-3 py-2 border border-orange-200 rounded outline-none focus:ring-1 focus:ring-orange-500 text-sm" placeholder="VD: Lỗi vân tay..." />
+              <input
+                type="text"
+                name="reason"
+                list="reasons-list"
+                value={formData.reason}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-orange-200 rounded outline-none focus:ring-1 focus:ring-orange-500 text-sm bg-white font-medium"
+                placeholder="VD: Lỗi vân tay..."
+              />
+              <datalist id="reasons-list">
+                {suggestedReasons.map(r => (
+                  <option key={r} value={r} />
+                ))}
+              </datalist>
             </div>
           </div>
 
@@ -70,25 +101,85 @@ export default function UnissuedDataTable() {
               <th className="px-3 py-3 border-b max-w-50">Địa Chỉ</th>
               <th className="px-3 py-3 border-b">Ngày Hẹn</th>
               <th className="px-3 py-3 border-b">Lý do</th>
+              <th className="px-3 py-3 border-b w-36">Kết quả xử lý</th>
               <th className="px-3 py-3 text-center border-b w-20 sticky right-0 bg-gray-100">Thao tác</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {!records || records.length === 0 ? (
               <tr>
-                <td colSpan={8} className="text-center py-10 text-gray-400">Chưa có dữ liệu theo dõi.</td>
+                <td colSpan={9} className="text-center py-10 text-gray-400">Chưa có dữ liệu theo dõi.</td>
               </tr>
             ) : (
               records.map((item, index) => (
                 <tr key={item.id} className="hover:bg-orange-50/30 transition-colors">
-                  <td className="px-3 py-2 text-center text-gray-400">{index + 1}</td>
-                  <td className="px-3 py-2 font-bold text-blue-800">{item.idNumber}</td>
-                  <td className="px-3 py-2 font-bold text-gray-800">{item.fullName}</td>
-                  <td className="px-3 py-2 font-medium">{item.phoneNumber}</td>
-                  <td className="px-3 py-2 truncate max-w-50" title={item.address}>{item.address}</td>
-                  <td className="px-3 py-2 text-orange-700 font-medium">{item.appointmentDate}</td>
-                  <td className="px-3 py-2 text-gray-500">{item.reason}</td>
-                  <td className="px-3 py-2 text-center sticky right-0 bg-white group-hover:bg-orange-50/30 shadow-[-4px_0_10px_rgba(0,0,0,0.02)]">
+                  <td className="px-3 py-2.5 text-center text-gray-400">{index + 1}</td>
+                  <td className="px-3 py-2.5 font-bold text-blue-800">{item.idNumber}</td>
+                  <td className="px-3 py-2.5 font-bold text-gray-800">{item.fullName}</td>
+                  <td className="px-3 py-2.5 font-medium">{item.phoneNumber}</td>
+                  <td className="px-3 py-2.5 truncate max-w-50" title={item.address}>{item.address}</td>
+                  <td className="px-3 py-2.5 text-orange-700 font-medium">{item.appointmentDate}</td>
+                  <td className="px-3 py-2.5 text-gray-500">{item.reason}</td>
+                  <td className="px-3 py-2.5">
+                    {editingResultId === item.id ? (
+                      <div className="flex items-center gap-1 animate-in fade-in duration-200">
+                        <input
+                          type="text"
+                          value={customResultText}
+                          onChange={(e) => setCustomResultText(e.target.value)}
+                          placeholder="Nhập kết quả..."
+                          className="px-2 py-1 border border-orange-300 rounded text-xs outline-none focus:ring-1 focus:ring-orange-500 w-28 bg-white font-medium"
+                          autoFocus
+                        />
+                        <button
+                          onClick={async () => {
+                            await handleUpdateResult(item.id!, customResultText.trim() || "Chờ xử lý");
+                            setEditingResultId(null);
+                          }}
+                          className="p-1 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors shadow-sm cursor-pointer"
+                          title="Lưu"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                        </button>
+                        <button
+                          onClick={() => setEditingResultId(null)}
+                          className="p-1 bg-gray-200 text-gray-600 rounded-md hover:bg-gray-300 transition-colors cursor-pointer"
+                          title="Hủy"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                      </div>
+                    ) : (
+                      <select
+                        value={item.result || "Chờ xử lý"}
+                        onChange={async (e) => {
+                          const val = e.target.value;
+                          if (val === "__custom__") {
+                            setEditingResultId(item.id!);
+                            setCustomResultText(item.result || "");
+                          } else {
+                            await handleUpdateResult(item.id!, val);
+                          }
+                        }}
+                        className={`px-2 py-0.5 rounded-md text-[10px] font-bold border outline-none cursor-pointer transition-colors ${
+                          (item.result || "Chờ xử lý") === "Chờ xử lý"
+                            ? "bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
+                            : ["Đã đi làm lại", "Đã gửi yêu cầu lại"].includes(item.result || "")
+                            ? "bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
+                            : "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
+                        }`}
+                      >
+                        <option value="Chờ xử lý">Chờ xử lý</option>
+                        <option value="Đã đi làm lại">Đã đi làm lại</option>
+                        <option value="Đã gửi yêu cầu lại">Đã gửi yêu cầu lại</option>
+                        {item.result && !["Chờ xử lý", "Đã đi làm lại", "Đã gửi yêu cầu lại"].includes(item.result) && (
+                          <option value={item.result}>{item.result}</option>
+                        )}
+                        <option value="__custom__">✍️ Tự nhập...</option>
+                      </select>
+                    )}
+                  </td>
+                  <td className="px-3 py-2.5 text-center sticky right-0 bg-white group-hover:bg-orange-50/30 shadow-[-4px_0_10px_rgba(0,0,0,0.02)]">
 
                     <div className="flex justify-center relative">
                       {/* MINI POP-UP XÁC NHẬN XÓA */}
@@ -97,11 +188,11 @@ export default function UnissuedDataTable() {
                           <span className="text-[10px] text-red-600 font-bold whitespace-nowrap px-1">Xóa thẻ này?</span>
                           <button
                             onClick={() => { if (item.id !== undefined) confirmDelete(item.id) }}
-                            className="px-2 py-1 bg-red-500 text-white text-[10px] font-bold rounded shadow-sm hover:bg-red-600"
+                            className="px-2 py-1 bg-red-500 text-white text-[10px] font-bold rounded-md shadow-sm hover:bg-red-600 cursor-pointer"
                           >Xóa</button>
                           <button
                             onClick={cancelDelete}
-                            className="px-2 py-1 bg-gray-100 text-gray-600 text-[10px] font-bold rounded hover:bg-gray-200"
+                            className="px-2 py-1 bg-gray-100 text-gray-600 text-[10px] font-bold rounded-md hover:bg-gray-200 cursor-pointer"
                           >Hủy</button>
                           {/* Mũi tên trỏ vào nút xóa */}
                           <div className="absolute top-1/2 -right-1 -translate-y-1/2 w-2 h-2 bg-white border-r border-t border-red-200 transform rotate-45"></div>
@@ -111,7 +202,7 @@ export default function UnissuedDataTable() {
                       {/* NÚT THÙNG RÁC MẶC ĐỊNH */}
                       <button
                         onClick={() => { if (item.id !== undefined) requestDelete(item.id) }}
-                        className="text-red-500 hover:text-red-700 p-1.5 bg-red-50 hover:bg-red-100 rounded transition-colors"
+                        className="text-red-500 hover:text-red-700 p-1.5 bg-red-50 hover:bg-red-100 rounded-md transition-colors cursor-pointer"
                         title="Xóa khỏi danh sách"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
