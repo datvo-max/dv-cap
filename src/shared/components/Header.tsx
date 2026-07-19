@@ -7,7 +7,7 @@ import { useAuth } from "../context/AuthContext";
 import { LogOut, ChevronDown, User as UserIcon } from "lucide-react";
 
 export default function Header() {
-  const { user, logout } = useAuth();
+  const { user, isGuest, logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
