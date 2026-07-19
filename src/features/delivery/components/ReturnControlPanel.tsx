@@ -1,5 +1,6 @@
 // src/components/ReturnControlPanel.tsx
 import React from "react";
+import * as XLSX from "xlsx-js-style";
 
 interface ReturnControlPanelProps {
   onImportExcel: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -21,6 +22,43 @@ interface ReturnControlPanelProps {
 }
 
 export default function ReturnControlPanel(props: ReturnControlPanelProps) {
+  const handleDownloadTemplate = () => {
+    const ws_data = [
+      ["Số CCCD", "Họ và Tên", "Ngày Sinh", "Giới Tính", "Địa Chỉ", "Ngày Cấp", "Họ Tên Cha", "Họ Tên Mẹ"],
+      ["079090123456", "Nguyễn Văn A", "01/01/1990", "Nam", "Phường 1, Tân An, Long An", "15/05/2024", "Nguyễn Văn B", "Trần Thị C"]
+    ];
+    
+    const ws = XLSX.utils.aoa_to_sheet(ws_data);
+    const wscols = [
+      { wch: 18 }, { wch: 25 }, { wch: 15 }, { wch: 12 },
+      { wch: 40 }, { wch: 15 }, { wch: 20 }, { wch: 20 }
+    ];
+    ws['!cols'] = wscols;
+
+    // Header styling
+    const headerStyle = {
+      font: { bold: true, color: { rgb: "FFFFFF" } },
+      fill: { fgColor: { rgb: "2563EB" } }, // blue-600
+      alignment: { horizontal: "center", vertical: "center" },
+      border: {
+        top: { style: "thin", color: { auto: 1 } },
+        bottom: { style: "thin", color: { auto: 1 } },
+        left: { style: "thin", color: { auto: 1 } },
+        right: { style: "thin", color: { auto: 1 } }
+      }
+    };
+    
+    for (let C = 0; C < ws_data[0].length; ++C) {
+      const cellAddress = XLSX.utils.encode_cell({ r: 0, c: C });
+      if (!ws[cellAddress]) continue;
+      ws[cellAddress].s = headerStyle;
+    }
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Mau_Danh_Sach");
+    XLSX.writeFile(wb, "File_Mau_Nhap_The_CCCD.xlsx");
+  };
+
   return (
     <>
       {/* 📥 KHỐI 1: NẠP DỮ LIỆU */}
@@ -30,10 +68,21 @@ export default function ReturnControlPanel(props: ReturnControlPanelProps) {
           Thêm thẻ vào kho
         </p>
 
-        <button className="w-full relative flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition-colors text-xs shadow-sm">
-          Nạp từ file Excel (Danh sách)
-          <input type="file" accept=".xlsx, .xls" onChange={props.onImportExcel} className="absolute inset-0 opacity-0 cursor-pointer" />
-        </button>
+        <div className="flex gap-2">
+          <button className="flex-1 relative flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded-md transition-colors text-[11px] shadow-sm">
+            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+            Nạp từ Excel
+            <input type="file" accept=".xlsx, .xls" onChange={props.onImportExcel} className="absolute inset-0 opacity-0 cursor-pointer" />
+          </button>
+          
+          <button 
+            onClick={handleDownloadTemplate} 
+            className="flex-1 flex items-center justify-center gap-2 bg-white hover:bg-blue-50 text-blue-700 border border-blue-600 font-bold py-2 px-3 rounded-md transition-colors text-[11px] shadow-sm"
+          >
+            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            Tải File Mẫu
+          </button>
+        </div>
 
         <input
           ref={props.importInputRef}
