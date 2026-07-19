@@ -37,25 +37,25 @@ export default function Header() {
 
       <div className="flex items-center gap-3">
         {/* User Profile Dropdown */}
-        {user && (
+        {(user || isGuest) && (
           <div className="relative ml-2" ref={dropdownRef}>
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               className="flex items-center gap-2 hover:bg-slate-50 p-1.5 rounded-lg transition-colors border border-transparent hover:border-slate-200"
             >
-              {user.photoURL ? (
+              {user?.photoURL ? (
                 <img src={user.photoURL} alt="Avatar" className="w-8 h-8 rounded-full border border-slate-200" />
               ) : (
-                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isGuest ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'}`}>
                   <UserIcon className="w-5 h-5" />
                 </div>
               )}
               <div className="hidden sm:flex flex-col items-start text-left">
                 <span className="text-sm font-bold text-slate-700 leading-tight">
-                  {user.displayName || "Người dùng"}
+                  {isGuest ? "Chế độ Khách" : (user?.displayName || "Người dùng")}
                 </span>
                 <span className="text-[10px] text-slate-500 leading-tight">
-                  {user.email}
+                  {isGuest ? "Dùng thử hệ thống" : user?.email}
                 </span>
               </div>
               <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
@@ -66,10 +66,10 @@ export default function Header() {
                 {/* Thông tin user (Chỉ hiện trên Mobile vì bị ẩn ở ngoài) */}
                 <div className="p-3 border-b border-slate-100 sm:hidden">
                   <span className="block text-sm font-bold text-slate-700 truncate">
-                    {user.displayName || "Người dùng"}
+                    {isGuest ? "Chế độ Khách" : (user?.displayName || "Người dùng")}
                   </span>
                   <span className="block text-xs text-slate-500 truncate">
-                    {user.email}
+                    {isGuest ? "Dùng thử hệ thống" : user?.email}
                   </span>
                 </div>
                 
@@ -95,7 +95,7 @@ export default function Header() {
                     className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium"
                   >
                     <LogOut className="w-4 h-4" />
-                    Đăng xuất
+                    {isGuest ? "Thoát chế độ Khách" : "Đăng xuất"}
                   </button>
                 </div>
               </div>

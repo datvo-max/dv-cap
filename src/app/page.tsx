@@ -30,7 +30,7 @@ import MergeBoxesModal from "@/features/delivery/components/MergeBoxesModal";
 import AssignShipperModal from "@/features/delivery/components/AssignShipperModal";
 
 export default function Home() {
-  const { user, isAllowed, loading } = useAuth();
+  const { user, isAllowed, loading, isGuest } = useAuth();
   // MỚI: Thêm trạng thái tab 'giay-hen'
   const [activeTab, setActiveTab] = useState<'nhap-lieu' | 'tra-the' | 'giay-hen'>('nhap-lieu');
 
@@ -59,7 +59,7 @@ export default function Home() {
     localStorage.setItem('cccd_active_tab', tab);
   };
 
-  if (loading || !user || !isAllowed) {
+  if (loading || (!user && !isGuest) || !isAllowed) {
     return <LoginScreen />;
   }
 

@@ -10,8 +10,10 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   isAllowed: boolean;
+  isGuest: boolean;
   login: () => Promise<void>;
   logout: () => Promise<void>;
+  continueAsGuest: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,6 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [isAllowed, setIsAllowed] = useState<boolean>(false);
+  const [isGuest, setIsGuest] = useState<boolean>(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -39,7 +42,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setIsAllowed(false);
         }
       } else {
-        setIsAllowed(false);
+        // Kiểm tra xem có đang ở chế độ khách không
+        const guestMode = localStorage.getItem("dv_cap_guest_mode") === "true";
+        if (guestMode) {
+          setIsGuest(true);
+          setIsAllowed(true);
+        } else {
+          setIsAllowed(false);
+          setIsGuest(false);
+        }
       }
       
       setLoading(false);
@@ -52,6 +63,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       await signInWithPopup(auth, googleProvider);
+      // Xóa chế độ khách nếu có
+      localStorage.removeItem("dv_cap_guest_mode");
+      setIsGuest(false);
     } catch (error: any) {
       console.error("Lỗi đăng nhập:", error);
       toast.error("Đăng nhập thất bại: " + error.message);
@@ -59,9 +73,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const continueAsGuest = () => {
+    localStorage.setItem("dv_cap_guest_mode", "true");
+    setIsGuest(true);
+    setIsAllowed(true);
+  };
+
   const logout = async () => {
     try {
       await signOut(auth);
+      localStorage.removeItem("dv_cap_guest_mode");
+      setIsGuest(false);
       setIsAllowed(false);
       setUser(null);
     } catch (error: any) {
@@ -71,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, isAllowed, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, isAllowed, isGuest, login, logout, continueAsGuest }}>
       {children}
     </AuthContext.Provider>
   );
