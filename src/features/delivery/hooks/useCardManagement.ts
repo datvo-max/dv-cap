@@ -1,6 +1,6 @@
 // src/hooks/useCardManagement.ts
 import { useState } from "react";
-import { db, CardRecord } from "@/lib/db";
+import { db, CardRecord } from "@/shared/lib/db";
 
 // Nhận hàm showToast từ bên ngoài truyền vào
 export function useCardManagement(showToast: (msg: string, type: any) => void) {

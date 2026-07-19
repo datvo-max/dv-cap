@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState, useMemo, useEffect, useRef } from "react";
-import { db } from "@/lib/db";
+import { db } from "@/shared/lib/db";
 import { useLiveQuery } from "dexie-react-hooks";
-import { useDebounce } from "@/hooks/useDebounce";
-import { removeVietnameseTones } from "@/utils/removeVietnameseTones";
+import { useDebounce } from "@/shared/hooks/useDebounce";
+import { removeVietnameseTones } from "@/shared/utils/removeVietnameseTones";
 
 interface ReturnDataTableProps {
   onReturnCard: (idNumber: string) => void;
@@ -59,7 +59,7 @@ export default function ReturnDataTable({
   useEffect(() => {
     if (prevPageRef.current !== currentPage) {
       prevPageRef.current = currentPage;
-      
+
       const yOffset = -80;
       if (tableTopRef.current) {
         const y = tableTopRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
@@ -79,9 +79,10 @@ export default function ReturnDataTable({
     const normalizedSearchTerm = removeVietnameseTones(debouncedSearchTerm.toLowerCase().trim());
 
     return allCards.filter(item => {
-      // 2. Lấy tên công dân trong DB, chuyển chữ thường và xóa dấu
+      // 2. Lấy các trường thông tin trong DB, chuyển chữ thường và xóa dấu
       const normalizedFullName = removeVietnameseTones(item.fullName.toLowerCase());
       const normalizedShipperName = item.shipperName ? removeVietnameseTones(item.shipperName.toLowerCase()) : "";
+      const normalizedAddress = item.address ? removeVietnameseTones(item.address.toLowerCase()) : "";
 
       // 3. Tiến hành so sánh
       return (
@@ -90,6 +91,7 @@ export default function ReturnDataTable({
         (item.phoneNumber && item.phoneNumber.includes(normalizedSearchTerm)) ||
         normalizedShipperName.includes(normalizedSearchTerm) ||
         (item.shipperPhone && item.shipperPhone.includes(normalizedSearchTerm)) ||
+        normalizedAddress.includes(normalizedSearchTerm) || // Bổ sung tìm kiếm theo địa chỉ
         // Lưu ý: Vì từ khóa đã bị xóa dấu ở bước 1, chữ "hộp" chắc chắn đã thành "hop", 
         // nên chúng ta chỉ cần replace "hop " là đủ để tra cứu chính xác hộp số mấy.
         item.zone.toString().toLowerCase() === normalizedSearchTerm.replace("hop ", "").trim()
@@ -126,7 +128,7 @@ export default function ReturnDataTable({
           </span>
           <input
             type="text"
-            placeholder="Tra cứu nhanh theo Tên, Số CCCD, Vị trí hoặc Shipper..."
+            placeholder="Tra cứu nhanh theo Tên, Số CCCD, Địa chỉ, Vị trí hoặc Shipper..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none bg-white font-medium"
@@ -134,14 +136,13 @@ export default function ReturnDataTable({
         </div>
         <button
           onClick={() => onToggleSelectMode(!isSelectMode)}
-          className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border shadow-sm flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-            isSelectMode
+          className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border shadow-sm flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${isSelectMode
               ? "bg-indigo-600 border-indigo-600 text-white hover:bg-indigo-700"
               : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-          }`}
+            }`}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
-          {isSelectMode ? "Tắt chế độ chọn" : "Chọn thẻ xuất file"}
+          {isSelectMode ? "Tắt chế độ chọn" : "Mở chế độ chọn"}
         </button>
       </div>
 

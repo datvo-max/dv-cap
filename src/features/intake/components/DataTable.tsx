@@ -1,5 +1,4 @@
-// src/components/DataTable.tsx
-import { ScannedRecord } from "@/lib/db";
+import { ScannedRecord } from "@/shared/lib/db";
 import { useState } from "react";
 
 interface DataTableProps {

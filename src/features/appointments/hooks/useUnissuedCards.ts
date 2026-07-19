@@ -1,6 +1,6 @@
 // src/hooks/useUnissuedCards.ts
 import { useState, useCallback } from "react";
-import { db } from "@/lib/db";
+import { db } from "@/shared/lib/db";
 import { useLiveQuery } from "dexie-react-hooks";
 
 export function useUnissuedCards() {

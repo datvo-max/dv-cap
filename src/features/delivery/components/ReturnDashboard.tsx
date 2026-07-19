@@ -2,7 +2,7 @@
 "use client";
 
 import React from "react";
-import { db } from "@/lib/db";
+import { db } from "@/shared/lib/db";
 import { useLiveQuery } from "dexie-react-hooks";
 
 export default function ReturnDashboard() {

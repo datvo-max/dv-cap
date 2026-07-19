@@ -1,6 +1,6 @@
 // src/components/MergeBoxesModal.tsx
 import React, { useState, useEffect } from "react";
-import { db } from "@/lib/db";
+import { db } from "@/shared/lib/db";
 
 interface MergeBoxesModalProps {
   isOpen: boolean;

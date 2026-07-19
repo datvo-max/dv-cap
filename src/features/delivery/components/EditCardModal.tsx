@@ -1,7 +1,7 @@
 // src/components/EditCardModal.tsx
 import React, { useState, useEffect, useRef } from "react";
-import { db, CardRecord } from "@/lib/db";
-import { parseCCCD } from "@/utils/cccdParser";
+import { db, CardRecord } from "@/shared/lib/db";
+import { parseCCCD } from "@/shared/utils/cccdParser";
 
 interface EditCardModalProps {
   isOpen: boolean;

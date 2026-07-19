@@ -1,6 +1,6 @@
 // src/utils/exportReturnToExcel.ts
 import * as XLSX from 'xlsx-js-style';
-import { CardRecord } from '@/lib/db';
+import { CardRecord } from '@/shared/lib/db';
 
 const yieldToMain = () => new Promise(resolve => setTimeout(resolve, 10));
 

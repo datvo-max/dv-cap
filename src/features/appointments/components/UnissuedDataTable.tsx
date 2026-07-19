@@ -2,8 +2,8 @@
 "use client";
 
 import React from "react";
-import { useUnissuedCards } from "@/hooks/useUnissuedCards";
-import Toast from "./Toast";
+import { useUnissuedCards } from "@/features/appointments/hooks/useUnissuedCards";
+import Toast from "@/shared/components/Toast";
 
 export default function UnissuedDataTable() {
   const {

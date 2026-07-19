@@ -1,31 +1,31 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useScannerApp } from "@/hooks/useScannerApp";
-import { useCardReturnApp } from "@/hooks/useCardReturnApp";
+import { useScannerApp } from "@/features/intake/hooks/useScannerApp";
+import { useCardReturnApp } from "@/features/delivery/hooks/useCardReturnApp";
 
-import Header from "@/components/Header";
-import Toast from "@/components/Toast";
-import ConfirmModal from "@/components/ConfirmModal";
-import EditCardModal from "@/components/EditCardModal";
+import Header from "@/shared/components/Header";
+import Toast from "@/shared/components/Toast";
+import ConfirmModal from "@/shared/components/ConfirmModal";
+import EditCardModal from "@/features/delivery/components/EditCardModal";
 
 // --- COMPONENTS CỦA PHÂN HỆ 1 ---
-import DashboardReport from "@/components/DashboardReport";
-import ControlPanel from "@/components/ControlPanel";
-import ScannerSection from "@/components/ScannerSection";
-import DataTable from "@/components/DataTable";
+import DashboardReport from "@/features/intake/components/DashboardReport";
+import ControlPanel from "@/features/intake/components/ControlPanel";
+import ScannerSection from "@/features/intake/components/ScannerSection";
+import DataTable from "@/features/intake/components/DataTable";
 
 // --- COMPONENTS CỦA PHÂN HỆ 2 ---
-import ReturnDashboard from "@/components/ReturnDashboard";
-import ReturnDataTable from "@/components/ReturnDataTable";
-import ReturnScannerSection from "@/components/ReturnScannerSection";
-import ReturnControlPanel from "@/components/ReturnControlPanel";
+import ReturnDashboard from "@/features/delivery/components/ReturnDashboard";
+import ReturnDataTable from "@/features/delivery/components/ReturnDataTable";
+import ReturnScannerSection from "@/features/delivery/components/ReturnScannerSection";
+import ReturnControlPanel from "@/features/delivery/components/ReturnControlPanel";
 
 // --- COMPONENT CỦA PHÂN HỆ 3 (MỚI) ---
-import UnissuedDataTable from "@/components/UnissuedDataTable";
-import ExportConfigModal from "@/components/ExportConfigModal";
-import MergeBoxesModal from "@/components/MergeBoxesModal";
-import AssignShipperModal from "@/components/AssignShipperModal";
+import UnissuedDataTable from "@/features/appointments/components/UnissuedDataTable";
+import ExportConfigModal from "@/features/delivery/components/ExportConfigModal";
+import MergeBoxesModal from "@/features/delivery/components/MergeBoxesModal";
+import AssignShipperModal from "@/features/delivery/components/AssignShipperModal";
 
 export default function Home() {
   // MỚI: Thêm trạng thái tab 'giay-hen'

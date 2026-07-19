@@ -1,5 +1,5 @@
 // src/lib/db.ts
-import { CCCDRecord } from '@/types/cccd';
+import { CCCDRecord } from '@/shared/types/cccd';
 import Dexie, { type Table } from 'dexie';
 
 // HÀM HỖ TRỢ: Tự động chuyển đổi chuỗi ngày tháng cũ (Việt Nam) sang dạng Số (Timestamp)

@@ -1,8 +1,8 @@
 // src/hooks/useCardReturnApp.ts
 import { useState, useRef, useCallback } from "react";
-import { db } from "@/lib/db";
+import { db } from "@/shared/lib/db";
 import { Html5Qrcode } from "html5-qrcode";
-import { exportReturnExcel } from "@/utils/exportReturnToExcel";
+import { exportReturnExcel } from "@/shared/utils/exportReturnToExcel";
 
 // ==========================================
 // 1. IMPORT CÁC MODULE NGHIỆP VỤ ĐÃ TÁCH

@@ -1,5 +1,5 @@
 // src/utils/cccdParser.ts
-import { CCCDRecord } from "@/types/cccd";
+import { CCCDRecord } from "@/shared/types/cccd";
 
 // Tạo ID tương thích với cả HTTP và HTTPS
 export const generateId = () => {

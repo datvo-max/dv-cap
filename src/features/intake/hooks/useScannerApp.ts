@@ -1,10 +1,10 @@
 // src/hooks/useScannerApp.ts
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Html5Qrcode } from "html5-qrcode";
-import { CCCDRecord } from "@/types/cccd";
-import { parseCCCD } from "@/utils/cccdParser";
-import { exportToExcel } from "@/utils/exportToExcel";
-import { db, ScannedRecord } from "@/lib/db";
+import { CCCDRecord } from "@/shared/types/cccd";
+import { parseCCCD } from "@/shared/utils/cccdParser";
+import { exportToExcel } from "@/shared/utils/exportToExcel";
+import { db, ScannedRecord } from "@/shared/lib/db";
 import { useLiveQuery } from "dexie-react-hooks";
 
 export function useScannerApp() {

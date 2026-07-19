@@ -1,6 +1,6 @@
 // src/components/ExportConfigModal.tsx
 import React, { useState, useEffect } from "react";
-import { COLUMNS_SCHEMA } from "@/utils/exportReturnToExcel";
+import { COLUMNS_SCHEMA } from "@/shared/utils/exportReturnToExcel";
 
 interface ExportConfigModalProps {
   isOpen: boolean;

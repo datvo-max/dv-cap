@@ -1,7 +1,7 @@
 // src/hooks/useCardImport.ts
 import { useState, useRef } from "react";
-import { db } from "@/lib/db";
-import { parseCCCD } from "@/utils/cccdParser";
+import { db } from "@/shared/lib/db";
+import { parseCCCD } from "@/shared/utils/cccdParser";
 import * as XLSX from "xlsx"; // Nhớ import thư viện XLSX
 
 export function useCardImport(showToast: (msg: string, type: any) => void) {

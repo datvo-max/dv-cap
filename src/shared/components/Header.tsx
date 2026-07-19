@@ -1,6 +1,6 @@
 // src/components/Header.tsx
 import Image from "next/image";
-import logoImg from "../../public/Logo-BCA.png";
+import logoImg from "../../../public/Logo-BCA.png";
 
 export default function Header() {
   return (
@@ -20,7 +20,7 @@ export default function Header() {
       </div>
 
       <div className="flex items-center gap-3">
-        <span className="text-xs text-gray-500 font-semibold bg-gray-100 px-2 py-1 rounded-md">Phiên bản: 3.4.0</span>
+        <span className="text-xs text-gray-500 font-semibold bg-gray-100 px-2 py-1 rounded-md">Phiên bản: 3.5.0</span>
         <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-full">
           <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
           <span className="text-xs font-bold text-green-700">Tốt</span>
