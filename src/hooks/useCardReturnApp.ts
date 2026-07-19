@@ -48,7 +48,12 @@ export function useCardReturnApp() {
   const isCameraPaused = useRef(false);
 
   const [modalConfig, setModalConfig] = useState({ isOpen: false, message: "" });
-  const [exportModalConfig, setExportModalConfig] = useState<{ isOpen: boolean; type: 'all' | 'returned' | 'pending' | null; }>({ isOpen: false, type: null });
+  const [exportModalConfig, setExportModalConfig] = useState<{ isOpen: boolean; type: 'all' | 'returned' | 'pending' | 'selected' | null; }>({ isOpen: false, type: null });
+
+  // MỚI: State chọn thẻ và Shipper
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [assignShipperModalConfig, setAssignShipperModalConfig] = useState({ isOpen: false });
 
   // ==========================================
   // 5. NGHIỆP VỤ TRẢ THẺ 
@@ -91,7 +96,13 @@ export function useCardReturnApp() {
       if (!card) { showToast("❌ Không tìm thấy hồ sơ thẻ này!", "error"); return; }
       if (card.status === 'pending') { showToast("⚠️ Thẻ này vẫn đang ở trong kho mà!", "warning"); return; }
 
-      await db.cards.update(id, { status: 'pending', returnedAt: undefined });
+      await db.cards.update(id, { 
+        status: 'pending', 
+        returnedAt: undefined,
+        shipperName: undefined,
+        shipperPhone: undefined,
+        shippedAt: undefined
+      });
       showToast(`🔄 Đã khôi phục thẻ của ${card.fullName} về kho (Hộp ${card.zone})`, "info");
     } catch (error) {
       showToast("❌ Có lỗi xảy ra khi hoàn tác!", "error");
@@ -219,10 +230,10 @@ export function useCardReturnApp() {
       showToast("❌ Lỗi khi đọc file sao lưu. Vui lòng kiểm tra lại!", "error");
     }
   };
-  const openExportModal = (type: 'all' | 'returned' | 'pending') => { setExportModalConfig({ isOpen: true, type }); };
+  const openExportModal = (type: 'all' | 'returned' | 'pending' | 'selected') => { setExportModalConfig({ isOpen: true, type }); };
   const closeExportModal = () => setExportModalConfig({ isOpen: false, type: null });
   // Hàm thực thi sau khi đã chọn xong cột
-  const executeExportExcel = async (selectedKeys: string[], type: 'all' | 'returned' | 'pending') => {
+  const executeExportExcel = async (selectedKeys: string[], type: 'all' | 'returned' | 'pending' | 'selected') => {
     try {
       closeExportModal(); // Đóng modal ngay khi bấm
       setIsExporting(true);
@@ -231,6 +242,9 @@ export function useCardReturnApp() {
       let dataToExport = [];
       if (type === 'all') {
         dataToExport = await db.cards.toArray();
+      } else if (type === 'selected') {
+        const idsArray = Array.from(selectedIds);
+        dataToExport = await db.cards.where('id').anyOf(idsArray).toArray();
       } else {
         dataToExport = await db.cards.where('status').equals(type).toArray();
       }
@@ -247,7 +261,7 @@ export function useCardReturnApp() {
         setExportProgress(percent);
       });
 
-      let typeName = type === 'all' ? 'Toàn bộ kho' : (type === 'returned' ? 'Đã trả' : 'Còn lại');
+      const typeName = type === 'all' ? 'Toàn bộ kho' : (type === 'returned' ? 'Đã trả' : (type === 'selected' ? 'Đã chọn' : 'Còn lại'));
       showToast(`✅ Đã tải xuống file: ${typeName}`, "success");
 
     } catch (error) {
@@ -258,6 +272,135 @@ export function useCardReturnApp() {
         setIsExporting(false);
         setExportProgress(null);
       }, 1000);
+    }
+  };
+
+  // MỚI: Các hàm xử lý chọn thẻ và Shipper
+  const toggleSelectCard = useCallback((id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }, []);
+
+  const toggleSelectAll = useCallback((displayedIds: number[]) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      const allDisplayedSelected = displayedIds.every(id => next.has(id));
+      if (allDisplayedSelected) {
+        displayedIds.forEach(id => next.delete(id));
+      } else {
+        displayedIds.forEach(id => next.add(id));
+      }
+      return next;
+    });
+  }, []);
+
+  const clearSelection = useCallback(() => {
+    setSelectedIds(new Set());
+  }, []);
+
+  const openAssignShipperModal = () => {
+    if (selectedIds.size === 0) {
+      showToast("⚠️ Vui lòng chọn ít nhất 1 thẻ để bàn giao shipper!", "warning");
+      return;
+    }
+    setAssignShipperModalConfig({ isOpen: true });
+  };
+
+  const closeAssignShipperModal = () => {
+    setAssignShipperModalConfig({ isOpen: false });
+  };
+
+  const executeAssignShipper = async (name: string, phone: string) => {
+    try {
+      if (selectedIds.size === 0) return;
+      const idsArray = Array.from(selectedIds);
+      
+      let count = 0;
+      await db.transaction("rw", db.cards, async () => {
+        for (const id of idsArray) {
+          const card = await db.cards.get(id);
+          if (card && card.status !== 'returned') {
+            await db.cards.update(id, {
+              status: 'shipping',
+              shipperName: name,
+              shipperPhone: phone,
+              shippedAt: Date.now()
+            });
+            count++;
+          }
+        }
+      });
+      
+      showToast(`✅ Đã bàn giao thành công ${count} thẻ cho shipper ${name}!`, "success");
+      clearSelection();
+      closeAssignShipperModal();
+    } catch (error) {
+      console.error(error);
+      showToast("❌ Có lỗi xảy ra khi bàn giao cho shipper!", "error");
+    }
+  };
+
+  const executeBulkConfirmDelivered = async () => {
+    try {
+      if (selectedIds.size === 0) return;
+      const idsArray = Array.from(selectedIds);
+      
+      let count = 0;
+      await db.transaction("rw", db.cards, async () => {
+        for (const id of idsArray) {
+          const card = await db.cards.get(id);
+          if (card && card.status === 'shipping') {
+            await db.cards.update(id, {
+              status: 'returned',
+              returnedAt: Date.now()
+            });
+            count++;
+          }
+        }
+      });
+      
+      showToast(`✅ Đã xác nhận shipper giao thành công ${count} thẻ!`, "success");
+      clearSelection();
+    } catch (error) {
+      console.error(error);
+      showToast("❌ Có lỗi xảy ra khi xác nhận giao hàng hàng loạt!", "error");
+    }
+  };
+
+  const executeBulkReturnToWarehouse = async () => {
+    try {
+      if (selectedIds.size === 0) return;
+      const idsArray = Array.from(selectedIds);
+      
+      let count = 0;
+      await db.transaction("rw", db.cards, async () => {
+        for (const id of idsArray) {
+          const card = await db.cards.get(id);
+          if (card && (card.status === 'shipping' || card.status === 'returned')) {
+            await db.cards.update(id, {
+              status: 'pending',
+              returnedAt: undefined,
+              shipperName: undefined,
+              shipperPhone: undefined,
+              shippedAt: undefined
+            });
+            count++;
+          }
+        }
+      });
+      
+      showToast(`🔄 Đã hoàn tác ${count} thẻ về lại kho!`, "info");
+      clearSelection();
+    } catch (error) {
+      console.error(error);
+      showToast("❌ Có lỗi xảy ra khi hoàn tác hàng loạt!", "error");
     }
   };
 
@@ -283,6 +426,12 @@ export function useCardReturnApp() {
     // Trả ra Backup, Export, Modal
     modalConfig, requestClearData, confirmClearData, closeModal,
     handleBackupDatabase, handleRestoreDatabase,
-    exportModalConfig, openExportModal, closeExportModal, executeExportExcel, isExporting, exportProgress
+    exportModalConfig, openExportModal, closeExportModal, executeExportExcel, isExporting, exportProgress,
+
+    // MỚI: Trả ra các biến và hàm phục vụ Chọn hàng loạt & Shipper
+    selectedIds, isSelectMode, setIsSelectMode,
+    assignShipperModalConfig, openAssignShipperModal, closeAssignShipperModal, executeAssignShipper,
+    toggleSelectCard, toggleSelectAll, clearSelection,
+    executeBulkConfirmDelivered, executeBulkReturnToWarehouse
   };
 }

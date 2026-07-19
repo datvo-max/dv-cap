@@ -25,6 +25,7 @@ import ReturnControlPanel from "@/components/ReturnControlPanel";
 import UnissuedDataTable from "@/components/UnissuedDataTable";
 import ExportConfigModal from "@/components/ExportConfigModal";
 import MergeBoxesModal from "@/components/MergeBoxesModal";
+import AssignShipperModal from "@/components/AssignShipperModal";
 
 export default function Home() {
   // MỚI: Thêm trạng thái tab 'giay-hen'
@@ -191,6 +192,16 @@ export default function Home() {
                     onReturnCard={returnApp.processReturnCard}
                     onUndoReturn={returnApp.undoReturnCard}
                     onEditCard={returnApp.openEditModal}
+                    selectedIds={returnApp.selectedIds}
+                    isSelectMode={returnApp.isSelectMode}
+                    onToggleSelectMode={returnApp.setIsSelectMode}
+                    onToggleSelectCard={returnApp.toggleSelectCard}
+                    onToggleSelectAll={returnApp.toggleSelectAll}
+                    onClearSelection={returnApp.clearSelection}
+                    onAssignShipper={returnApp.openAssignShipperModal}
+                    onBulkConfirmDelivered={returnApp.executeBulkConfirmDelivered}
+                    onBulkReturnToWarehouse={returnApp.executeBulkReturnToWarehouse}
+                    onOpenExportModal={returnApp.openExportModal}
                   />
                 </div>
               </div>
@@ -239,6 +250,11 @@ export default function Home() {
         onClose={returnApp.closeMergeModal}
         onMerge={returnApp.executeMergeBoxes}
         onShowToast={returnApp.showToast}
+      />
+      <AssignShipperModal
+        isOpen={returnApp.assignShipperModalConfig.isOpen}
+        onClose={returnApp.closeAssignShipperModal}
+        onConfirm={returnApp.executeAssignShipper}
       />
     </main>
   );

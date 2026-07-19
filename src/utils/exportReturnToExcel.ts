@@ -17,12 +17,15 @@ export const COLUMNS_SCHEMA = [
   { key: 'motherName', label: 'Họ Tên Mẹ', defaultChecked: false, wch: 25 },
   { key: 'importDate', label: 'Ngày Nhận', defaultChecked: true, wch: 15 },
   { key: 'status', label: 'Trạng Thái', defaultChecked: true, wch: 12 },
-  { key: 'returnedAt', label: 'Thời Gian Trả', defaultChecked: true, wch: 20 }
+  { key: 'returnedAt', label: 'Thời Gian Trả', defaultChecked: true, wch: 20 },
+  { key: 'shipperName', label: 'Tên Shipper', defaultChecked: false, wch: 20 },
+  { key: 'shipperPhone', label: 'SĐT Shipper', defaultChecked: false, wch: 15 },
+  { key: 'shippedAt', label: 'Thời Gian Chuyển', defaultChecked: false, wch: 20 }
 ];
 
 export const exportReturnExcel = async (
   data: CardRecord[],
-  type: 'all' | 'returned' | 'pending',
+  type: 'all' | 'returned' | 'pending' | 'selected',
   selectedKeys: string[],
   onProgress: (percent: number) => void
 ): Promise<void> => {
@@ -51,8 +54,13 @@ export const exportReturnExcel = async (
         if (col.key === 'fatherName') rowData[col.label] = item.fatherName || "-";
         if (col.key === 'motherName') rowData[col.label] = item.motherName || "-";
         if (col.key === 'importDate') rowData[col.label] = item.importDate;
-        if (col.key === 'status') rowData[col.label] = item.status === 'returned' ? 'Đã trả' : 'Chưa trả';
+        if (col.key === 'status') {
+          rowData[col.label] = item.status === 'returned' ? 'Đã trả' : (item.status === 'shipping' ? 'Đang giao' : 'Chưa trả');
+        }
         if (col.key === 'returnedAt') rowData[col.label] = item.returnedAt ? new Date(item.returnedAt).toLocaleString('vi-VN') : '-';
+        if (col.key === 'shipperName') rowData[col.label] = item.shipperName || "-";
+        if (col.key === 'shipperPhone') rowData[col.label] = item.shipperPhone || "-";
+        if (col.key === 'shippedAt') rowData[col.label] = item.shippedAt ? new Date(item.shippedAt).toLocaleString('vi-VN') : '-';
       });
       return rowData;
     });
@@ -152,6 +160,7 @@ export const exportReturnExcel = async (
     let filename = `TanAn_Tong_So_The_Can_Cuoc_${dateStr}`;
     if (type === 'returned') filename = `TanAn_Danh_Sach_Da_Tra_${dateStr}`;
     if (type === 'pending') filename = `TanAn_Danh_Sach_Con_Lai_${dateStr}`;
+    if (type === 'selected') filename = `TanAn_Danh_Sach_Da_Chon_${dateStr}`;
     if (totalFiles > 1) filename += `_Phan_${fileIndex + 1}`;
     filename += `.xlsx`;
 

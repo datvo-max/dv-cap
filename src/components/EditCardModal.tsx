@@ -16,6 +16,8 @@ interface EditCardModalProps {
 export default function EditCardModal({ isOpen, cardId, onClose, onSave, onDelete, onShowToast, onUndoReturn }: EditCardModalProps) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isNoPhoto, setIsNoPhoto] = useState(false);
+  const [shipperName, setShipperName] = useState("");
+  const [shipperPhone, setShipperPhone] = useState("");
   const [cardData, setCardData] = useState<Partial<CardRecord>>({});
   const [isLoading, setIsLoading] = useState(false);
 
@@ -38,6 +40,8 @@ export default function EditCardModal({ isOpen, cardId, onClose, onSave, onDelet
         if (card) {
           setPhoneNumber(card.phoneNumber || "");
           setIsNoPhoto(!!card.isNoPhoto);
+          setShipperName(card.shipperName || "");
+          setShipperPhone(card.shipperPhone || "");
           setCardData(card);
         }
         setIsLoading(false);
@@ -88,13 +92,57 @@ export default function EditCardModal({ isOpen, cardId, onClose, onSave, onDelet
 
   if (!isOpen || !cardId) return null;
 
+  const toTitleCase = (str: string) => {
+    return str
+      .toLowerCase()
+      .split(/\s+/)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
+  const validateVNPhone = (phone: string) => {
+    const regex = /^(0|84|\+84)(3|5|7|8|9)\d{8}$/;
+    return regex.test(phone.replace(/\s+/g, ""));
+  };
+
   const handleSave = () => {
-    onSave(cardId, { ...cardData, phoneNumber, isNoPhoto });
+    // 1. Validate Số điện thoại công dân nếu có nhập
+    if (phoneNumber.trim() && !validateVNPhone(phoneNumber)) {
+      onShowToast("❌ Số điện thoại công dân không hợp lệ! Vui lòng nhập đúng định dạng VN (10 số).", "error");
+      return;
+    }
+
+    const nameTrimmed = toTitleCase(shipperName.trim());
+    const phoneTrimmed = shipperPhone.trim();
+
+    // 2. Validate Shipper nếu thẻ ở trạng thái shipping
+    if (cardData.status === 'shipping') {
+      if (!nameTrimmed) {
+        onShowToast("❌ Vui lòng nhập tên Shipper!", "error");
+        return;
+      }
+      if (!phoneTrimmed) {
+        onShowToast("❌ Vui lòng nhập số điện thoại Shipper!", "error");
+        return;
+      }
+      if (!validateVNPhone(phoneTrimmed)) {
+        onShowToast("❌ Số điện thoại Shipper không hợp lệ! Vui lòng nhập đúng số điện thoại VN (10 số).", "error");
+        return;
+      }
+    }
+
+    onSave(cardId, { 
+      ...cardData, 
+      phoneNumber: phoneNumber.trim(), 
+      isNoPhoto, 
+      shipperName: nameTrimmed || undefined, 
+      shipperPhone: phoneTrimmed || undefined 
+    });
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
 
         <div className="bg-indigo-600 px-5 py-3 flex justify-between items-center">
           <h3 className="text-white font-bold text-sm">Chỉnh sửa thông tin thẻ</h3>
@@ -161,71 +209,133 @@ export default function EditCardModal({ isOpen, cardId, onClose, onSave, onDelet
                   <span className="text-sm font-medium text-gray-700">Đánh dấu: Thẻ không thu nhận sinh trắc (Không ảnh)</span>
                 </label>
               </div>
+
+              {cardData.status === 'shipping' && (
+                <div className="bg-amber-50/50 p-4 rounded-xl border border-amber-100 space-y-3 animate-in slide-in-from-top-2 duration-300">
+                  <div className="flex items-center justify-between border-b border-amber-100/60 pb-2">
+                    <h4 className="text-xs font-black text-amber-800 uppercase tracking-wider flex items-center gap-1.5">
+                      <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                      Thông tin Shipper bàn giao
+                    </h4>
+                    {cardData.shippedAt && (
+                      <span className="text-[9px] text-amber-700 font-bold bg-amber-100/50 px-2 py-0.5 rounded-md">
+                        Đã chuyển: {new Date(cardData.shippedAt).toLocaleString('vi-VN')}
+                      </span>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-bold text-amber-900/80 mb-1 uppercase tracking-wide">Tên Shipper</label>
+                      <input
+                        type="text"
+                        value={shipperName}
+                        onChange={(e) => setShipperName(e.target.value)}
+                        onBlur={() => setShipperName(toTitleCase(shipperName))}
+                        placeholder="Tên shipper..."
+                        className="w-full px-3 py-2 bg-white border border-amber-200 rounded-md text-xs focus:ring-2 focus:ring-amber-500 outline-none text-gray-800 font-semibold shadow-sm focus:border-amber-400 transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-amber-900/80 mb-1 uppercase tracking-wide">Số điện thoại</label>
+                      <input
+                        type="text"
+                        value={shipperPhone}
+                        onChange={(e) => setShipperPhone(e.target.value)}
+                        placeholder="SĐT shipper..."
+                        className="w-full px-3 py-2 bg-white border border-amber-200 rounded-md text-xs focus:ring-2 focus:ring-amber-500 outline-none text-gray-800 font-semibold shadow-sm focus:border-amber-400 transition-all"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>
 
-        <div className="bg-gray-50 px-5 py-3 border-t flex justify-between gap-2">
-
-          {/* KHU VỰC NÚT BÊN TRÁI: XÓA & HOÀN TÁC */}
-          <div className="flex gap-2">
+        <div className="bg-gray-50 px-5 py-3 border-t flex justify-between items-center gap-2">
+          {/* BÊN TRÁI: Chỉ có nút Xóa nguy hiểm */}
+          <div>
             <div className="relative">
               {isConfirmingDelete && (
                 <div className="absolute bottom-full left-0 mb-2 bg-white border border-red-200 shadow-xl rounded-lg p-2 flex items-center gap-2 z-50 animate-in slide-in-from-bottom-2 fade-in duration-200 whitespace-nowrap">
                   <span className="text-xs text-red-600 font-bold px-1">Xóa thẻ này khỏi kho?</span>
                   <button
                     onClick={() => onDelete(cardId)}
-                    className="px-2 py-1.5 bg-red-500 text-white text-[11px] font-bold rounded shadow-sm hover:bg-red-600"
-                  >Xóa</button>
+                    className="px-2 py-1.5 bg-red-500 text-white text-[11px] font-bold rounded-md shadow-sm hover:bg-red-600 cursor-pointer"
+                  >Xác nhận</button>
                   <button
                     onClick={() => setIsConfirmingDelete(false)}
-                    className="px-2 py-1.5 bg-gray-100 text-gray-600 text-[11px] font-bold rounded hover:bg-gray-200"
+                    className="px-2 py-1.5 bg-gray-100 text-gray-600 text-[11px] font-bold rounded-md hover:bg-gray-200 cursor-pointer"
                   >Hủy</button>
                   <div className="absolute -bottom-1 left-4 w-2 h-2 bg-white border-b border-r border-red-200 transform rotate-45"></div>
                 </div>
               )}
               <button
+                type="button"
                 onClick={() => setIsConfirmingDelete(true)}
-                className="px-3 py-2 rounded-md text-sm font-bold text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 transition-colors flex items-center gap-1.5 shadow-sm"
+                className="px-3 py-2 rounded-md text-xs font-bold text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                Xóa
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                Xóa thẻ
               </button>
             </div>
+          </div>
 
-            {/* MỚI: NÚT HOÀN TÁC (Chỉ hiển thị nếu thẻ đang ở trạng thái 'returned') */}
-            {cardData.status === 'returned' && (
+          {/* BÊN PHẢI: Các nút hành động nghiệp vụ & Lưu thông tin */}
+          <div className="flex items-center gap-2">
+            {/* Nút Trả lại kho (Hoàn tác) */}
+            {(cardData.status === 'returned' || cardData.status === 'shipping') && (
               <div className="relative">
                 {isConfirmingUndo && (
-                  <div className="absolute bottom-full left-0 mb-2 bg-white border border-orange-200 shadow-xl rounded-lg p-2 flex items-center gap-2 z-50 animate-in slide-in-from-bottom-2 fade-in duration-200 whitespace-nowrap">
-                    <span className="text-xs text-orange-600 font-bold px-1">Trả thẻ này lại vào kho?</span>
+                  <div className="absolute bottom-full right-0 mb-2 bg-white border border-orange-200 shadow-xl rounded-lg p-2 flex items-center gap-2 z-50 animate-in slide-in-from-bottom-2 fade-in duration-200 whitespace-nowrap">
+                    <span className="text-xs text-orange-600 font-bold px-1">
+                      {cardData.status === 'shipping' ? "Hủy giao & trả thẻ về kho?" : "Trả thẻ này lại vào kho?"}
+                    </span>
                     <button
                       onClick={() => { onUndoReturn(cardId); onClose(); }}
-                      className="px-2 py-1.5 bg-orange-500 text-white text-[11px] font-bold rounded shadow-sm hover:bg-orange-600"
-                    >Xác nhận</button>
+                      className="px-2 py-1.5 bg-orange-500 text-white text-[11px] font-bold rounded-md shadow-sm hover:bg-orange-600 cursor-pointer"
+                    >Đồng ý</button>
                     <button
                       onClick={() => setIsConfirmingUndo(false)}
-                      className="px-2 py-1.5 bg-gray-100 text-gray-600 text-[11px] font-bold rounded hover:bg-gray-200"
+                      className="px-2 py-1.5 bg-gray-100 text-gray-600 text-[11px] font-bold rounded-md hover:bg-gray-200 cursor-pointer"
                     >Hủy</button>
-                    <div className="absolute -bottom-1 left-4 w-2 h-2 bg-white border-b border-r border-orange-200 transform rotate-45"></div>
+                    <div className="absolute -bottom-1 right-4 w-2 h-2 bg-white border-b border-r border-orange-200 transform rotate-45"></div>
                   </div>
                 )}
                 <button
+                  type="button"
                   onClick={() => setIsConfirmingUndo(true)}
-                  className="px-3 py-2 rounded-md text-sm font-bold text-orange-600 bg-orange-50 border border-orange-200 hover:bg-orange-100 transition-colors flex items-center gap-1.5 shadow-sm"
+                  className="px-3 py-2 rounded-md text-xs font-bold text-orange-600 bg-orange-50 border border-orange-200 hover:bg-orange-100 transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
                   Trả lại kho
                 </button>
               </div>
             )}
-          </div>
 
-          <div className="flex gap-2">
-            {/* <button onClick={onClose} className="px-4 py-2 rounded-md text-sm font-bold text-gray-600 bg-white border border-gray-300 hover:bg-gray-100 transition-colors">
-              Hủy bỏ
-            </button> */}
-            <button onClick={handleSave} className="px-4 py-2 rounded-md text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-sm">
+            {/* Nút Đã giao xong */}
+            {cardData.status === 'shipping' && (
+              <button
+                type="button"
+                onClick={async () => {
+                  await db.cards.update(cardId, { status: 'returned', returnedAt: Date.now() });
+                  onShowToast("✅ Đã xác nhận shipper giao thẻ thành công!", "success");
+                  onClose();
+                }}
+                className="px-3.5 py-2 rounded-md text-xs font-bold text-white bg-green-600 hover:bg-green-700 transition-colors shadow-sm flex items-center gap-1 cursor-pointer"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                Đã giao xong
+              </button>
+            )}
+
+            {/* Nút Lưu thay đổi */}
+            <button
+              type="button"
+              onClick={handleSave}
+              className="px-4 py-2 rounded-md text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-sm flex items-center gap-1 cursor-pointer"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
               Lưu thay đổi
             </button>
           </div>

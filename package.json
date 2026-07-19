@@ -1,6 +1,6 @@
 {
   "name": "dv-cap",
-  "version": "2.1.2",
+  "version": "3.4.0",
   "private": true,
   "scripts": {
     "dev": "next dev -H 0.0.0.0",

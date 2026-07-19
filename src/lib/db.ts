@@ -43,11 +43,14 @@ export interface ScannedRecord extends Omit<CCCDRecord, 'id'> {
 export interface CardRecord extends Omit<CCCDRecord, 'id'> {
   id?: number;
   importDate: string;
-  status: 'pending' | 'returned';
+  status: 'pending' | 'returned' | 'shipping'; // CẬP NHẬT: thêm 'shipping'
   zone: number | string;
   returnedAt?: number; // <--- CẬP NHẬT: Đổi thành lưu số (Timestamp)
   isNoPhoto?: boolean;
   phoneNumber?: string;
+  shipperName?: string;    // MỚI: Tên shipper
+  shipperPhone?: string;   // MỚI: SĐT shipper
+  shippedAt?: number;      // MỚI: Thời gian giao cho shipper (Timestamp)
 }
 
 export interface UnissuedRecord {
