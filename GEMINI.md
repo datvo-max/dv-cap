@@ -1,11 +1,11 @@
-# Hướng dẫn Phát triển Dự án `dv-cap` (GEMINI.md)
+# Hướng dẫn Phát triển Dự án `QL-TCC` (GEMINI.md)
 
-Chào mừng bạn đến với tài liệu hướng dẫn phát triển của dự án **`dv-cap`** – Hệ thống Quản lý và Cấp phát Thẻ Căn cước (CCCD) dựa trên quét mã QR và quản lý cơ sở dữ liệu nội bộ (IndexedDB).
+Chào mừng bạn đến với tài liệu hướng dẫn phát triển của dự án **`QL-TCC`** – Hệ thống Quản lý và Cấp phát Thẻ Căn cước (CCCD) dựa trên quét mã QR và quản lý cơ sở dữ liệu nội bộ (IndexedDB).
 
 ---
 
 ## 🚀 Tổng quan về Dự án
-Dự án **`dv-cap`** là một ứng dụng Web Single-Page (SPA) được thiết kế để tối ưu hóa quy trình nhập liệu, phân loại, lưu kho và trả thẻ Căn cước công dân (CCCD). Ứng dụng hỗ trợ quét mã QR trực tiếp qua camera của thiết bị để điền thông tin tự động, lưu trữ dữ liệu hoàn toàn dưới client để bảo mật thông tin cá nhân và xuất báo cáo ra file Excel.
+Dự án **`QL-TCC`** là một ứng dụng Web Single-Page (SPA) được thiết kế để tối ưu hóa quy trình nhập liệu, phân loại, lưu kho và trả thẻ Căn cước công dân (CCCD). Ứng dụng hỗ trợ quét mã QR trực tiếp qua camera của thiết bị để điền thông tin tự động, lưu trữ dữ liệu hoàn toàn dưới client để bảo mật thông tin cá nhân và xuất báo cáo ra file Excel.
 
 Dự án gồm **3 phân hệ chính**:
 1. **📥 Phân hệ 1: Lập danh sách (`intake`)**: Quét QR CCCD, tự động phân tích và lưu danh sách thẻ đã quét.

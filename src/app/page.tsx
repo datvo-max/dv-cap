@@ -8,6 +8,8 @@ import Header from "@/shared/components/Header";
 import Toast from "@/shared/components/Toast";
 import ConfirmModal from "@/shared/components/ConfirmModal";
 import EditCardModal from "@/features/delivery/components/EditCardModal";
+import LoginScreen from "@/shared/components/LoginScreen";
+import { useAuth } from "@/shared/context/AuthContext";
 
 // --- COMPONENTS CỦA PHÂN HỆ 1 ---
 import DashboardReport from "@/features/intake/components/DashboardReport";
@@ -28,6 +30,7 @@ import MergeBoxesModal from "@/features/delivery/components/MergeBoxesModal";
 import AssignShipperModal from "@/features/delivery/components/AssignShipperModal";
 
 export default function Home() {
+  const { user, isAllowed, loading } = useAuth();
   // MỚI: Thêm trạng thái tab 'giay-hen'
   const [activeTab, setActiveTab] = useState<'nhap-lieu' | 'tra-the' | 'giay-hen'>('nhap-lieu');
 
@@ -55,6 +58,10 @@ export default function Home() {
     setActiveTab(tab);
     localStorage.setItem('cccd_active_tab', tab);
   };
+
+  if (loading || !user || !isAllowed) {
+    return <LoginScreen />;
+  }
 
   return (
     <main className="min-h-screen bg-gray-50 font-sans text-gray-800 pb-10">

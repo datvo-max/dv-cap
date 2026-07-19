@@ -1,6 +1,6 @@
 {
-  "name": "dv-cap",
-  "version": "3.5.0",
+  "name": "ql-tcc",
+  "version": "3.6.0",
   "private": true,
   "scripts": {
     "dev": "next dev -H 0.0.0.0",
@@ -12,10 +12,13 @@
     "dexie": "^4.4.4",
     "dexie-export-import": "^4.4.0",
     "dexie-react-hooks": "^4.4.0",
+    "firebase": "^12.16.0",
     "html5-qrcode": "^2.3.8",
+    "lucide-react": "^1.25.0",
     "next": "16.2.10",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "react-hot-toast": "^2.6.0",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.2/xlsx-0.20.2.tgz",
     "xlsx-js-style": "^1.2.0"
   },
