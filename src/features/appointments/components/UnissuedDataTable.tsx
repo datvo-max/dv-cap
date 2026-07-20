@@ -10,7 +10,9 @@ export default function UnissuedDataTable() {
     records, formData, handleInputChange, handleAddRecord,
     requestDelete, confirmDelete, cancelDelete, confirmingId,
     toasts,
-    handleUpdateResult
+    handleUpdateResult,
+    handleImageUpload,
+    isScanningPhoto
   } = useUnissuedCards();
 
   const [editingResultId, setEditingResultId] = React.useState<number | null>(null);
@@ -32,6 +34,8 @@ export default function UnissuedDataTable() {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-orange-200 overflow-hidden flex flex-col w-full relative">
+      {/* Khung ẩn dùng để xử lý đọc file ảnh tải lên ngầm */}
+      <div id="unissued-file-scanner" className="hidden"></div>
 
       {/* HEADER & FORM NHẬP LIỆU NHANH (GIỮ NGUYÊN) */}
       <div className="bg-orange-50 border-b border-orange-100 p-4">
@@ -49,6 +53,14 @@ export default function UnissuedDataTable() {
             <div>
               <label className="block text-[11px] font-bold text-orange-700 mb-1">Họ và Tên (*)</label>
               <input type="text" name="fullName" value={formData.fullName} onChange={handleInputChange} className="w-full px-3 py-2 border border-orange-200 rounded outline-none focus:ring-1 focus:ring-orange-500 text-sm bg-white font-medium" placeholder="Nhập tên..." />
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-orange-700 mb-1">Ngày Sinh</label>
+              <input type="text" name="dob" value={formData.dob || ""} onChange={handleInputChange} className="w-full px-3 py-2 border border-orange-200 rounded outline-none focus:ring-1 focus:ring-orange-500 text-sm bg-white font-medium" placeholder="VD: 03/08/2015" />
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-orange-700 mb-1">Giới Tính</label>
+              <input type="text" name="gender" value={formData.gender || ""} onChange={handleInputChange} className="w-full px-3 py-2 border border-orange-200 rounded outline-none focus:ring-1 focus:ring-orange-500 text-sm bg-white font-medium" placeholder="VD: Nam" />
             </div>
             <div>
               <label className="block text-[11px] font-bold text-orange-700 mb-1">Số Điện Thoại</label>
@@ -81,9 +93,13 @@ export default function UnissuedDataTable() {
             </div>
           </div>
 
-          <div className="flex justify-end mt-1">
+          <div className="flex justify-end gap-2 mt-1">
+            <label className={`bg-white hover:bg-orange-50 text-orange-700 border border-orange-600 font-bold py-2 px-4 rounded text-sm shadow-sm transition-colors cursor-pointer text-center flex items-center justify-center gap-1.5 ${isScanningPhoto ? "opacity-60 pointer-events-none" : ""}`}>
+              {isScanningPhoto ? "⏳ Đang quét..." : "📸 Đọc từ file ảnh"}
+              <input type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" disabled={isScanningPhoto} />
+            </label>
             <button type="submit" className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-6 rounded text-sm shadow-sm transition-colors">
-              + Thêm vào danh sách
+              + Thêm bằng tay
             </button>
           </div>
         </form>
@@ -115,7 +131,16 @@ export default function UnissuedDataTable() {
                 <tr key={item.id} className="hover:bg-orange-50/30 transition-colors">
                   <td className="px-3 py-2.5 text-center text-gray-400">{index + 1}</td>
                   <td className="px-3 py-2.5 font-bold text-blue-800">{item.idNumber}</td>
-                  <td className="px-3 py-2.5 font-bold text-gray-800">{item.fullName}</td>
+                  <td className="px-3 py-2.5 font-bold text-gray-800">
+                    <div>{item.fullName}</div>
+                    {((item.dob && item.dob !== "-") || (item.gender && item.gender !== "-")) && (
+                      <div className="text-[10px] text-gray-400 font-normal mt-0.5">
+                        {item.dob && item.dob !== "-" ? `NS: ${item.dob}` : ""}
+                        {item.dob && item.dob !== "-" && item.gender && item.gender !== "-" ? " • " : ""}
+                        {item.gender && item.gender !== "-" ? `GT: ${item.gender}` : ""}
+                      </div>
+                    )}
+                  </td>
                   <td className="px-3 py-2.5 font-medium">{item.phoneNumber}</td>
                   <td className="px-3 py-2.5 truncate max-w-50" title={item.address}>{item.address}</td>
                   <td className="px-3 py-2.5 text-orange-700 font-medium">{item.appointmentDate}</td>

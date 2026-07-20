@@ -58,6 +58,8 @@ export interface UnissuedRecord {
   id?: number;
   idNumber: string;
   fullName: string;
+  dob?: string;
+  gender?: string;
   appointmentDate: string;
   reason: string;
   createdAt: string;
