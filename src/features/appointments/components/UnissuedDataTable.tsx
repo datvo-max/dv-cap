@@ -99,7 +99,7 @@ export default function UnissuedDataTable() {
               <input type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" disabled={isScanningPhoto} />
             </label>
             <button type="submit" className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-6 rounded text-sm shadow-sm transition-colors">
-              + Thêm bằng tay
+              + Thêm vào danh sách
             </button>
           </div>
         </form>
@@ -186,13 +186,12 @@ export default function UnissuedDataTable() {
                             await handleUpdateResult(item.id!, val);
                           }
                         }}
-                        className={`px-2 py-0.5 rounded-md text-[10px] font-bold border outline-none cursor-pointer transition-colors ${
-                          (item.result || "Chờ xử lý") === "Chờ xử lý"
+                        className={`px-2 py-0.5 rounded-md text-[10px] font-bold border outline-none cursor-pointer transition-colors ${(item.result || "Chờ xử lý") === "Chờ xử lý"
                             ? "bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
                             : ["Đã đi làm lại", "Đã gửi yêu cầu lại"].includes(item.result || "")
-                            ? "bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
-                            : "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
-                        }`}
+                              ? "bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
+                              : "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
+                          }`}
                       >
                         <option value="Chờ xử lý">Chờ xử lý</option>
                         <option value="Đã đi làm lại">Đã đi làm lại</option>

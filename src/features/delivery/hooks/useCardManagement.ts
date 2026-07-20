@@ -20,26 +20,50 @@ export function useCardManagement(showToast: (msg: string, type: 'success' | 'er
       await db.cards.update(id, updates);
 
       const changes: string[] = [];
-      if (updates.fullName !== undefined && updates.fullName !== existing.fullName) {
-        changes.push(`Họ tên: "${existing.fullName}" -> "${updates.fullName}"`);
+      if (updates.fullName !== undefined) {
+        const oldVal = existing.fullName || "";
+        const newVal = updates.fullName || "";
+        if (oldVal !== newVal) {
+          changes.push(`Họ tên: "${oldVal}" -> "${newVal}"`);
+        }
       }
-      if (updates.idNumber !== undefined && updates.idNumber !== existing.idNumber) {
-        changes.push(`Số CCCD: "${existing.idNumber}" -> "${updates.idNumber}"`);
+      if (updates.idNumber !== undefined) {
+        const oldVal = existing.idNumber || "";
+        const newVal = updates.idNumber || "";
+        if (oldVal !== newVal) {
+          changes.push(`Số CCCD: "${oldVal}" -> "${newVal}"`);
+        }
       }
-      if (updates.phoneNumber !== undefined && updates.phoneNumber !== existing.phoneNumber) {
-        changes.push(`SĐT liên hệ: "${existing.phoneNumber || 'Trống'}" -> "${updates.phoneNumber || 'Trống'}"`);
+      if (updates.phoneNumber !== undefined) {
+        const oldVal = existing.phoneNumber || "";
+        const newVal = updates.phoneNumber || "";
+        if (oldVal !== newVal) {
+          changes.push(`SĐT liên hệ: "${oldVal || 'Trống'}" -> "${newVal || 'Trống'}"`);
+        }
       }
-      if (updates.zone !== undefined && updates.zone !== existing.zone) {
-        changes.push(`Vị trí Hộp: "${existing.zone}" -> "${updates.zone}"`);
+      if (updates.zone !== undefined) {
+        const oldVal = String(existing.zone || "");
+        const newVal = String(updates.zone || "");
+        if (oldVal !== newVal) {
+          changes.push(`Vị trí Hộp: "${oldVal}" -> "${newVal}"`);
+        }
       }
       if (updates.isNoPhoto !== undefined && updates.isNoPhoto !== existing.isNoPhoto) {
         changes.push(`Đánh dấu không ảnh: ${existing.isNoPhoto ? 'Có' : 'Không'} -> ${updates.isNoPhoto ? 'Có' : 'Không'}`);
       }
-      if (updates.shipperName !== undefined && updates.shipperName !== existing.shipperName) {
-        changes.push(`Tên Shipper: "${existing.shipperName || 'Trống'}" -> "${updates.shipperName || 'Trống'}"`);
+      if (updates.shipperName !== undefined) {
+        const oldVal = existing.shipperName || "";
+        const newVal = updates.shipperName || "";
+        if (oldVal !== newVal) {
+          changes.push(`Tên Shipper: "${oldVal || 'Trống'}" -> "${newVal || 'Trống'}"`);
+        }
       }
-      if (updates.shipperPhone !== undefined && updates.shipperPhone !== existing.shipperPhone) {
-        changes.push(`SĐT Shipper: "${existing.shipperPhone || 'Trống'}" -> "${updates.shipperPhone || 'Trống'}"`);
+      if (updates.shipperPhone !== undefined) {
+        const oldVal = existing.shipperPhone || "";
+        const newVal = updates.shipperPhone || "";
+        if (oldVal !== newVal) {
+          changes.push(`SĐT Shipper: "${oldVal || 'Trống'}" -> "${newVal || 'Trống'}"`);
+        }
       }
 
       if (changes.length > 0) {
