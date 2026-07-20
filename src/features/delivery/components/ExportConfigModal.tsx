@@ -4,9 +4,9 @@ import { COLUMNS_SCHEMA } from "@/shared/utils/exportReturnToExcel";
 
 interface ExportConfigModalProps {
   isOpen: boolean;
-  exportType: 'all' | 'returned' | 'pending' | 'selected' | null;
+  exportType: 'all' | 'returned' | 'pending' | 'selected' | 'todayImport' | 'returnedToday' | null;
   onClose: () => void;
-  onConfirm: (selectedKeys: string[], type: 'all' | 'returned' | 'pending' | 'selected') => void;
+  onConfirm: (selectedKeys: string[], type: 'all' | 'returned' | 'pending' | 'selected' | 'todayImport' | 'returnedToday') => void;
 }
 
 export default function ExportConfigModal({ isOpen, exportType, onClose, onConfirm }: ExportConfigModalProps) {
@@ -44,9 +44,11 @@ export default function ExportConfigModal({ isOpen, exportType, onClose, onConfi
 
   const titleMap = {
     all: "Xuất Toàn bộ Kho thẻ",
-    returned: "Xuất Danh sách Đã trả (Có phân Sheet theo ngày)",
+    returned: "Xuất Danh sách Đã trả (Toàn thời gian)",
     pending: "Xuất Danh sách Còn lại",
-    selected: "Xuất Danh sách Thẻ đã chọn"
+    selected: "Xuất Danh sách Thẻ đã chọn",
+    todayImport: "Xuất Danh sách Nhận vào hôm nay",
+    returnedToday: "Xuất Danh sách Đã trả hôm nay"
   };
 
   return (

@@ -25,7 +25,7 @@ export const COLUMNS_SCHEMA = [
 
 export const exportReturnExcel = async (
   data: CardRecord[],
-  type: 'all' | 'returned' | 'pending' | 'selected',
+  type: 'all' | 'returned' | 'pending' | 'selected' | 'todayImport' | 'returnedToday',
   selectedKeys: string[],
   onProgress: (percent: number) => void
 ): Promise<void> => {
@@ -160,6 +160,8 @@ export const exportReturnExcel = async (
     if (type === 'returned') filename = `TanAn_Danh_Sach_Da_Tra_${dateStr}`;
     if (type === 'pending') filename = `TanAn_Danh_Sach_Con_Lai_${dateStr}`;
     if (type === 'selected') filename = `TanAn_Danh_Sach_Da_Chon_${dateStr}`;
+    if (type === 'todayImport') filename = `TanAn_Danh_Sach_Nhan_Hom_Nay_${dateStr}`;
+    if (type === 'returnedToday') filename = `TanAn_Danh_Sach_Da_Tra_Hom_Nay_${dateStr}`;
     if (totalFiles > 1) filename += `_Phan_${fileIndex + 1}`;
     filename += `.xlsx`;
 

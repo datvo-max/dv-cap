@@ -1,14 +1,15 @@
 // src/hooks/useCardReturnApp.ts
 import { useState, useRef, useCallback } from "react";
-import { db, addCardHistory, addCardHistoryBulk } from "@/shared/lib/db";
+import { db, addCardHistory } from "@/shared/lib/db";
 import { Html5Qrcode } from "html5-qrcode";
-import { exportReturnExcel } from "@/shared/utils/exportReturnToExcel";
 
 // ==========================================
 // 1. IMPORT CÁC MODULE NGHIỆP VỤ ĐÃ TÁCH
 // ==========================================
 import { useCardManagement } from "./useCardManagement";
 import { useCardImport } from "./useCardImport";
+import { useCardSelection } from "./useCardSelection";
+import { useSystemUtils } from "./useSystemUtils";
 
 export function useCardReturnApp() {
   // ==========================================
@@ -30,6 +31,8 @@ export function useCardReturnApp() {
   // ==========================================
   const cardManager = useCardManagement(showToast);
   const cardImporter = useCardImport(showToast);
+  const cardSelection = useCardSelection(showToast);
+  const systemUtils = useSystemUtils(showToast, cardSelection.selectedIds);
 
   // ==========================================
   // 4. CÁC STATE CỐT LÕI CÒN LẠI CỦA GIAO DIỆN
@@ -38,8 +41,6 @@ export function useCardReturnApp() {
   const [isWebCamActive, setIsWebCamActive] = useState(false);
   const [isFlashActive, setIsFlashActive] = useState(false);
   const [scannerDisplayValue, setScannerDisplayValue] = useState("");
-  const [isExporting, setIsExporting] = useState(false);
-  const [exportProgress, setExportProgress] = useState<number | null>(null);
 
   const importInputRef = useRef<HTMLInputElement>(null);
   const returnInputRef = useRef<HTMLInputElement>(null);
@@ -47,14 +48,6 @@ export function useCardReturnApp() {
   const [cameraAction, setCameraAction] = useState<'import' | 'return'>('return');
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
   const isCameraPaused = useRef(false);
-
-  const [modalConfig, setModalConfig] = useState({ isOpen: false, message: "" });
-  const [exportModalConfig, setExportModalConfig] = useState<{ isOpen: boolean; type: 'all' | 'returned' | 'pending' | 'selected' | null; }>({ isOpen: false, type: null });
-
-  // MỚI: State chọn thẻ và Shipper
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
-  const [isSelectMode, setIsSelectMode] = useState(false);
-  const [assignShipperModalConfig, setAssignShipperModalConfig] = useState({ isOpen: false });
 
   // ==========================================
   // 5. NGHIỆP VỤ TRẢ THẺ 
@@ -171,285 +164,16 @@ export function useCardReturnApp() {
   };
 
   // ==========================================
-  // 7. CÁC TIỆN ÍCH HỆ THỐNG (Backup, Export, Xóa kho)
-  // ==========================================
-  const requestClearData = () => {
-    setModalConfig({
-      isOpen: true,
-      message: "Hành động này sẽ xóa sạch toàn bộ dữ liệu trong Kho thẻ (IndexedDB) và không thể khôi phục!"
-    });
-  };
-  const closeModal = () => setModalConfig({ isOpen: false, message: "" });
-  const confirmClearData = async () => {
-    try {
-      await db.cards.clear();
-      await db.cardHistory.clear();
-      showToast("🗑️ Đã xóa sạch dữ liệu kho thẻ và lịch sử!", "warning");
-    } catch {
-      showToast("❌ Có lỗi xảy ra khi xóa dữ liệu!", "error");
-    } finally {
-      setModalConfig({ isOpen: false, message: "" });
-    }
-  };
-
-  // 6. Back up database
-  const handleBackupDatabase = async () => {
-    try {
-      await import('dexie-export-import');
-      showToast("Đang tạo file sao lưu hệ thống...", "info");
-
-      // 1. Nén toàn bộ DB thành file JSON (định dạng Blob)
-      const blob = await db.export();
-
-      // 2. Tạo đường link ảo để ép trình duyệt tải file xuống
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `KhoThe_Backup_${new Date().toISOString().split('T')[0]}.json`;
-      a.click();
-
-      URL.revokeObjectURL(url); // Dọn dẹp bộ nhớ
-      showToast("✅ Đã xuất file sao lưu dữ liệu thành công!", "success");
-    } catch (error) {
-      console.error("Lỗi backup:", error);
-      showToast("❌ Có lỗi xảy ra khi sao lưu dữ liệu!", "error");
-    }
-  };
-  const handleRestoreDatabase = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      await import('dexie-export-import');
-      showToast("Đang khôi phục hệ thống...", "warning");
-
-      // Đọc và nạp dữ liệu từ file JSON vào hệ thống Dexie
-      await db.import(file, {
-        // Tùy chọn này rất quan trọng: Xoá sạch dữ liệu kho thẻ cũ (nếu có) trên máy mới trước khi đè dữ liệu này vào để đảm bảo tính đồng bộ 100% với máy A.
-        clearTablesBeforeImport: true,
-      });
-
-      showToast("✅ Đã khôi phục toàn bộ kho thẻ thành công!", "success");
-      e.target.value = ""; // Reset lại input để có thể chọn lại đúng file đó lần sau
-    } catch (error) {
-      console.error("Lỗi restore:", error);
-      showToast("❌ Lỗi khi đọc file sao lưu. Vui lòng kiểm tra lại!", "error");
-    }
-  };
-  const openExportModal = (type: 'all' | 'returned' | 'pending' | 'selected') => { setExportModalConfig({ isOpen: true, type }); };
-  const closeExportModal = () => setExportModalConfig({ isOpen: false, type: null });
-  // Hàm thực thi sau khi đã chọn xong cột
-  const executeExportExcel = async (selectedKeys: string[], type: 'all' | 'returned' | 'pending' | 'selected') => {
-    try {
-      closeExportModal(); // Đóng modal ngay khi bấm
-      setIsExporting(true);
-      setExportProgress(0);
-
-      let dataToExport = [];
-      if (type === 'all') {
-        dataToExport = await db.cards.toArray();
-      } else if (type === 'selected') {
-        const idsArray = Array.from(selectedIds);
-        dataToExport = await db.cards.where('id').anyOf(idsArray).toArray();
-      } else {
-        dataToExport = await db.cards.where('status').equals(type).toArray();
-      }
-
-      if (dataToExport.length === 0) {
-        showToast("⚠️ Không có dữ liệu để xuất!", "warning");
-        setIsExporting(false);
-        setExportProgress(null);
-        return;
-      }
-
-      // Đẩy selectedKeys vào hàm xuất chuẩn
-      await exportReturnExcel(dataToExport, type, selectedKeys, (percent) => {
-        setExportProgress(percent);
-      });
-
-      const typeName = type === 'all' ? 'Toàn bộ kho' : (type === 'returned' ? 'Đã trả' : (type === 'selected' ? 'Đã chọn' : 'Còn lại'));
-      showToast(`✅ Đã tải xuống file: ${typeName}`, "success");
-
-    } catch (error) {
-      console.error("Export Error:", error);
-      showToast("❌ Có lỗi xảy ra khi xuất file!", "error");
-    } finally {
-      setTimeout(() => {
-        setIsExporting(false);
-        setExportProgress(null);
-      }, 1000);
-    }
-  };
-
-  // MỚI: Các hàm xử lý chọn thẻ và Shipper
-  const toggleSelectCard = useCallback((id: number) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  }, []);
-
-  const toggleSelectAll = useCallback((displayedIds: number[]) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      const allDisplayedSelected = displayedIds.every(id => next.has(id));
-      if (allDisplayedSelected) {
-        displayedIds.forEach(id => next.delete(id));
-      } else {
-        displayedIds.forEach(id => next.add(id));
-      }
-      return next;
-    });
-  }, []);
-
-  const clearSelection = useCallback(() => {
-    setSelectedIds(new Set());
-  }, []);
-
-  const openAssignShipperModal = () => {
-    if (selectedIds.size === 0) {
-      showToast("⚠️ Vui lòng chọn ít nhất 1 thẻ để bàn giao shipper!", "warning");
-      return;
-    }
-    setAssignShipperModalConfig({ isOpen: true });
-  };
-
-  const closeAssignShipperModal = () => {
-    setAssignShipperModalConfig({ isOpen: false });
-  };
-
-  const executeAssignShipper = async (name: string, phone: string) => {
-    try {
-      if (selectedIds.size === 0) return;
-      const idsArray = Array.from(selectedIds);
-      
-      let count = 0;
-      const historyEntries: { idNumber: string; action: 'assign_shipper'; details: string }[] = [];
-      await db.transaction("rw", db.cards, async () => {
-        for (const id of idsArray) {
-          const card = await db.cards.get(id);
-          if (card && card.status !== 'returned') {
-            await db.cards.update(id, {
-              status: 'shipping',
-              shipperName: name,
-              shipperPhone: phone,
-              shippedAt: Date.now()
-            });
-            historyEntries.push({
-              idNumber: card.idNumber,
-              action: 'assign_shipper',
-              details: `Bàn giao cho shipper: ${name} (${phone})`
-            });
-            count++;
-          }
-        }
-      });
-
-      if (historyEntries.length > 0) {
-        await addCardHistoryBulk(historyEntries);
-      }
-      
-      showToast(`✅ Đã bàn giao thành công ${count} thẻ cho shipper ${name}!`, "success");
-      clearSelection();
-      closeAssignShipperModal();
-    } catch (error) {
-      console.error(error);
-      showToast("❌ Có lỗi xảy ra khi bàn giao cho shipper!", "error");
-    }
-  };
-
-  const executeBulkConfirmDelivered = async () => {
-    try {
-      if (selectedIds.size === 0) return;
-      const idsArray = Array.from(selectedIds);
-      
-      let count = 0;
-      const historyEntries: { idNumber: string; action: 'bulk_confirm_delivered'; details: string }[] = [];
-      await db.transaction("rw", db.cards, async () => {
-        for (const id of idsArray) {
-          const card = await db.cards.get(id);
-          if (card && card.status === 'shipping') {
-            await db.cards.update(id, {
-              status: 'returned',
-              returnedAt: Date.now()
-            });
-            historyEntries.push({
-              idNumber: card.idNumber,
-              action: 'bulk_confirm_delivered',
-              details: `Shipper giao thành công cho công dân`
-            });
-            count++;
-          }
-        }
-      });
-
-      if (historyEntries.length > 0) {
-        await addCardHistoryBulk(historyEntries);
-      }
-      
-      showToast(`✅ Đã xác nhận shipper giao thành công ${count} thẻ!`, "success");
-      clearSelection();
-    } catch (error) {
-      console.error(error);
-      showToast("❌ Có lỗi xảy ra khi xác nhận giao hàng hàng loạt!", "error");
-    }
-  };
-
-  const executeBulkReturnToWarehouse = async () => {
-    try {
-      if (selectedIds.size === 0) return;
-      const idsArray = Array.from(selectedIds);
-      
-      let count = 0;
-      const historyEntries: { idNumber: string; action: 'bulk_return_to_warehouse'; details: string }[] = [];
-      await db.transaction("rw", db.cards, async () => {
-        for (const id of idsArray) {
-          const card = await db.cards.get(id);
-          if (card && (card.status === 'shipping' || card.status === 'returned')) {
-            await db.cards.update(id, {
-              status: 'pending',
-              returnedAt: undefined,
-              shipperName: undefined,
-              shipperPhone: undefined,
-              shippedAt: undefined
-            });
-            historyEntries.push({
-              idNumber: card.idNumber,
-              action: 'bulk_return_to_warehouse',
-              details: `Hoàn tác về kho hàng loạt (đưa về Hộp ${card.zone})`
-            });
-            count++;
-          }
-        }
-      });
-
-      if (historyEntries.length > 0) {
-        await addCardHistoryBulk(historyEntries);
-      }
-      
-      showToast(`🔄 Đã hoàn tác ${count} thẻ về lại kho!`, "info");
-      clearSelection();
-    } catch (error) {
-      console.error(error);
-      showToast("❌ Có lỗi xảy ra khi hoàn tác hàng loạt!", "error");
-    }
-  };
-
-
-  // ==========================================
   // 8. TỔNG HỢP VÀ TRẢ RA GIAO DIỆN (MẶT TIỀN)
   // ==========================================
   return {
     toasts, showToast,
 
     // Gộp toàn bộ hàm từ các file đã tách ra bằng cú pháp "..."
-    ...cardManager,  // Có chứa: editModalConfig, mergeModalConfig, updateCardDetails, ...
-    ...cardImporter, // Có chứa: isNoPhotoImport, handleImportExcel, handleForceNextBox, ...
+    ...cardManager,
+    ...cardImporter,
+    ...cardSelection,
+    ...systemUtils,
 
     // Trả ra các Refs
     importInputRef, returnInputRef, cameraActionRef,
@@ -458,17 +182,6 @@ export function useCardReturnApp() {
     // Trả ra WebCam & Trả thẻ
     isWebCamActive, isFlashActive, scannerDisplayValue, scanMode, setScanMode,
     startWebcam, stopWebcam, handleScannerChange,
-    handleReturnScannerInput, processReturnCard, undoReturnCard,
-
-    // Trả ra Backup, Export, Modal
-    modalConfig, requestClearData, confirmClearData, closeModal,
-    handleBackupDatabase, handleRestoreDatabase,
-    exportModalConfig, openExportModal, closeExportModal, executeExportExcel, isExporting, exportProgress,
-
-    // MỚI: Trả ra các biến và hàm phục vụ Chọn hàng loạt & Shipper
-    selectedIds, isSelectMode, setIsSelectMode,
-    assignShipperModalConfig, openAssignShipperModal, closeAssignShipperModal, executeAssignShipper,
-    toggleSelectCard, toggleSelectAll, clearSelection,
-    executeBulkConfirmDelivered, executeBulkReturnToWarehouse
+    handleReturnScannerInput, processReturnCard, undoReturnCard
   };
 }

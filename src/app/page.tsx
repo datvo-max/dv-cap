@@ -28,6 +28,7 @@ import UnissuedDataTable from "@/features/appointments/components/UnissuedDataTa
 import ExportConfigModal from "@/features/delivery/components/ExportConfigModal";
 import MergeBoxesModal from "@/features/delivery/components/MergeBoxesModal";
 import AssignShipperModal from "@/features/delivery/components/AssignShipperModal";
+import MoveCardsBoxModal from "@/features/delivery/components/MoveCardsBoxModal";
 
 export default function Home() {
   const { user, isAllowed, loading, isGuest } = useAuth();
@@ -175,7 +176,7 @@ export default function Home() {
             />
 
             <div className={returnApp.isWebCamActive ? 'hidden' : 'block'}>
-              <ReturnDashboard />
+              <ReturnDashboard onOpenExportModal={returnApp.openExportModal} />
               <div className="flex flex-col lg:flex-row gap-6 items-start mt-6">
                 <div className="w-full lg:w-1/4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm lg:sticky lg:top-24 flex flex-col gap-5">
                   <h4 className="text-sm font-bold text-gray-700 border-b pb-2">Bảng Công cụ</h4>
@@ -208,6 +209,7 @@ export default function Home() {
                     onToggleSelectAll={returnApp.toggleSelectAll}
                     onClearSelection={returnApp.clearSelection}
                     onAssignShipper={returnApp.openAssignShipperModal}
+                    onOpenMoveBoxModal={returnApp.openMoveCardsBoxModal}
                     onBulkConfirmDelivered={returnApp.executeBulkConfirmDelivered}
                     onBulkReturnToWarehouse={returnApp.executeBulkReturnToWarehouse}
                     onOpenExportModal={returnApp.openExportModal}
@@ -264,6 +266,11 @@ export default function Home() {
         isOpen={returnApp.assignShipperModalConfig.isOpen}
         onClose={returnApp.closeAssignShipperModal}
         onConfirm={returnApp.executeAssignShipper}
+      />
+      <MoveCardsBoxModal
+        isOpen={returnApp.moveCardsBoxModalConfig.isOpen}
+        onClose={returnApp.closeMoveCardsBoxModal}
+        onConfirm={returnApp.executeMoveCardsBox}
       />
     </main>
   );

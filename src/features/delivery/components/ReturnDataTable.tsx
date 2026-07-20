@@ -18,6 +18,7 @@ interface ReturnDataTableProps {
   onToggleSelectAll: (displayedIds: number[]) => void;
   onClearSelection: () => void;
   onAssignShipper: () => void;
+  onOpenMoveBoxModal: () => void;
   onBulkConfirmDelivered: () => void;
   onBulkReturnToWarehouse: () => void;
   onOpenExportModal: (type: 'all' | 'returned' | 'pending' | 'selected') => void;
@@ -34,6 +35,7 @@ export default function ReturnDataTable({
   onToggleSelectAll,
   onClearSelection,
   onAssignShipper,
+  onOpenMoveBoxModal,
   onBulkConfirmDelivered,
   onBulkReturnToWarehouse,
   onOpenExportModal
@@ -164,6 +166,13 @@ export default function ReturnDataTable({
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
               Xuất Excel
+            </button>
+            <button
+              onClick={onOpenMoveBoxModal}
+              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-[11px] font-bold shadow-sm transition-all flex items-center gap-1 cursor-pointer"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+              Chuyển hộp
             </button>
             <button
               onClick={onAssignShipper}
