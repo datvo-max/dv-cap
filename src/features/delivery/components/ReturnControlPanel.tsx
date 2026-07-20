@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import * as XLSX from "xlsx-js-style";
 import BoxManagementPanel from "./BoxManagementPanel";
 
@@ -35,12 +35,14 @@ export default function ReturnControlPanel({
   isForceNextBox,
   nextBoxName
 }: ReturnControlPanelProps) {
+  const [activeFocus, setActiveFocus] = useState<'import' | 'return' | null>(null);
+
   const handleDownloadTemplate = () => {
     const ws_data = [
       ["Số CCCD", "Họ và Tên", "Ngày Sinh", "Giới Tính", "Địa Chỉ", "Ngày Cấp", "Họ Tên Cha", "Họ Tên Mẹ"],
       ["079090123456", "Nguyễn Văn A", "01/01/1990", "Nam", "Phường 1, Tân An, Long An", "15/05/2024", "Nguyễn Văn B", "Trần Thị C"]
     ];
-    
+
     const ws = XLSX.utils.aoa_to_sheet(ws_data);
     const wscols = [
       { wch: 18 }, { wch: 25 }, { wch: 15 }, { wch: 12 },
@@ -59,7 +61,7 @@ export default function ReturnControlPanel({
         right: { style: "thin", color: { auto: 1 } }
       }
     };
-    
+
     for (let C = 0; C < ws_data[0].length; ++C) {
       const cellAddress = XLSX.utils.encode_cell({ r: 0, c: C });
       if (!ws[cellAddress]) continue;
@@ -73,21 +75,24 @@ export default function ReturnControlPanel({
 
   return (
     <>
-      <div className="bg-blue-50/40 p-3 rounded-lg border border-blue-100 flex flex-col gap-3">
-        <p className="text-[11px] font-bold text-blue-700 uppercase flex items-center gap-1.5 mb-1">
+      {/* 📥 KHỐI 1: NẠP DỮ LIỆU */}
+      <div className="bg-blue-50/40 p-3 rounded-lg border border-blue-100 flex flex-col gap-3 transition-colors duration-300">
+        <p className={`text-[11px] font-bold text-blue-700 uppercase flex items-center gap-1.5 mb-1 transition-opacity duration-300 ${activeFocus === 'import' ? 'opacity-30' : 'opacity-100'
+          }`}>
           <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
           Thêm thẻ vào kho
         </p>
 
-        <div className="flex gap-2">
+        <div className={`flex gap-2 transition-opacity duration-300 ${activeFocus === 'import' ? 'opacity-30' : 'opacity-100'
+          }`}>
           <button className="flex-1 relative flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded-md transition-colors text-[11px] shadow-sm">
             <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9"></path></svg>
             Nạp từ Excel
             <input type="file" accept=".xlsx, .xls" onChange={onImportExcel} className="absolute inset-0 opacity-0 cursor-pointer" />
           </button>
-          
-          <button 
-            onClick={handleDownloadTemplate} 
+
+          <button
+            onClick={handleDownloadTemplate}
             className="flex-1 flex items-center justify-center gap-2 bg-white hover:bg-blue-50 text-blue-700 border border-blue-600 font-bold py-2 px-3 rounded-md transition-colors text-[11px] shadow-sm"
           >
             <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
@@ -95,14 +100,27 @@ export default function ReturnControlPanel({
           </button>
         </div>
 
-        <input
-          ref={importInputRef}
-          onKeyDown={onImportScannerInput}
-          placeholder="🔫 Click vào đây khi quét thẻ để thêm ..."
-          className="w-full pl-3 pr-3 py-2 border border-blue-200 rounded-md text-xs focus:ring-2 focus:ring-blue-500 outline-none"
-          title="Nạp lẻ bằng máy quét phần cứng"
-        />
-        <div className="flex items-center justify-between gap-2">
+        {/* Ô quét nạp thẻ kèm viền chạy động */}
+        <div className={`relative p-[1.5px] rounded-[7px] transition-all duration-300 ${activeFocus === 'import' ? 'overflow-hidden shadow-lg' : 'border border-blue-200 bg-white'
+          }`}>
+          {activeFocus === 'import' && (
+            <div className="absolute w-[150%] aspect-square top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,#ff453a,#ff9f0a,#30d158,#0a84ff,#bf5af2,#ff453a)] animate-[spin_3.5s_linear_infinite]" />
+          )}
+          <div className="relative bg-white rounded-[5px] z-10">
+            <input
+              ref={importInputRef}
+              onKeyDown={onImportScannerInput}
+              onFocus={() => setActiveFocus('import')}
+              onBlur={() => setActiveFocus(null)}
+              placeholder={activeFocus === 'import' ? "🔫 Đang đợi dữ liệu từ máy quét..." : "🔫 Click vào đây và quét thẻ để thêm ..."}
+              className="w-full pl-3 pr-3 py-1.5 text-xs outline-none text-blue-900 bg-transparent font-medium"
+              title="Nạp lẻ bằng máy quét phần cứng"
+            />
+          </div>
+        </div>
+
+        <div className={`flex items-center justify-between gap-2 transition-opacity duration-300 ${activeFocus === 'import' ? 'opacity-30' : 'opacity-100'
+          }`}>
           <label className="flex items-center gap-2 cursor-pointer bg-blue-100/50 p-1.5 rounded border border-blue-200 hover:bg-blue-100 transition-colors flex-1">
             <input
               type="checkbox"
@@ -116,11 +134,10 @@ export default function ReturnControlPanel({
           <button
             onClick={onForceNextBox}
             disabled={isForceNextBox}
-            className={`flex items-center justify-center gap-1 border transition-colors p-1.5 rounded flex-1 shadow-sm ${
-              isForceNextBox 
-                ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed" 
-                : "bg-white border-blue-300 text-blue-700 hover:bg-blue-100"
-            }`}
+            className={`flex items-center justify-center gap-1 border transition-colors p-1.5 rounded flex-1 shadow-sm ${isForceNextBox
+              ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed"
+              : "bg-white border-blue-300 text-blue-700 hover:bg-blue-100"
+              }`}
           >
             <span className="text-[10px] font-bold">
               {isForceNextBox ? `🎯 Kế tiếp: Hộp ${nextBoxName}` : "📦 Sang hộp mới"}
@@ -130,29 +147,44 @@ export default function ReturnControlPanel({
 
         <button
           onClick={() => onStartWebcam('import')}
-          className="w-full py-2 rounded-md font-bold text-xs border transition-colors shadow-sm bg-white text-blue-700 border-blue-300 hover:bg-blue-50"
+          className={`w-full py-2 rounded-md font-bold text-xs border transition-all duration-300 shadow-sm bg-white text-blue-700 border-blue-300 hover:bg-blue-50 ${activeFocus === 'import' ? 'opacity-30' : 'opacity-100'
+            }`}
         >
           📸 Mở Camera Để Thêm Thẻ Thủ Công
         </button>
       </div>
 
-      <div className="bg-green-50/40 p-3 rounded-lg border border-green-100 flex flex-col gap-3">
-        <p className="text-[11px] font-bold text-green-700 uppercase flex items-center gap-1.5 mb-1">
+      {/* 📤 KHỐI 2: TRẢ THẺ */}
+      <div className="bg-green-50/40 p-3 rounded-lg border border-green-100 flex flex-col gap-3 transition-colors duration-300">
+        <p className={`text-[11px] font-bold text-green-700 uppercase flex items-center gap-1.5 mb-1 transition-opacity duration-300 ${activeFocus === 'return' ? 'opacity-30' : 'opacity-100'
+          }`}>
           <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           Xác nhận trả thẻ
         </p>
 
-        <input
-          ref={returnInputRef}
-          onKeyDown={onReturnScannerInput}
-          placeholder="🔫 Click vào đây khi quét thẻ để trả ..."
-          className="w-full pl-3 pr-3 py-2 border border-green-200 rounded-md text-xs focus:ring-2 focus:ring-green-500 outline-none"
-          title="Trả thẻ bằng máy quét phần cứng"
-        />
+        {/* Ô quét trả thẻ kèm viền chạy động */}
+        <div className={`relative p-[1.5px] rounded-[7px] transition-all duration-300 ${activeFocus === 'return' ? 'overflow-hidden shadow-lg' : 'border border-green-200 bg-white'
+          }`}>
+          {activeFocus === 'return' && (
+            <div className="absolute w-[150%] aspect-square top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,#30d158,#ffd60a,#ff9f0a,#30d158)] animate-[spin_3.5s_linear_infinite]" />
+          )}
+          <div className="relative bg-white rounded-[5px] z-10">
+            <input
+              ref={returnInputRef}
+              onKeyDown={onReturnScannerInput}
+              onFocus={() => setActiveFocus('return')}
+              onBlur={() => setActiveFocus(null)}
+              placeholder={activeFocus === 'return' ? "🔫 Đang đợi dữ liệu từ máy quét..." : "🔫 Click vào đây và quét thẻ để trả ..."}
+              className="w-full pl-3 pr-3 py-1.5 text-xs outline-none text-green-900 bg-transparent font-medium"
+              title="Trả thẻ bằng máy quét phần cứng"
+            />
+          </div>
+        </div>
 
         <button
           onClick={() => onStartWebcam('return')}
-          className="w-full py-2 rounded-md font-bold text-xs border transition-colors shadow-sm bg-white text-green-700 border-green-300 hover:bg-green-50"
+          className={`w-full py-2 rounded-md font-bold text-xs border transition-all duration-300 shadow-sm bg-white text-green-700 border-green-300 hover:bg-green-50 ${activeFocus === 'return' ? 'opacity-30' : 'opacity-100'
+            }`}
         >
           📸 Mở Camera Trả Thẻ
         </button>
@@ -167,7 +199,7 @@ export default function ReturnControlPanel({
         </div>
       </div>
 
-      <BoxManagementPanel 
+      <BoxManagementPanel
         onOpenMergeModal={onOpenMergeModal}
         onOpenRenameModal={onOpenRenameModal}
       />

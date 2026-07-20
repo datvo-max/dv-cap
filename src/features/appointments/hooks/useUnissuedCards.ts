@@ -17,15 +17,92 @@ function parseAppointmentText(text: string) {
   let appointmentDate = "";
 
   // 1. Trích xuất Số định danh (12 chữ số)
-  const numbersOnly = text.replace(/[^0-9]/g, '');
-  const idMatch = numbersOnly.match(/\d{12}/);
-  if (idMatch) {
-    idNumber = idMatch[0];
-  } else {
-    // Dự phòng: dãy số dài từ 9 đến 12 số
-    const fallbackMatch = numbersOnly.match(/\d{9,12}/);
-    if (fallbackMatch) {
-      idNumber = fallbackMatch[0];
+  // --- LAYER 0: Tiền xử lý văn bản để sửa lỗi OCR phổ biến ở các chữ số đứng rời rạc (do in trong ô vuông) ---
+  const fixOcr = (str: string) => {
+    let res = str;
+    for (let i = 0; i < 2; i++) {
+      res = res
+        .replace(/(^|[^a-zA-ZÀ-Ỹà-ỹ])([OoD])(?=[^a-zA-ZÀ-Ỹà-ỹ]|$)/g, '$10')
+        .replace(/(^|[^a-zA-ZÀ-Ỹà-ỹ])([Il])(?=[^a-zA-ZÀ-Ỹà-ỹ]|$)/g, '$11')
+        .replace(/(^|[^a-zA-ZÀ-Ỹà-ỹ])([Zz])(?=[^a-zA-ZÀ-Ỹà-ỹ]|$)/g, '$12')
+        .replace(/(^|[^a-zA-ZÀ-Ỹà-ỹ])([Ss])(?=[^a-zA-ZÀ-Ỹà-ỹ]|$)/g, '$15')
+        .replace(/(^|[^a-zA-ZÀ-Ỹà-ỹ])([B])(?=[^a-zA-ZÀ-Ỹà-ỹ]|$)/g, '$18')
+        .replace(/(^|[^a-zA-ZÀ-Ỹà-ỹ])([qQ])(?=[^a-zA-ZÀ-Ỹà-ỹ]|$)/g, '$19');
+    }
+    return res;
+  };
+
+  const fixedText = fixOcr(text);
+  const fixedLines = fixedText.split('\n').map(line => line.trim()).filter(Boolean);
+
+  // --- LAYER 1: Tìm theo dòng chứa từ khóa liên quan đến Số định danh ---
+  for (let i = 0; i < fixedLines.length; i++) {
+    const line = fixedLines[i];
+    if (/(?:định\s*danh|cccd|số\s*thẻ|căn\s*cước|đdcn|ident|card|số\s*đd)/i.test(line)) {
+      const afterKeyword = line.replace(/.*(?:định\s*danh|cccd|thẻ|cước|đdcn|card|đd)[\s:]*/i, '');
+      const digitsInLine = afterKeyword.replace(/[^0-9]/g, '');
+      const match = digitsInLine.match(/\d{9,12}/);
+      if (match) {
+        idNumber = match[0];
+        break;
+      }
+      
+      if (digitsInLine.length < 9 && i + 1 < fixedLines.length) {
+        const nextLine = fixedLines[i + 1];
+        if (!/(?:cư\s*trú|sinh|hẹn|ngày|giấy|họ\s*tên)/i.test(nextLine)) {
+          const digitsInNextLine = nextLine.replace(/[^0-9]/g, '');
+          const nextMatch = digitsInNextLine.match(/\d{9,12}/);
+          if (nextMatch) {
+            idNumber = nextMatch[0];
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  // --- LAYER 2: Tìm cụm 12 hoặc 9 chữ số có thể bị ngăn cách bởi các ô vuông ---
+  if (!idNumber) {
+    const box12Pattern = /(?:[0-9]\s*[\s|\[\]\-\._:]*\s*){11}[0-9]/;
+    const box12Match = fixedText.match(box12Pattern);
+    if (box12Match) {
+      const cleaned = box12Match[0].replace(/[^0-9]/g, '');
+      if (cleaned.length === 12) {
+        idNumber = cleaned;
+      }
+    }
+  }
+
+  if (!idNumber) {
+    const box9Pattern = /(?:[0-9]\s*[\s|\[\]\-\._:]*\s*){8}[0-9]/;
+    const box9Match = fixedText.match(box9Pattern);
+    if (box9Match) {
+      const cleaned = box9Match[0].replace(/[^0-9]/g, '');
+      if (cleaned.length === 9) {
+        idNumber = cleaned;
+      }
+    }
+  }
+
+  // --- LAYER 3: Tìm dãy 12 hoặc 9 số liên tiếp thông thường ---
+  if (!idNumber) {
+    const consecutive12 = fixedText.match(/\b\d{12}\b/) || fixedText.match(/\d{12}/);
+    if (consecutive12) {
+      idNumber = consecutive12[0];
+    } else {
+      const consecutive9 = fixedText.match(/\b\d{9}\b/) || fixedText.match(/\d{9}/);
+      if (consecutive9) {
+        idNumber = consecutive9[0];
+      }
+    }
+  }
+
+  // --- LAYER 4: Fallback cuối cùng nếu vẫn chưa có ---
+  if (!idNumber) {
+    const numbersOnly = fixedText.replace(/[^0-9]/g, '');
+    const idMatch = numbersOnly.match(/\d{12}/) || numbersOnly.match(/\d{9,12}/);
+    if (idMatch) {
+      idNumber = idMatch[0];
     }
   }
 
