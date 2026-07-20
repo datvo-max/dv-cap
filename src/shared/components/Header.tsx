@@ -82,7 +82,7 @@ export default function Header() {
                     Quản lý Thẻ căn cước
                   </span>
                   <span className="inline-block text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-md">
-                    Phiên bản 3.6.0
+                    Phiên bản 3.7.2
                   </span>
                 </div>
 
