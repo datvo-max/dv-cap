@@ -1,6 +1,6 @@
-// src/components/ReturnControlPanel.tsx
 import React from "react";
 import * as XLSX from "xlsx-js-style";
+import BoxManagementPanel from "./BoxManagementPanel";
 
 interface ReturnControlPanelProps {
   onImportExcel: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -10,15 +10,13 @@ interface ReturnControlPanelProps {
   returnInputRef: React.RefObject<HTMLInputElement | null>;
   onReturnScannerInput: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   onExportExcel: (type: 'all' | 'returned' | 'pending') => void;
-  onBackupDatabase: () => void;
-  onRestoreDatabase: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onRequestClearData: () => void;
-  // MỚI: Quản lý trạng thái checkbox không ảnh
   isNoPhotoImport: boolean;
   onToggleNoPhotoImport: (val: boolean) => void;
-  // Chuyển sang hộp mới
   onForceNextBox: () => void;
   onOpenMergeModal: () => void;
+  onOpenRenameModal: () => void;
+  isForceNextBox: boolean;
+  nextBoxName: string;
 }
 
 export default function ReturnControlPanel({
@@ -29,13 +27,13 @@ export default function ReturnControlPanel({
   returnInputRef,
   onReturnScannerInput,
   onExportExcel,
-  onBackupDatabase,
-  onRestoreDatabase,
-  onRequestClearData,
   isNoPhotoImport,
   onToggleNoPhotoImport,
   onForceNextBox,
-  onOpenMergeModal
+  onOpenMergeModal,
+  onOpenRenameModal,
+  isForceNextBox,
+  nextBoxName
 }: ReturnControlPanelProps) {
   const handleDownloadTemplate = () => {
     const ws_data = [
@@ -50,10 +48,9 @@ export default function ReturnControlPanel({
     ];
     ws['!cols'] = wscols;
 
-    // Header styling
     const headerStyle = {
       font: { bold: true, color: { rgb: "FFFFFF" } },
-      fill: { fgColor: { rgb: "2563EB" } }, // blue-600
+      fill: { fgColor: { rgb: "2563EB" } },
       alignment: { horizontal: "center", vertical: "center" },
       border: {
         top: { style: "thin", color: { auto: 1 } },
@@ -76,7 +73,6 @@ export default function ReturnControlPanel({
 
   return (
     <>
-      {/* 📥 KHỐI 1: NẠP DỮ LIỆU */}
       <div className="bg-blue-50/40 p-3 rounded-lg border border-blue-100 flex flex-col gap-3">
         <p className="text-[11px] font-bold text-blue-700 uppercase flex items-center gap-1.5 mb-1">
           <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
@@ -106,7 +102,6 @@ export default function ReturnControlPanel({
           className="w-full pl-3 pr-3 py-2 border border-blue-200 rounded-md text-xs focus:ring-2 focus:ring-blue-500 outline-none"
           title="Nạp lẻ bằng máy quét phần cứng"
         />
-        {/* KHU VỰC CÔNG CỤ NẠP */}
         <div className="flex items-center justify-between gap-2">
           <label className="flex items-center gap-2 cursor-pointer bg-blue-100/50 p-1.5 rounded border border-blue-200 hover:bg-blue-100 transition-colors flex-1">
             <input
@@ -120,9 +115,16 @@ export default function ReturnControlPanel({
 
           <button
             onClick={onForceNextBox}
-            className="flex items-center justify-center gap-1 bg-white border border-blue-300 text-blue-700 hover:bg-blue-100 transition-colors p-1.5 rounded flex-1 shadow-sm"
+            disabled={isForceNextBox}
+            className={`flex items-center justify-center gap-1 border transition-colors p-1.5 rounded flex-1 shadow-sm ${
+              isForceNextBox 
+                ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed" 
+                : "bg-white border-blue-300 text-blue-700 hover:bg-blue-100"
+            }`}
           >
-            <span className="text-[10px] font-bold">📦 Sang hộp mới</span>
+            <span className="text-[10px] font-bold">
+              {isForceNextBox ? `🎯 Kế tiếp: Hộp ${nextBoxName}` : "📦 Sang hộp mới"}
+            </span>
           </button>
         </div>
 
@@ -134,7 +136,6 @@ export default function ReturnControlPanel({
         </button>
       </div>
 
-      {/* 📤 KHỐI 2: TRẢ THẺ */}
       <div className="bg-green-50/40 p-3 rounded-lg border border-green-100 flex flex-col gap-3">
         <p className="text-[11px] font-bold text-green-700 uppercase flex items-center gap-1.5 mb-1">
           <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -157,7 +158,6 @@ export default function ReturnControlPanel({
         </button>
       </div>
 
-      {/* 📊 KHỐI 3: XUẤT BÁO CÁO EXCEL */}
       <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
         <p className="text-[11px] font-bold text-gray-500 uppercase mb-2">Tải báo cáo (Danh Sách)</p>
         <div className="grid grid-cols-2 gap-2">
@@ -167,38 +167,10 @@ export default function ReturnControlPanel({
         </div>
       </div>
 
-      {/* ⚙️ KHỐI 4: QUẢN TRỊ HỆ THỐNG */}
-      <div className="bg-purple-50/40 p-3 rounded-lg border border-purple-200 mt-4">
-        <p className="text-[11px] font-bold text-purple-700 uppercase mb-2">⚙️ Quản trị Hệ thống (Sao Lưu / Khôi Phục / Gộp Hộp)</p>
-
-        {/* Nút Gộp Hộp chễm chệ ở trên cùng khu quản trị */}
-        <button
-          onClick={onOpenMergeModal}
-          className="w-full mb-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold py-2 px-2 rounded text-xs border border-indigo-200 transition-colors shadow-sm flex items-center justify-center gap-2"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
-          Gộp Hộp Lưu Trữ (Dồn thẻ)
-        </button>
-
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            onClick={onBackupDatabase}
-            className="bg-white hover:bg-purple-50 text-purple-700 font-bold py-2 px-2 rounded text-xs border border-purple-300 transition-colors shadow-sm"
-          >
-            💾 Tải File Sao Lưu
-          </button>
-          <label className="bg-white hover:bg-purple-50 text-purple-700 font-bold py-2 px-2 rounded text-xs border border-purple-300 transition-colors shadow-sm cursor-pointer text-center flex items-center justify-center">
-            🔄 Nạp File Khôi Phục
-            <input type="file" accept=".json" onChange={onRestoreDatabase} className="hidden" />
-          </label>
-          <button
-            onClick={onRequestClearData}
-            className="col-span-2 bg-red-50 hover:bg-red-100 text-red-700 font-bold py-1.5 px-2 rounded text-[11px] border border-red-200 transition-colors shadow-sm mt-1"
-          >
-            🗑️ Xóa Toàn Bộ Dữ Liệu Kho
-          </button>
-        </div>
-      </div>
+      <BoxManagementPanel 
+        onOpenMergeModal={onOpenMergeModal}
+        onOpenRenameModal={onOpenRenameModal}
+      />
     </>
   );
 }

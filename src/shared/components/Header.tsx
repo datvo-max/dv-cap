@@ -4,12 +4,20 @@ import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import logoImg from "../../../public/Logo-BCA.png";
 import { useAuth } from "../context/AuthContext";
-import { LogOut, ChevronDown, User as UserIcon } from "lucide-react";
+import { LogOut, ChevronDown, User as UserIcon, Settings } from "lucide-react";
+import { useSettings } from "../hooks/useSettings";
+import pkg from "../../../package.json";
 
-export default function Header() {
+interface HeaderProps {
+  onOpenSettings?: () => void;
+}
+
+export default function Header({ onOpenSettings }: HeaderProps) {
   const { user, isGuest, logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  
+  const { unitName } = useSettings();
 
   // Đóng dropdown khi click ra ngoài
   useEffect(() => {
@@ -31,7 +39,7 @@ export default function Header() {
           className="w-10 h-10 object-contain"
         />
         <h1 className="text-xl font-bold text-blue-900">
-          Tân An
+          {unitName}
         </h1>
       </div>
 
@@ -73,7 +81,7 @@ export default function Header() {
                   </span>
                 </div>
                 
-                {/* Thông tin Hệ thống (Được dời vào từ Header) */}
+                {/* Thông tin Hệ thống */}
                 <div className="p-3 border-b border-slate-100 bg-slate-50/50">
                   <span className="block text-xs font-semibold text-slate-500 mb-0.5 uppercase tracking-wider">
                     Hệ thống
@@ -82,8 +90,23 @@ export default function Header() {
                     Quản lý Thẻ căn cước
                   </span>
                   <span className="inline-block text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-md">
-                    Phiên bản 3.7.2
+                    Phiên bản {pkg.version}
                   </span>
+                </div>
+
+                <div className="p-1 border-b border-slate-100">
+                  {onOpenSettings && (
+                    <button
+                      onClick={() => {
+                        setIsDropdownOpen(false);
+                        onOpenSettings();
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors font-medium"
+                    >
+                      <Settings className="w-4 h-4" />
+                      Cài đặt hệ thống
+                    </button>
+                  )}
                 </div>
 
                 <div className="p-1">

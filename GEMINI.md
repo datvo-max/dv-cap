@@ -87,5 +87,5 @@ Dự án được cấu hình tự động build và deploy lên **GitHub Pages*
 2. **Camera & Giao thức HTTPS:** Quyền truy cập camera của HTML5-qrcode yêu cầu giao thức an toàn `https://` (hoặc `localhost` trên máy tính). Khi test thực tế trên thiết bị di động, cần cấu hình proxy HTTPS.
 3. **Logic hướng tính năng (Feature-based logic):** Luôn phân chia rõ ràng các tệp component và hooks thuộc phân hệ nào.
 4. **Quy định đẩy mã nguồn (Git Push):** Chỉ chỉnh sửa, biên dịch và chạy kiểm thử build trên môi trường local. **Tuyệt đối không tự ý chạy các lệnh commit hoặc push lên GitHub** trừ khi có yêu cầu cụ thể từ người dùng.
-5. Không tự ý up code lên GitHub trừ khi có yêu cầu, sau mỗi lần up lên git hãy cập nhật phiên bản tăng dần phù hợp (thay đổi nhỏ thì update patch version, thay đổi vừa thì update minor version, thay đổi lớn thì update major version).
+5. Không tự ý up code lên GitHub trừ khi có yêu cầu, sau mỗi lần up lên git hãy cập nhật phiên bản tăng dần phù hợp (thay đổi nhỏ thì update patch version, thay đổi vừa thì update minor version, thay đổi lớn thì update major version). Khi thay đổi version trong package.json, hãy nhớ thay đổi version trong file Header.tsx
 6. Luôn đưa ra kế hoạch để kiểm tra, sửa chữa trước khi thực hiện một nhiệm vụ.

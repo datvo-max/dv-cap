@@ -141,8 +141,51 @@ export function useCardManagement(showToast: (msg: string, type: 'success' | 'er
   };
 
 
+  // 3. NGHIỆP VỤ ĐỔI TÊN HỘP
+  const [renameModalConfig, setRenameModalConfig] = useState({ isOpen: false });
+  const openRenameModal = () => setRenameModalConfig({ isOpen: true });
+  const closeRenameModal = () => setRenameModalConfig({ isOpen: false });
+
+  const executeRenameBox = async (oldBox: string, newBoxName: string) => {
+    try {
+      const searchKeys: (string | number)[] = [];
+      searchKeys.push(String(oldBox));
+      if (!isNaN(Number(oldBox))) {
+        searchKeys.push(Number(oldBox));
+      }
+
+      const finalNewBoxName = isNaN(Number(newBoxName)) ? newBoxName : Number(newBoxName);
+      const affectedCards = await db.cards.where('zone').anyOf(searchKeys).toArray();
+
+      const updatedCount = await db.cards
+        .where('zone')
+        .anyOf(searchKeys)
+        .modify({ zone: finalNewBoxName });
+
+      if (updatedCount === 0) {
+        showToast("⚠️ Không tìm thấy thẻ nào trong hộp này để đổi tên!", "warning");
+      } else {
+        if (affectedCards.length > 0) {
+          const historyEntries = affectedCards.map(c => ({
+            idNumber: c.idNumber,
+            action: 'merge_box' as const, // Reusing merge_box action for renaming box
+            details: `Đổi tên hộp từ Hộp ${c.zone} sang Hộp ${finalNewBoxName}`
+          }));
+          await addCardHistoryBulk(historyEntries);
+        }
+        showToast(`✅ Đã đổi tên hộp thành công ${updatedCount} thẻ sang hộp ${finalNewBoxName}!`, "success");
+        closeRenameModal();
+      }
+    } catch (error) {
+      console.error("Lỗi khi đổi tên hộp:", error);
+      showToast("❌ Có lỗi xảy ra trong quá trình đổi tên hộp!", "error");
+    }
+  };
+
+
   return {
     editModalConfig, openEditModal, closeEditModal, updateCardDetails, deleteCard,
-    mergeModalConfig, openMergeModal, closeMergeModal, executeMergeBoxes
+    mergeModalConfig, openMergeModal, closeMergeModal, executeMergeBoxes,
+    renameModalConfig, openRenameModal, closeRenameModal, executeRenameBox
   };
 }

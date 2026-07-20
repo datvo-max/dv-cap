@@ -29,11 +29,14 @@ import ExportConfigModal from "@/features/delivery/components/ExportConfigModal"
 import MergeBoxesModal from "@/features/delivery/components/MergeBoxesModal";
 import AssignShipperModal from "@/features/delivery/components/AssignShipperModal";
 import MoveCardsBoxModal from "@/features/delivery/components/MoveCardsBoxModal";
+import RenameBoxModal from "@/features/delivery/components/RenameBoxModal";
+import SettingsModal from "@/shared/components/SettingsModal";
 
 export default function Home() {
   const { user, isAllowed, loading, isGuest } = useAuth();
   // MỚI: Thêm trạng thái tab 'giay-hen'
   const [activeTab, setActiveTab] = useState<'nhap-lieu' | 'tra-the' | 'giay-hen'>('nhap-lieu');
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const app = useScannerApp();
   const returnApp = useCardReturnApp();
@@ -68,7 +71,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-gray-50 font-sans text-gray-800 pb-10">
-      <Header />
+      <Header onOpenSettings={() => setIsSettingsOpen(true)} />
 
       {isMounted && <div className="max-w-[1700px] mx-auto px-4">
 
@@ -188,13 +191,13 @@ export default function Home() {
                     returnInputRef={returnApp.returnInputRef}
                     onReturnScannerInput={returnApp.handleReturnScannerInput}
                     onExportExcel={returnApp.openExportModal}
-                    onBackupDatabase={returnApp.handleBackupDatabase}
-                    onRestoreDatabase={returnApp.handleRestoreDatabase}
-                    onRequestClearData={returnApp.requestClearData}
                     isNoPhotoImport={returnApp.isNoPhotoImport}
                     onToggleNoPhotoImport={returnApp.setIsNoPhotoImport}
                     onForceNextBox={returnApp.handleForceNextBox}
                     onOpenMergeModal={returnApp.openMergeModal}
+                    onOpenRenameModal={returnApp.openRenameModal}
+                    isForceNextBox={returnApp.isForceNextBox}
+                    nextBoxName={returnApp.nextBoxName}
                   />
                 </div>
                 <div className="w-full lg:w-3/4">
@@ -271,6 +274,19 @@ export default function Home() {
         isOpen={returnApp.moveCardsBoxModalConfig.isOpen}
         onClose={returnApp.closeMoveCardsBoxModal}
         onConfirm={returnApp.executeMoveCardsBox}
+      />
+      <RenameBoxModal
+        isOpen={returnApp.renameModalConfig.isOpen}
+        onClose={returnApp.closeRenameModal}
+        onRename={returnApp.executeRenameBox}
+        onShowToast={returnApp.showToast}
+      />
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        onBackupDatabase={returnApp.handleBackupDatabase}
+        onRestoreDatabase={returnApp.handleRestoreDatabase}
+        onRequestClearData={returnApp.requestClearData}
       />
     </main>
   );

@@ -1,5 +1,6 @@
-// src/features/delivery/components/MoveCardsBoxModal.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { db } from "@/shared/lib/db";
+import { useLiveQuery } from "dexie-react-hooks";
 
 interface MoveCardsBoxModalProps {
   isOpen: boolean;
@@ -19,6 +20,19 @@ export default function MoveCardsBoxModal({ isOpen, onClose, onConfirm }: MoveCa
       setError("");
     }
   }
+
+  // Truy vấn danh sách hộp
+  const availableBoxes = useLiveQuery(async () => {
+    if (!isOpen) return [];
+    const cards = await db.cards.toArray();
+    const zones = cards.map(c => String(c.zone)).filter(Boolean);
+    const uniqueZones = Array.from(new Set(zones)).sort((a, b) => {
+      const numA = parseInt(a.replace(/\D/g, "")) || 0;
+      const numB = parseInt(b.replace(/\D/g, "")) || 0;
+      return numA - numB;
+    });
+    return uniqueZones;
+  }, [isOpen]) || [];
 
   if (!isOpen) return null;
 
@@ -44,7 +58,7 @@ export default function MoveCardsBoxModal({ isOpen, onClose, onConfirm }: MoveCa
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
             Chuyển hộp cho thẻ đã chọn
           </h3>
-          <button onClick={onClose} className="text-indigo-200 hover:text-white transition-colors">
+          <button type="button" onClick={onClose} className="text-indigo-200 hover:text-white transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
           </button>
         </div>
@@ -52,7 +66,7 @@ export default function MoveCardsBoxModal({ isOpen, onClose, onConfirm }: MoveCa
         <form onSubmit={handleSubmit}>
           <div className="p-5 space-y-4">
             <p className="text-xs text-gray-500 font-medium">
-              Vui lòng nhập vị trí/hộp mới để chuyển toàn bộ các thẻ đã chọn sang.
+              Vui lòng chọn hoặc nhập vị trí/hộp mới để chuyển toàn bộ các thẻ đã chọn sang.
             </p>
 
             {error && (
@@ -65,12 +79,36 @@ export default function MoveCardsBoxModal({ isOpen, onClose, onConfirm }: MoveCa
               <label className="block text-xs font-bold text-gray-700 mb-1">Vị trí/Hộp mới <span className="text-red-500">*</span></label>
               <input
                 type="text"
+                list="box-list"
                 value={newZone}
-                onChange={(e) => { setNewZone(e.target.value); setError(""); }}
-                placeholder="Ví dụ: 10, Hộp 10, Tủ A..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                onChange={(e) => { setNewZone(e.target.value.toUpperCase()); setError(""); }}
+                placeholder="Ví dụ: 10, K10..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-bold text-indigo-700 outline-none focus:ring-2 focus:ring-indigo-500 mb-3"
                 autoFocus
               />
+              <datalist id="box-list">
+                {availableBoxes.map(b => (
+                  <option key={b} value={b} />
+                ))}
+              </datalist>
+
+              {availableBoxes.length > 0 && (
+                <div>
+                  <p className="text-[11px] font-bold text-gray-500 mb-2">Chọn nhanh hộp đã có:</p>
+                  <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto">
+                    {availableBoxes.map(b => (
+                      <button
+                        key={b}
+                        type="button"
+                        onClick={() => { setNewZone(b); setError(""); }}
+                        className="px-2 py-1 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded text-xs font-bold hover:bg-indigo-100 transition-colors"
+                      >
+                        {b.includes('K') ? b : `Hộp ${b}`}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

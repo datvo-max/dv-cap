@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 import { db, CardRecord, addCardHistory, addCardHistoryBulk } from "@/shared/lib/db";
 import { parseCCCD } from "@/shared/utils/cccdParser";
 import * as XLSX from "xlsx"; // Nhớ import thư viện XLSX
+import { useLiveQuery } from "dexie-react-hooks";
 
 export function useCardImport(showToast: (msg: string, type: 'success' | 'error' | 'warning' | 'info') => void) {
 
@@ -14,11 +15,36 @@ export function useCardImport(showToast: (msg: string, type: 'success' | 'error'
     isNoPhotoImportRef.current = val;
   };
 
+  const [isForceNextBox, setIsForceNextBox] = useState(false);
   const forceNextBoxRef = useRef(false);
+  
   const handleForceNextBox = () => {
+    setIsForceNextBox(true);
     forceNextBoxRef.current = true;
     showToast("📦 Đã ghi nhận! Lượt nạp tiếp theo sẽ tự động chuyển sang hộp mới.", "info");
   };
+
+  // Tính hộp sẽ lưu thẻ trong lần quét tiếp theo
+  const nextBoxName = useLiveQuery(async () => {
+    const allCards = await db.cards.toArray();
+    const relevantCards = allCards.filter(c => !!c.isNoPhoto === isNoPhotoImport);
+
+    let maxZoneNum = 1;
+    relevantCards.forEach(c => {
+      const num = parseInt(String(c.zone).replace(/\D/g, "")) || 1;
+      if (num > maxZoneNum) maxZoneNum = num;
+    });
+
+    const targetZoneStr = isNoPhotoImport ? `K${maxZoneNum}` : `${maxZoneNum}`;
+    const cardsInMaxZone = relevantCards.filter(c => String(c.zone) === targetZoneStr).length;
+
+    let finalZoneNum = maxZoneNum;
+    if (cardsInMaxZone >= 50 || (isForceNextBox && cardsInMaxZone > 0)) {
+      finalZoneNum = maxZoneNum + 1;
+    }
+
+    return isNoPhotoImport ? `K${finalZoneNum}` : `${finalZoneNum}`;
+  }, [isNoPhotoImport, isForceNextBox]) || (isNoPhotoImport ? "K1" : "1");
 
   // ==========================================
   // 2. LOGIC ĐỌC FILE EXCEL & CHIA VÙNG (GIỮ NGUYÊN THỨ TỰ)
@@ -58,6 +84,7 @@ export function useCardImport(showToast: (msg: string, type: 'success' | 'error'
           maxZoneNum++;
           currentZoneCount = 0;
           forceNextBoxRef.current = false;
+          setIsForceNextBox(false);
         }
 
         let successCount = 0;
@@ -169,6 +196,7 @@ export function useCardImport(showToast: (msg: string, type: 'success' | 'error'
     if (cardsInMaxZone >= 50 || (forceNextBoxRef.current && cardsInMaxZone > 0)) {
       finalZoneNum = maxZoneNum + 1;
       forceNextBoxRef.current = false; // Tắt cờ sau khi đã thực thi thành công
+      setIsForceNextBox(false);
     }
 
     const finalZone = isNoPhoto ? `K${finalZoneNum}` : finalZoneNum;
@@ -215,6 +243,8 @@ export function useCardImport(showToast: (msg: string, type: 'success' | 'error'
     handleForceNextBox,
     handleImportExcel,
     handleImportScannerInput,
-    processImportCard
+    processImportCard,
+    isForceNextBox,
+    nextBoxName
   };
 }
