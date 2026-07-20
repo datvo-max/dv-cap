@@ -1,9 +1,10 @@
 // src/lib/db.ts
 import { CCCDRecord } from '@/shared/types/cccd';
 import Dexie, { type Table } from 'dexie';
+import { auth } from './firebase';
 
 // HÀM HỖ TRỢ: Tự động chuyển đổi chuỗi ngày tháng cũ (Việt Nam) sang dạng Số (Timestamp)
-function migrateToTimestamp(val: any): number | undefined {
+function migrateToTimestamp(val: unknown): number | undefined {
   if (!val) return undefined;
   if (typeof val === 'number') return val; // Nếu đã là số thì giữ nguyên
 
@@ -30,7 +31,7 @@ function migrateToTimestamp(val: any): number | undefined {
       return isNaN(time) ? undefined : time;
     }
     return undefined;
-  } catch (error) {
+  } catch {
     return undefined;
   }
 }
@@ -65,10 +66,20 @@ export interface UnissuedRecord {
   result?: string; // MỚI: Kết quả xử lý (Đã đi làm lại, Đã gửi yêu cầu lại...)
 }
 
+export interface HistoryRecord {
+  id?: number;
+  idNumber: string;
+  action: 'import' | 'return' | 'assign_shipper' | 'bulk_return_to_warehouse' | 'bulk_confirm_delivered' | 'undo_return' | 'edit' | 'merge_box';
+  timestamp: number;
+  details: string;
+  actor?: string;
+}
+
 class CardDatabase extends Dexie {
   scannedCards!: Table<ScannedRecord>;
   cards!: Table<CardRecord>;
   unissuedCards!: Table<UnissuedRecord>;
+  cardHistory!: Table<HistoryRecord>;
 
   constructor() {
     super('CCCD_KhoThe_DB');
@@ -97,7 +108,58 @@ class CardDatabase extends Dexie {
         }
       });
     });
+
+    // Phiên bản 5: Bổ sung bảng lịch sử tác động của thẻ
+    this.version(5).stores({
+      cards: '++id, &idNumber, fullName, phoneNumber, importDate, status, zone, canceledIdNumber',
+      scannedCards: '++id, &idNumber, fullName, scannedAt, fatherName, motherName',
+      unissuedCards: '++id, &idNumber, fullName, appointmentDate',
+      cardHistory: '++id, idNumber, action, timestamp'
+    });
   }
 }
 
 export const db = new CardDatabase();
+
+export async function addCardHistory(
+  idNumber: string,
+  action: HistoryRecord['action'],
+  details: string
+) {
+  try {
+    const user = auth.currentUser;
+    const actor = user
+      ? (user.displayName || user.email || 'Cán bộ')
+      : (typeof window !== 'undefined' && localStorage.getItem("dv_cap_guest_mode") === "true" ? 'Khách (Guest)' : 'Hệ thống');
+    await db.cardHistory.add({
+      idNumber,
+      action,
+      timestamp: Date.now(),
+      details,
+      actor
+    });
+  } catch (error) {
+    console.error("Lỗi ghi lịch sử thẻ:", error);
+  }
+}
+
+export async function addCardHistoryBulk(
+  records: { idNumber: string; action: HistoryRecord['action']; details: string }[]
+) {
+  if (records.length === 0) return;
+  try {
+    const user = auth.currentUser;
+    const actor = user
+      ? (user.displayName || user.email || 'Cán bộ')
+      : (typeof window !== 'undefined' && localStorage.getItem("dv_cap_guest_mode") === "true" ? 'Khách (Guest)' : 'Hệ thống');
+    const timestamp = Date.now();
+    const historyRecords = records.map(r => ({
+      ...r,
+      timestamp,
+      actor
+    }));
+    await db.cardHistory.bulkAdd(historyRecords);
+  } catch (error) {
+    console.error("Lỗi ghi lịch sử thẻ hàng loạt:", error);
+  }
+}

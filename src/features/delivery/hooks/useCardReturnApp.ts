@@ -1,6 +1,6 @@
 // src/hooks/useCardReturnApp.ts
 import { useState, useRef, useCallback } from "react";
-import { db } from "@/shared/lib/db";
+import { db, addCardHistory, addCardHistoryBulk } from "@/shared/lib/db";
 import { Html5Qrcode } from "html5-qrcode";
 import { exportReturnExcel } from "@/shared/utils/exportReturnToExcel";
 
@@ -44,6 +44,7 @@ export function useCardReturnApp() {
   const importInputRef = useRef<HTMLInputElement>(null);
   const returnInputRef = useRef<HTMLInputElement>(null);
   const cameraActionRef = useRef<'import' | 'return'>('return');
+  const [cameraAction, setCameraAction] = useState<'import' | 'return'>('return');
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
   const isCameraPaused = useRef(false);
 
@@ -87,6 +88,8 @@ export function useCardReturnApp() {
       returnedAt: Date.now()
     });
 
+    await addCardHistory(card.idNumber, 'return', 'Trả thẻ trực tiếp cho công dân');
+
     showToast(`✅ Đã trả thẻ: ${card.fullName} (Vị trí: Hộp ${card.zone})`, "success");
   };
 
@@ -103,8 +106,9 @@ export function useCardReturnApp() {
         shipperPhone: undefined,
         shippedAt: undefined
       });
+      await addCardHistory(card.idNumber, 'undo_return', `Hoàn tác trả thẻ, đưa về kho Hộp ${card.zone}`);
       showToast(`🔄 Đã khôi phục thẻ của ${card.fullName} về kho (Hộp ${card.zone})`, "info");
-    } catch (error) {
+    } catch {
       showToast("❌ Có lỗi xảy ra khi hoàn tác!", "error");
     }
   };
@@ -140,6 +144,7 @@ export function useCardReturnApp() {
 
   const startWebcam = async (action: 'import' | 'return') => {
     cameraActionRef.current = action;
+    setCameraAction(action);
     setIsWebCamActive(true);
     setTimeout(async () => {
       if (!html5QrCodeRef.current) html5QrCodeRef.current = new Html5Qrcode("return-reader");
@@ -152,7 +157,7 @@ export function useCardReturnApp() {
             () => { }
           );
         }
-      } catch (err) {
+      } catch {
         showToast("Lỗi mở camera!", "error");
       }
     }, 150);
@@ -178,8 +183,9 @@ export function useCardReturnApp() {
   const confirmClearData = async () => {
     try {
       await db.cards.clear();
-      showToast("🗑️ Đã xóa sạch dữ liệu kho thẻ!", "warning");
-    } catch (error) {
+      await db.cardHistory.clear();
+      showToast("🗑️ Đã xóa sạch dữ liệu kho thẻ và lịch sử!", "warning");
+    } catch {
       showToast("❌ Có lỗi xảy ra khi xóa dữ liệu!", "error");
     } finally {
       setModalConfig({ isOpen: false, message: "" });
@@ -323,6 +329,7 @@ export function useCardReturnApp() {
       const idsArray = Array.from(selectedIds);
       
       let count = 0;
+      const historyEntries: { idNumber: string; action: 'assign_shipper'; details: string }[] = [];
       await db.transaction("rw", db.cards, async () => {
         for (const id of idsArray) {
           const card = await db.cards.get(id);
@@ -333,10 +340,19 @@ export function useCardReturnApp() {
               shipperPhone: phone,
               shippedAt: Date.now()
             });
+            historyEntries.push({
+              idNumber: card.idNumber,
+              action: 'assign_shipper',
+              details: `Bàn giao cho shipper: ${name} (${phone})`
+            });
             count++;
           }
         }
       });
+
+      if (historyEntries.length > 0) {
+        await addCardHistoryBulk(historyEntries);
+      }
       
       showToast(`✅ Đã bàn giao thành công ${count} thẻ cho shipper ${name}!`, "success");
       clearSelection();
@@ -353,6 +369,7 @@ export function useCardReturnApp() {
       const idsArray = Array.from(selectedIds);
       
       let count = 0;
+      const historyEntries: { idNumber: string; action: 'bulk_confirm_delivered'; details: string }[] = [];
       await db.transaction("rw", db.cards, async () => {
         for (const id of idsArray) {
           const card = await db.cards.get(id);
@@ -361,10 +378,19 @@ export function useCardReturnApp() {
               status: 'returned',
               returnedAt: Date.now()
             });
+            historyEntries.push({
+              idNumber: card.idNumber,
+              action: 'bulk_confirm_delivered',
+              details: `Shipper giao thành công cho công dân`
+            });
             count++;
           }
         }
       });
+
+      if (historyEntries.length > 0) {
+        await addCardHistoryBulk(historyEntries);
+      }
       
       showToast(`✅ Đã xác nhận shipper giao thành công ${count} thẻ!`, "success");
       clearSelection();
@@ -380,6 +406,7 @@ export function useCardReturnApp() {
       const idsArray = Array.from(selectedIds);
       
       let count = 0;
+      const historyEntries: { idNumber: string; action: 'bulk_return_to_warehouse'; details: string }[] = [];
       await db.transaction("rw", db.cards, async () => {
         for (const id of idsArray) {
           const card = await db.cards.get(id);
@@ -391,10 +418,19 @@ export function useCardReturnApp() {
               shipperPhone: undefined,
               shippedAt: undefined
             });
+            historyEntries.push({
+              idNumber: card.idNumber,
+              action: 'bulk_return_to_warehouse',
+              details: `Hoàn tác về kho hàng loạt (đưa về Hộp ${card.zone})`
+            });
             count++;
           }
         }
       });
+
+      if (historyEntries.length > 0) {
+        await addCardHistoryBulk(historyEntries);
+      }
       
       showToast(`🔄 Đã hoàn tác ${count} thẻ về lại kho!`, "info");
       clearSelection();
@@ -417,6 +453,7 @@ export function useCardReturnApp() {
 
     // Trả ra các Refs
     importInputRef, returnInputRef, cameraActionRef,
+    cameraAction,
 
     // Trả ra WebCam & Trả thẻ
     isWebCamActive, isFlashActive, scannerDisplayValue, scanMode, setScanMode,

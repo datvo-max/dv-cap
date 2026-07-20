@@ -41,7 +41,7 @@ export const exportReturnExcel = async (
   // HÀM HỖ TRỢ: TẠO SHEET ĐỘNG (Áp dụng chung cho Sheet Tổng và Sheet Ngày)
   const buildSheet = async (subsetData: CardRecord[], startIndex: number, sheetProgressWeight: number, currentProgress: number) => {
     const dataToExport = subsetData.map((item, index) => {
-      const rowData: Record<string, any> = {};
+      const rowData: Record<string, unknown> = {};
 
       activeSchema.forEach(col => {
         if (col.key === 'stt') rowData[col.label] = startIndex + index + 1;
@@ -116,7 +116,6 @@ export const exportReturnExcel = async (
 
     // --- 2. TẠO 7 SHEET THEO NGÀY (Chỉ khi xuất danh sách Đã Trả) ---
     if (type === 'returned') {
-      const today = new Date();
       // Phân bổ 50% thanh progress còn lại cho 7 sheet ngày
       const sheetDayWeight = (chunkWeight * 0.5) / 7;
       let currentProgress = baseProgress + (chunkWeight * 0.4);

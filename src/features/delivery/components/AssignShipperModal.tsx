@@ -1,5 +1,5 @@
 // src/components/AssignShipperModal.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 interface AssignShipperModalProps {
   isOpen: boolean;
@@ -12,13 +12,15 @@ export default function AssignShipperModal({ isOpen, onClose, onConfirm }: Assig
   const [shipperPhone, setShipperPhone] = useState("");
   const [error, setError] = useState("");
 
-  useEffect(() => {
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
     if (isOpen) {
       setShipperName("");
       setShipperPhone("");
       setError("");
     }
-  }, [isOpen]);
+  }
 
   const toTitleCase = (str: string) => {
     return str
@@ -71,7 +73,7 @@ export default function AssignShipperModal({ isOpen, onClose, onConfirm }: Assig
         <form onSubmit={handleSubmit}>
           <div className="p-5 space-y-4">
             <p className="text-xs text-gray-500 font-medium">
-              Vui lòng điền thông tin shipper để thực hiện bàn giao hàng loạt thẻ đã chọn. Trạng thái của các thẻ sẽ được cập nhật sang "Đang giao".
+              Vui lòng điền thông tin shipper để thực hiện bàn giao hàng loạt thẻ đã chọn. Trạng thái của các thẻ sẽ được cập nhật sang &quot;Đang giao&quot;.
             </p>
 
             {error && (

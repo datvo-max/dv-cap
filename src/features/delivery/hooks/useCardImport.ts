@@ -1,10 +1,10 @@
 // src/hooks/useCardImport.ts
 import { useState, useRef } from "react";
-import { db } from "@/shared/lib/db";
+import { db, CardRecord, addCardHistory, addCardHistoryBulk } from "@/shared/lib/db";
 import { parseCCCD } from "@/shared/utils/cccdParser";
 import * as XLSX from "xlsx"; // Nhớ import thư viện XLSX
 
-export function useCardImport(showToast: (msg: string, type: any) => void) {
+export function useCardImport(showToast: (msg: string, type: 'success' | 'error' | 'warning' | 'info') => void) {
 
   const [isNoPhotoImport, setIsNoPhotoImport] = useState(false);
   const isNoPhotoImportRef = useRef(false);
@@ -36,7 +36,7 @@ export function useCardImport(showToast: (msg: string, type: any) => void) {
         const wb = XLSX.read(bstr, { type: "binary" });
         const wsname = wb.SheetNames[0];
         const ws = wb.Sheets[wsname];
-        const data = XLSX.utils.sheet_to_json(ws) as any[];
+        const data = XLSX.utils.sheet_to_json(ws) as Record<string, string | number>[];
 
         const today = new Date().toISOString().split('T')[0];
 
@@ -61,7 +61,7 @@ export function useCardImport(showToast: (msg: string, type: any) => void) {
         }
 
         let successCount = 0;
-        const newRecords = [];
+        const newRecords: CardRecord[] = [];
 
         // Duyệt theo ĐÚNG THỨ TỰ từ trên xuống dưới của file Excel
         for (const row of data) {
@@ -85,16 +85,16 @@ export function useCardImport(showToast: (msg: string, type: any) => void) {
             status: 'pending' as const,
             zone: zone,
             idNumber: idNumber,
-            fullName: row['Họ và Tên'] || row['Ho Ten'] || 'Chưa rõ',
-            dob: row['Ngày Sinh'] || row['Ngay Sinh'] || '-',
-            address: row['Địa Chỉ'] || row['Dia Chi'] || '-',
+            fullName: row['Họ và Tên'] as string || row['Ho Ten'] as string || 'Chưa rõ',
+            dob: row['Ngày Sinh'] as string || row['Ngay Sinh'] as string || '-',
+            address: row['Địa Chỉ'] as string || row['Dia Chi'] as string || '-',
             type: "Thẻ Căn cước" as const,
             oldIdNumber: "-",
-            gender: row['Giới Tính'] || row['Gioi Tinh'] || '-',
-            issueDate: row['Ngày Cấp'] || row['Ngay Cap'] || '-',
+            gender: row['Giới Tính'] as string || row['Gioi Tinh'] as string || '-',
+            issueDate: row['Ngày Cấp'] as string || row['Ngay Cap'] as string || '-',
             canceledIdNumber: "-",
-            fatherName: row['Cha'] || row["Họ Tên Cha"] || "-",
-            motherName: row['Mẹ'] || row["Me"] || row["Họ Tên Mẹ"] || "-",
+            fatherName: row['Cha'] as string || row["Họ Tên Cha"] as string || "-",
+            motherName: row['Mẹ'] as string || row["Me"] as string || row["Họ Tên Mẹ"] as string || "-",
             isNoPhoto: false
           });
 
@@ -104,11 +104,17 @@ export function useCardImport(showToast: (msg: string, type: any) => void) {
 
         if (newRecords.length > 0) {
           await db.cards.bulkAdd(newRecords);
+          const historyEntries = newRecords.map(rec => ({
+            idNumber: rec.idNumber,
+            action: 'import' as const,
+            details: `Nạp mới thẻ từ Excel vào Hộp ${rec.zone}`
+          }));
+          await addCardHistoryBulk(historyEntries);
           showToast(`✅ Đã thêm thành công ${successCount} thẻ vào hệ thống!`, "success");
         } else {
           showToast(`⚠️ Không có thẻ mới nào được nạp (hoặc bị trùng toàn bộ).`, "warning");
         }
-      } catch (err) {
+      } catch {
         showToast("❌ Lỗi đọc file Excel. Vui lòng kiểm tra lại định dạng.", "error");
       }
       e.target.value = "";
@@ -185,6 +191,8 @@ export function useCardImport(showToast: (msg: string, type: any) => void) {
       motherName: record.motherName || "-",
       isNoPhoto: isNoPhoto
     });
+
+    await addCardHistory(record.idNumber, record.idNumber ? 'import' : 'import', `Quét nạp thẻ lẻ vào Hộp ${finalZone}`);
 
     showToast(`✅ Đã nạp thẻ: ${record.fullName} (Vị trí: Hộp ${finalZone})`, "success");
   };

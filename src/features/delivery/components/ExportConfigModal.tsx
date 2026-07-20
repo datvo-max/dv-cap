@@ -1,5 +1,5 @@
 // src/components/ExportConfigModal.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { COLUMNS_SCHEMA } from "@/shared/utils/exportReturnToExcel";
 
 interface ExportConfigModalProps {
@@ -12,13 +12,15 @@ interface ExportConfigModalProps {
 export default function ExportConfigModal({ isOpen, exportType, onClose, onConfirm }: ExportConfigModalProps) {
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
 
-  // Đặt mặc định khi mở Modal
-  useEffect(() => {
+  // Đặt mặc định khi mở Modal (Tránh dùng useEffect setState)
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
     if (isOpen) {
       const defaults = COLUMNS_SCHEMA.filter(c => c.defaultChecked).map(c => c.key);
       setSelectedKeys(defaults);
     }
-  }, [isOpen]);
+  }
 
   if (!isOpen || !exportType) return null;
 

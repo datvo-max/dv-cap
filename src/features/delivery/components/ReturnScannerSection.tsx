@@ -3,14 +3,14 @@ import React from "react";
 
 interface ReturnScannerSectionProps {
   isWebCamActive: boolean;
-  cameraActionRef: React.RefObject<'import' | 'return'>;
+  cameraAction: 'import' | 'return';
   isFlashActive: boolean;
   onStopWebcam: () => void;
 }
 
 export default function ReturnScannerSection({
   isWebCamActive,
-  cameraActionRef,
+  cameraAction,
   isFlashActive,
   onStopWebcam
 }: ReturnScannerSectionProps) {
@@ -19,9 +19,9 @@ export default function ReturnScannerSection({
       <div className="max-w-2xl mx-auto flex flex-col gap-6 mb-10 mt-4">
 
         {/* Khung Tiêu Đề Động */}
-        <div className={`p-5 rounded-2xl border-2 shadow-sm text-center ${cameraActionRef.current === 'import' ? 'bg-blue-50 border-blue-300' : 'bg-green-50 border-green-300'}`}>
-          <h2 className={`text-2xl font-black uppercase tracking-wide ${cameraActionRef.current === 'import' ? 'text-blue-800' : 'text-green-800'}`}>
-            {cameraActionRef.current === 'import'
+        <div className={`p-5 rounded-2xl border-2 shadow-sm text-center ${cameraAction === 'import' ? 'bg-blue-50 border-blue-300' : 'bg-green-50 border-green-300'}`}>
+          <h2 className={`text-2xl font-black uppercase tracking-wide ${cameraAction === 'import' ? 'text-blue-800' : 'text-green-800'}`}>
+            {cameraAction === 'import'
               ? "📥 Quét mã QR để Thêm thẻ vào Kho"
               : "📤 Quét mã QR để Trả thẻ cho Công dân"}
           </h2>
@@ -31,7 +31,7 @@ export default function ReturnScannerSection({
         </div>
 
         {/* KHUNG CAMERA CHUẨN KỸ THUẬT */}
-        <div className={`relative w-full rounded-2xl overflow-hidden shadow-xl border-4 ${cameraActionRef.current === 'import' ? 'border-blue-400' : 'border-green-400'} ${isWebCamActive ? 'bg-black' : ''}`}>
+        <div className={`relative w-full rounded-2xl overflow-hidden shadow-xl border-4 ${cameraAction === 'import' ? 'border-blue-400' : 'border-green-400'} ${isWebCamActive ? 'bg-black' : ''}`}>
           <div id="return-reader" className={`w-full ${isWebCamActive ? 'block' : 'hidden'}`}></div>
           <div className={`absolute inset-0 bg-white pointer-events-none z-30 transition-opacity ease-out ${isFlashActive ? "opacity-100 duration-0" : "opacity-0 duration-500"}`} />
         </div>

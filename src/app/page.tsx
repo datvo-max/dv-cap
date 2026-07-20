@@ -47,11 +47,13 @@ export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
-    const savedTab = localStorage.getItem('cccd_active_tab') as 'nhap-lieu' | 'tra-the' | 'giay-hen' | null;
-    if (savedTab) {
-      setActiveTab(savedTab);
-    }
+    setTimeout(() => {
+      setIsMounted(true);
+      const savedTab = localStorage.getItem('cccd_active_tab') as 'nhap-lieu' | 'tra-the' | 'giay-hen' | null;
+      if (savedTab) {
+        setActiveTab(savedTab);
+      }
+    }, 0);
   }, []);
 
   const handleTabChange = (tab: 'nhap-lieu' | 'tra-the' | 'giay-hen') => {
@@ -167,7 +169,7 @@ export default function Home() {
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
             <ReturnScannerSection
               isWebCamActive={returnApp.isWebCamActive}
-              cameraActionRef={returnApp.cameraActionRef}
+              cameraAction={returnApp.cameraAction}
               isFlashActive={returnApp.isFlashActive}
               onStopWebcam={returnApp.stopWebcam}
             />

@@ -66,9 +66,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Xóa chế độ khách nếu có
       localStorage.removeItem("dv_cap_guest_mode");
       setIsGuest(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Lỗi đăng nhập:", error);
-      toast.error("Đăng nhập thất bại: " + error.message);
+      toast.error("Đăng nhập thất bại: " + (error instanceof Error ? error.message : String(error)));
       setLoading(false);
     }
   };
@@ -86,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsGuest(false);
       setIsAllowed(false);
       setUser(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Lỗi đăng xuất:", error);
       toast.error("Đăng xuất thất bại!");
     }

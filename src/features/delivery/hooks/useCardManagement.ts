@@ -1,9 +1,9 @@
 // src/hooks/useCardManagement.ts
 import { useState } from "react";
-import { db, CardRecord } from "@/shared/lib/db";
+import { db, CardRecord, addCardHistory, addCardHistoryBulk } from "@/shared/lib/db";
 
 // Nhận hàm showToast từ bên ngoài truyền vào
-export function useCardManagement(showToast: (msg: string, type: any) => void) {
+export function useCardManagement(showToast: (msg: string, type: 'success' | 'error' | 'warning' | 'info') => void) {
 
   // 1. NGHIỆP VỤ SỬA / XÓA THẺ
   const [editModalConfig, setEditModalConfig] = useState<{ isOpen: boolean, cardId: number | null }>({ isOpen: false, cardId: null });
@@ -12,10 +12,43 @@ export function useCardManagement(showToast: (msg: string, type: any) => void) {
 
   const updateCardDetails = async (id: number, updates: Partial<CardRecord>) => {
     try {
+      const existing = await db.cards.get(id);
+      if (!existing) {
+        showToast("❌ Không tìm thấy hồ sơ thẻ này!", "error");
+        return;
+      }
       await db.cards.update(id, updates);
+
+      const changes: string[] = [];
+      if (updates.fullName !== undefined && updates.fullName !== existing.fullName) {
+        changes.push(`Họ tên: "${existing.fullName}" -> "${updates.fullName}"`);
+      }
+      if (updates.idNumber !== undefined && updates.idNumber !== existing.idNumber) {
+        changes.push(`Số CCCD: "${existing.idNumber}" -> "${updates.idNumber}"`);
+      }
+      if (updates.phoneNumber !== undefined && updates.phoneNumber !== existing.phoneNumber) {
+        changes.push(`SĐT liên hệ: "${existing.phoneNumber || 'Trống'}" -> "${updates.phoneNumber || 'Trống'}"`);
+      }
+      if (updates.zone !== undefined && updates.zone !== existing.zone) {
+        changes.push(`Vị trí Hộp: "${existing.zone}" -> "${updates.zone}"`);
+      }
+      if (updates.isNoPhoto !== undefined && updates.isNoPhoto !== existing.isNoPhoto) {
+        changes.push(`Đánh dấu không ảnh: ${existing.isNoPhoto ? 'Có' : 'Không'} -> ${updates.isNoPhoto ? 'Có' : 'Không'}`);
+      }
+      if (updates.shipperName !== undefined && updates.shipperName !== existing.shipperName) {
+        changes.push(`Tên Shipper: "${existing.shipperName || 'Trống'}" -> "${updates.shipperName || 'Trống'}"`);
+      }
+      if (updates.shipperPhone !== undefined && updates.shipperPhone !== existing.shipperPhone) {
+        changes.push(`SĐT Shipper: "${existing.shipperPhone || 'Trống'}" -> "${updates.shipperPhone || 'Trống'}"`);
+      }
+
+      if (changes.length > 0) {
+        await addCardHistory(updates.idNumber || existing.idNumber, 'edit', `Cập nhật: ${changes.join(', ')}`);
+      }
+
       showToast("✅ Đã cập nhật thông tin thẻ!", "success");
       closeEditModal();
-    } catch (error) {
+    } catch {
       showToast("❌ Có lỗi xảy ra khi lưu!", "error");
     }
   };
@@ -23,10 +56,14 @@ export function useCardManagement(showToast: (msg: string, type: any) => void) {
 
   const deleteCard = async (id: number) => {
     try {
+      const existing = await db.cards.get(id);
+      if (existing) {
+        await db.cardHistory.where('idNumber').equals(existing.idNumber).delete();
+      }
       await db.cards.delete(id);
       showToast("🗑️ Đã xóa thẻ khỏi hệ thống!", "success");
       closeEditModal();
-    } catch (error) {
+    } catch {
       showToast("❌ Có lỗi xảy ra khi xóa thẻ!", "error");
     }
   };
@@ -50,6 +87,9 @@ export function useCardManagement(showToast: (msg: string, type: any) => void) {
       // 2. ÉP KIỂU TÊN HỘP MỚI (Nếu nhập "3" thì lưu thành số 3, nhập "K3" thì giữ nguyên chuỗi)
       const finalNewBoxName = isNaN(Number(newBoxName)) ? newBoxName : Number(newBoxName);
 
+      // Lấy danh sách thẻ bị ảnh hưởng trước khi gộp để ghi lịch sử
+      const affectedCards = await db.cards.where('zone').anyOf(searchKeys).toArray();
+
       // 3. THỰC THI GỘP HỘP
       const updatedCount = await db.cards
         .where('zone')
@@ -59,6 +99,14 @@ export function useCardManagement(showToast: (msg: string, type: any) => void) {
       if (updatedCount === 0) {
         showToast("⚠️ Không tìm thấy thẻ nào trong 2 hộp này để gộp!", "warning");
       } else {
+        if (affectedCards.length > 0) {
+          const historyEntries = affectedCards.map(c => ({
+            idNumber: c.idNumber,
+            action: 'merge_box' as const,
+            details: `Gộp từ Hộp ${c.zone} sang Hộp ${finalNewBoxName}`
+          }));
+          await addCardHistoryBulk(historyEntries);
+        }
         showToast(`✅ Đã gộp thành công ${updatedCount} thẻ vào hộp ${finalNewBoxName}!`, "success");
         closeMergeModal();
       }

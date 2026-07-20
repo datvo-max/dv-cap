@@ -45,10 +45,12 @@ export default function ReturnDataTable({
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
 
-  // Reset về trang 1 mỗi khi người dùng gõ từ khóa tìm kiếm mới
-  useEffect(() => {
+  // Reset về trang 1 mỗi khi người dùng gõ từ khóa tìm kiếm mới (Tránh dùng useEffect setState)
+  const [prevSearchTerm, setPrevSearchTerm] = useState(debouncedSearchTerm);
+  if (debouncedSearchTerm !== prevSearchTerm) {
+    setPrevSearchTerm(debouncedSearchTerm);
     setCurrentPage(1);
-  }, [debouncedSearchTerm]);
+  }
 
   // =====================================
   // MỚI: TẠO CỘT MỐC VÀ HIỆU ỨNG CUỘN
