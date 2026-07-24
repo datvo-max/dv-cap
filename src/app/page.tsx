@@ -193,11 +193,12 @@ export default function Home() {
                     onExportExcel={returnApp.openExportModal}
                     isNoPhotoImport={returnApp.isNoPhotoImport}
                     onToggleNoPhotoImport={returnApp.setIsNoPhotoImport}
-                    onForceNextBox={returnApp.handleForceNextBox}
+                    onForceNextBox={returnApp.toggleForceNextBox}
                     onOpenMergeModal={returnApp.openMergeModal}
                     onOpenRenameModal={returnApp.openRenameModal}
                     isForceNextBox={returnApp.isForceNextBox}
                     nextBoxName={returnApp.nextBoxName}
+                    cardsInCurrentBox={returnApp.cardsInCurrentBox}
                   />
                 </div>
                 <div className="w-full lg:w-3/4">

@@ -17,6 +17,7 @@ interface ReturnControlPanelProps {
   onOpenRenameModal: () => void;
   isForceNextBox: boolean;
   nextBoxName: string;
+  cardsInCurrentBox: number;
 }
 
 export default function ReturnControlPanel({
@@ -33,7 +34,8 @@ export default function ReturnControlPanel({
   onOpenMergeModal,
   onOpenRenameModal,
   isForceNextBox,
-  nextBoxName
+  nextBoxName,
+  cardsInCurrentBox
 }: ReturnControlPanelProps) {
   const [activeFocus, setActiveFocus] = useState<'import' | 'return' | null>(null);
 
@@ -76,82 +78,95 @@ export default function ReturnControlPanel({
   return (
     <>
       {/* 📥 KHỐI 1: NẠP DỮ LIỆU */}
-      <div className="bg-blue-50/40 p-3 rounded-lg border border-blue-100 flex flex-col gap-3 transition-colors duration-300">
-        <p className={`text-[11px] font-bold text-blue-700 uppercase flex items-center gap-1.5 mb-1 transition-opacity duration-300 ${activeFocus === 'import' ? 'opacity-30' : 'opacity-100'
-          }`}>
-          <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-          Thêm thẻ vào kho
-        </p>
+      <div className="bg-blue-50/40 p-3 rounded-lg border border-blue-100 flex flex-col gap-4 transition-colors duration-300">
+        
+        {/* PHẦN A: NẠP EXCEL */}
+        <div className="bg-white p-3 rounded-md border border-blue-200 shadow-sm flex flex-col gap-2">
+          <p className="text-[11px] font-bold text-blue-700 uppercase flex items-center gap-1.5 border-b border-blue-100 pb-1 mb-1">
+            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            Nạp danh sách từ Excel
+          </p>
+          <div className="flex gap-2">
+            <button className="flex-1 relative flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded-md transition-colors text-[11px] shadow-sm">
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9"></path></svg>
+              Nạp từ Excel
+              <input type="file" accept=".xlsx, .xls" onChange={onImportExcel} className="absolute inset-0 opacity-0 cursor-pointer" />
+            </button>
 
-        <div className={`flex gap-2 transition-opacity duration-300 ${activeFocus === 'import' ? 'opacity-30' : 'opacity-100'
-          }`}>
-          <button className="flex-1 relative flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded-md transition-colors text-[11px] shadow-sm">
-            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9"></path></svg>
-            Nạp từ Excel
-            <input type="file" accept=".xlsx, .xls" onChange={onImportExcel} className="absolute inset-0 opacity-0 cursor-pointer" />
-          </button>
-
-          <button
-            onClick={handleDownloadTemplate}
-            className="flex-1 flex items-center justify-center gap-2 bg-white hover:bg-blue-50 text-blue-700 border border-blue-600 font-bold py-2 px-3 rounded-md transition-colors text-[11px] shadow-sm"
-          >
-            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-            Tải File Mẫu
-          </button>
-        </div>
-
-        {/* Ô quét nạp thẻ kèm viền chạy động */}
-        <div className={`relative p-[1.5px] rounded-[7px] transition-all duration-300 ${activeFocus === 'import' ? 'overflow-hidden shadow-lg' : 'border border-blue-200 bg-white'
-          }`}>
-          {activeFocus === 'import' && (
-            <div className="absolute w-[150%] aspect-square top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,#ff453a,#ff9f0a,#30d158,#0a84ff,#bf5af2,#ff453a)] animate-[spin_3.5s_linear_infinite]" />
-          )}
-          <div className="relative bg-white rounded-[5px] z-10">
-            <input
-              ref={importInputRef}
-              onKeyDown={onImportScannerInput}
-              onFocus={() => setActiveFocus('import')}
-              onBlur={() => setActiveFocus(null)}
-              placeholder={activeFocus === 'import' ? "🔫 Đang đợi dữ liệu từ máy quét..." : "🔫 Click vào đây và quét thẻ để thêm ..."}
-              className="w-full pl-3 pr-3 py-1.5 text-xs outline-none text-blue-900 bg-transparent font-medium"
-              title="Nạp lẻ bằng máy quét phần cứng"
-            />
+            <button
+              onClick={handleDownloadTemplate}
+              className="flex-1 flex items-center justify-center gap-2 bg-white hover:bg-blue-50 text-blue-700 border border-blue-600 font-bold py-2 px-3 rounded-md transition-colors text-[11px] shadow-sm"
+            >
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+              Tải File Mẫu
+            </button>
           </div>
         </div>
 
-        <div className={`flex items-center justify-between gap-2 transition-opacity duration-300 ${activeFocus === 'import' ? 'opacity-30' : 'opacity-100'
-          }`}>
-          <label className="flex items-center gap-2 cursor-pointer bg-blue-100/50 p-1.5 rounded border border-blue-200 hover:bg-blue-100 transition-colors flex-1">
-            <input
-              type="checkbox"
-              checked={isNoPhotoImport}
-              onChange={(e) => onToggleNoPhotoImport(e.target.checked)}
-              className="w-3.5 h-3.5 text-blue-600 rounded focus:ring-blue-500 border-gray-300"
-            />
-            <span className="text-[10px] font-bold text-blue-800">Thẻ không ảnh</span>
-          </label>
+        {/* PHẦN B: NẠP THỦ CÔNG (QUÉT/CAMERA) */}
+        <div className={`bg-white p-3 rounded-md border border-blue-200 shadow-sm flex flex-col gap-3 transition-opacity duration-300 ${activeFocus === 'import' ? 'opacity-30' : 'opacity-100'}`}>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-blue-100 pb-2">
+            <p className="text-[11px] font-bold text-blue-700 uppercase flex items-center gap-1.5">
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+              Thêm thủ công
+            </p>
+            <div className="flex items-center gap-2 bg-blue-50 px-2 py-1 rounded text-[10px] font-bold text-blue-800 shadow-inner">
+              <span>Hộp hiện tại: <span className="text-blue-900 text-[11px]">{nextBoxName}</span></span>
+              <span className="text-blue-300">|</span>
+              <span>SL: <span className={`${cardsInCurrentBox >= 45 ? 'text-red-600' : 'text-blue-900'}`}>{cardsInCurrentBox}/50</span></span>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between gap-2">
+            <label className="flex items-center gap-2 cursor-pointer bg-blue-100/50 p-1.5 rounded border border-blue-200 hover:bg-blue-100 transition-colors flex-1">
+              <input
+                type="checkbox"
+                checked={isNoPhotoImport}
+                onChange={(e) => onToggleNoPhotoImport(e.target.checked)}
+                className="w-3.5 h-3.5 text-blue-600 rounded focus:ring-blue-500 border-gray-300"
+              />
+              <span className="text-[10px] font-bold text-blue-800">Thẻ không ảnh</span>
+            </label>
+
+            <button
+              onClick={onForceNextBox}
+              className={`flex items-center justify-center gap-1 border transition-colors p-1.5 rounded flex-1 shadow-sm ${isForceNextBox
+                ? "bg-red-50 border-red-300 text-red-600 hover:bg-red-100"
+                : "bg-white border-blue-300 text-blue-700 hover:bg-blue-50"
+                }`}
+            >
+              <span className="text-[10px] font-bold">
+                {isForceNextBox ? `❌ Hủy sang hộp mới` : "📦 Sang hộp mới"}
+              </span>
+            </button>
+          </div>
+
+          {/* Ô quét nạp thẻ */}
+          <div className={`relative p-[1.5px] rounded-[7px] transition-all duration-300 ${activeFocus === 'import' ? 'overflow-hidden shadow-lg' : 'border border-blue-200 bg-white'
+            }`}>
+            {activeFocus === 'import' && (
+              <div className="absolute w-[150%] aspect-square top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,#ff453a,#ff9f0a,#30d158,#0a84ff,#bf5af2,#ff453a)] animate-[spin_3.5s_linear_infinite]" />
+            )}
+            <div className="relative bg-white rounded-[5px] z-10">
+              <input
+                ref={importInputRef}
+                onKeyDown={onImportScannerInput}
+                onFocus={() => setActiveFocus('import')}
+                onBlur={() => setActiveFocus(null)}
+                placeholder={activeFocus === 'import' ? "🔫 Đang đợi dữ liệu từ máy quét..." : "🔫 Click vào đây và quét thẻ để thêm ..."}
+                className="w-full pl-3 pr-3 py-1.5 text-xs outline-none text-blue-900 bg-transparent font-medium"
+                title="Nạp lẻ bằng máy quét phần cứng"
+              />
+            </div>
+          </div>
 
           <button
-            onClick={onForceNextBox}
-            disabled={isForceNextBox}
-            className={`flex items-center justify-center gap-1 border transition-colors p-1.5 rounded flex-1 shadow-sm ${isForceNextBox
-              ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed"
-              : "bg-white border-blue-300 text-blue-700 hover:bg-blue-100"
-              }`}
+            onClick={() => onStartWebcam('import')}
+            className="w-full py-2 rounded-md font-bold text-xs border transition-all duration-300 shadow-sm bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100"
           >
-            <span className="text-[10px] font-bold">
-              {isForceNextBox ? `🎯 Kế tiếp: Hộp ${nextBoxName}` : "📦 Sang hộp mới"}
-            </span>
+            📸 Mở Camera Để Quét Nạp
           </button>
         </div>
-
-        <button
-          onClick={() => onStartWebcam('import')}
-          className={`w-full py-2 rounded-md font-bold text-xs border transition-all duration-300 shadow-sm bg-white text-blue-700 border-blue-300 hover:bg-blue-50 ${activeFocus === 'import' ? 'opacity-30' : 'opacity-100'
-            }`}
-        >
-          📸 Mở Camera Để Thêm Thẻ Thủ Công
-        </button>
       </div>
 
       {/* 📤 KHỐI 2: TRẢ THẺ */}

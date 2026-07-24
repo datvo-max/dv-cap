@@ -18,14 +18,19 @@ export function useCardImport(showToast: (msg: string, type: 'success' | 'error'
   const [isForceNextBox, setIsForceNextBox] = useState(false);
   const forceNextBoxRef = useRef(false);
   
-  const handleForceNextBox = () => {
-    setIsForceNextBox(true);
-    forceNextBoxRef.current = true;
-    showToast("📦 Đã ghi nhận! Lượt nạp tiếp theo sẽ tự động chuyển sang hộp mới.", "info");
+  const toggleForceNextBox = () => {
+    const newState = !isForceNextBox;
+    setIsForceNextBox(newState);
+    forceNextBoxRef.current = newState;
+    if (newState) {
+      showToast("📦 Đã ghi nhận! Lượt nạp tiếp theo sẽ tự động chuyển sang hộp mới.", "info");
+    } else {
+      showToast("🔄 Đã hủy lệnh chuyển sang hộp mới.", "info");
+    }
   };
 
-  // Tính hộp sẽ lưu thẻ trong lần quét tiếp theo
-  const nextBoxName = useLiveQuery(async () => {
+  // Tính hộp sẽ lưu thẻ trong lần quét tiếp theo VÀ số lượng thẻ hiện tại
+  const nextBoxInfo = useLiveQuery(async () => {
     const allCards = await db.cards.toArray();
     const relevantCards = allCards.filter(c => !!c.isNoPhoto === isNoPhotoImport);
 
@@ -43,8 +48,14 @@ export function useCardImport(showToast: (msg: string, type: 'success' | 'error'
       finalZoneNum = maxZoneNum + 1;
     }
 
-    return isNoPhotoImport ? `K${finalZoneNum}` : `${finalZoneNum}`;
-  }, [isNoPhotoImport, isForceNextBox]) || (isNoPhotoImport ? "K1" : "1");
+    const nextName = isNoPhotoImport ? `K${finalZoneNum}` : `${finalZoneNum}`;
+    const currentCount = (finalZoneNum === maxZoneNum) ? cardsInMaxZone : 0;
+    
+    return { name: nextName, count: currentCount };
+  }, [isNoPhotoImport, isForceNextBox]) || { name: (isNoPhotoImport ? "K1" : "1"), count: 0 };
+  
+  const nextBoxName = nextBoxInfo.name;
+  const cardsInCurrentBox = nextBoxInfo.count;
 
   // ==========================================
   // 2. LOGIC ĐỌC FILE EXCEL & CHIA VÙNG (GIỮ NGUYÊN THỨ TỰ)
@@ -95,8 +106,10 @@ export function useCardImport(showToast: (msg: string, type: 'success' | 'error'
           const idNumber = String(row['Số CCCD'] || row['So CCCD'] || row['ID'] || '');
           if (!idNumber) continue;
 
-          // Bỏ qua nếu đã tồn tại
-          const isExist = await db.cards.where('idNumber').equals(idNumber).count();
+          const issueDate = row['Ngày Cấp'] as string || row['Ngay Cap'] as string || '-';
+          
+          // Bỏ qua nếu đã tồn tại (Trùng CCCD VÀ trùng Ngày Cấp)
+          const isExist = await db.cards.where('idNumber').equals(idNumber).filter(c => c.issueDate === issueDate).count();
           if (isExist > 0) continue;
 
           // Xếp hộp tự động: Đủ 50 thì nhảy hộp tiếp theo
@@ -118,7 +131,7 @@ export function useCardImport(showToast: (msg: string, type: 'success' | 'error'
             type: "Thẻ Căn cước" as const,
             oldIdNumber: "-",
             gender: row['Giới Tính'] as string || row['Gioi Tinh'] as string || '-',
-            issueDate: row['Ngày Cấp'] as string || row['Ngay Cap'] as string || '-',
+            issueDate: issueDate,
             canceledIdNumber: "-",
             fatherName: row['Cha'] as string || row["Họ Tên Cha"] as string || "-",
             motherName: row['Mẹ'] as string || row["Me"] as string || row["Họ Tên Mẹ"] as string || "-",
@@ -163,9 +176,10 @@ export function useCardImport(showToast: (msg: string, type: 'success' | 'error'
       return;
     }
 
-    const isExist = await db.cards.where('idNumber').equals(record.idNumber).count();
+    // Kiểm tra tồn tại: Trùng CCCD VÀ trùng Ngày cấp
+    const isExist = await db.cards.where('idNumber').equals(record.idNumber).filter(c => c.issueDate === (record.issueDate || "-")).count();
     if (isExist > 0) {
-      showToast(`⚠️ Thẻ của ${record.fullName} (${record.idNumber}) đã có trong kho!`, "warning");
+      showToast(`⚠️ Thẻ của ${record.fullName} (${record.idNumber}) - Ngày cấp: ${record.issueDate || "-"} đã có trong kho!`, "warning");
       return;
     }
 
@@ -240,11 +254,12 @@ export function useCardImport(showToast: (msg: string, type: 'success' | 'error'
   return {
     isNoPhotoImport,
     setIsNoPhotoImport: setNoPhotoWrapper,
-    handleForceNextBox,
+    toggleForceNextBox,
     handleImportExcel,
     handleImportScannerInput,
     processImportCard,
     isForceNextBox,
-    nextBoxName
+    nextBoxName,
+    cardsInCurrentBox
   };
 }

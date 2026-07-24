@@ -118,6 +118,14 @@ class CardDatabase extends Dexie {
       unissuedCards: '++id, &idNumber, fullName, appointmentDate',
       cardHistory: '++id, idNumber, action, timestamp'
     });
+
+    // Phiên bản 6: Gỡ bỏ khóa Unique của idNumber trong bảng cards để cho phép 1 người làm nhiều thẻ khác ngày cấp
+    this.version(6).stores({
+      cards: '++id, idNumber, fullName, phoneNumber, importDate, status, zone, canceledIdNumber',
+      scannedCards: '++id, &idNumber, fullName, scannedAt, fatherName, motherName',
+      unissuedCards: '++id, &idNumber, fullName, appointmentDate',
+      cardHistory: '++id, idNumber, action, timestamp'
+    });
   }
 }
 
