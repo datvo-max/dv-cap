@@ -77,11 +77,19 @@ export interface HistoryRecord {
   actor?: string;
 }
 
+export interface MatchingRecord extends Omit<CCCDRecord, 'id'> {
+  id?: number;
+  status: 'pending' | 'matched' | 'unmatched' | 'resolved';
+  matchedCardId?: number;
+  importedAt: number;
+}
+
 class CardDatabase extends Dexie {
   scannedCards!: Table<ScannedRecord>;
   cards!: Table<CardRecord>;
   unissuedCards!: Table<UnissuedRecord>;
   cardHistory!: Table<HistoryRecord>;
+  matchingCards!: Table<MatchingRecord>;
 
   constructor() {
     super('CCCD_KhoThe_DB');
@@ -125,6 +133,15 @@ class CardDatabase extends Dexie {
       scannedCards: '++id, &idNumber, fullName, scannedAt, fatherName, motherName',
       unissuedCards: '++id, &idNumber, fullName, appointmentDate',
       cardHistory: '++id, idNumber, action, timestamp'
+    });
+
+    // Phiên bản 7: Bổ sung bảng đối sánh thẻ hàng loạt
+    this.version(7).stores({
+      cards: '++id, idNumber, fullName, phoneNumber, importDate, status, zone, canceledIdNumber',
+      scannedCards: '++id, &idNumber, fullName, scannedAt, fatherName, motherName',
+      unissuedCards: '++id, &idNumber, fullName, appointmentDate',
+      cardHistory: '++id, idNumber, action, timestamp',
+      matchingCards: '++id, idNumber, status, importedAt'
     });
   }
 }

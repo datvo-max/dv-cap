@@ -75,7 +75,7 @@ export default function MergeBoxesModal({ isOpen, onClose, onMerge, onShowToast 
 
         <div className="p-5 space-y-4">
           <div className="p-3 bg-blue-50 text-blue-800 text-xs rounded border border-blue-200 leading-relaxed">
-            <strong>Lưu ý:</strong> Sau khi gộp, hệ thống sẽ bỏ qua giới hạn 50 thẻ/hộp cho hộp mới này. Toàn bộ thẻ chưa trả của 2 hộp cũ sẽ được chuyển sang hộp mới.
+            <strong>Lưu ý:</strong> Sau khi gộp, hệ thống sẽ bỏ qua giới hạn thẻ/hộp cho hộp mới này. Toàn bộ thẻ chưa trả của 2 hộp cũ sẽ được chuyển sang hộp mới.
           </div>
 
           <div className="grid grid-cols-2 gap-4">

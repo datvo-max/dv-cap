@@ -4,8 +4,10 @@ import { db, CardRecord, addCardHistory, addCardHistoryBulk } from "@/shared/lib
 import { parseCCCD } from "@/shared/utils/cccdParser";
 import * as XLSX from "xlsx"; // Nhớ import thư viện XLSX
 import { useLiveQuery } from "dexie-react-hooks";
+import { useSettings } from "@/shared/hooks/useSettings";
 
 export function useCardImport(showToast: (msg: string, type: 'success' | 'error' | 'warning' | 'info') => void) {
+  const { cardsPerBox } = useSettings();
 
   const [isNoPhotoImport, setIsNoPhotoImport] = useState(false);
   const isNoPhotoImportRef = useRef(false);
@@ -17,7 +19,7 @@ export function useCardImport(showToast: (msg: string, type: 'success' | 'error'
 
   const [isForceNextBox, setIsForceNextBox] = useState(false);
   const forceNextBoxRef = useRef(false);
-  
+
   const toggleForceNextBox = () => {
     const newState = !isForceNextBox;
     setIsForceNextBox(newState);
@@ -44,16 +46,16 @@ export function useCardImport(showToast: (msg: string, type: 'success' | 'error'
     const cardsInMaxZone = relevantCards.filter(c => String(c.zone) === targetZoneStr).length;
 
     let finalZoneNum = maxZoneNum;
-    if (cardsInMaxZone >= 50 || (isForceNextBox && cardsInMaxZone > 0)) {
+    if (cardsInMaxZone >= cardsPerBox || (isForceNextBox && cardsInMaxZone > 0)) {
       finalZoneNum = maxZoneNum + 1;
     }
 
     const nextName = isNoPhotoImport ? `K${finalZoneNum}` : `${finalZoneNum}`;
     const currentCount = (finalZoneNum === maxZoneNum) ? cardsInMaxZone : 0;
-    
+
     return { name: nextName, count: currentCount };
-  }, [isNoPhotoImport, isForceNextBox]) || { name: (isNoPhotoImport ? "K1" : "1"), count: 0 };
-  
+  }, [isNoPhotoImport, isForceNextBox, cardsPerBox]) || { name: (isNoPhotoImport ? "K1" : "1"), count: 0 };
+
   const nextBoxName = nextBoxInfo.name;
   const cardsInCurrentBox = nextBoxInfo.count;
 
@@ -103,17 +105,17 @@ export function useCardImport(showToast: (msg: string, type: 'success' | 'error'
 
         // Duyệt theo ĐÚNG THỨ TỰ từ trên xuống dưới của file Excel
         for (const row of data) {
-          const idNumber = String(row['Số CCCD'] || row['So CCCD'] || row['ID'] || '');
+          const idNumber = String(row['Số CCCD'] || row['So CCCD'] || row['ID'] || row['So DDCN'] || row['DDCN'] || '');
           if (!idNumber) continue;
 
           const issueDate = row['Ngày Cấp'] as string || row['Ngay Cap'] as string || '-';
-          
+
           // Bỏ qua nếu đã tồn tại (Trùng CCCD VÀ trùng Ngày Cấp)
           const isExist = await db.cards.where('idNumber').equals(idNumber).filter(c => c.issueDate === issueDate).count();
           if (isExist > 0) continue;
 
-          // Xếp hộp tự động: Đủ 50 thì nhảy hộp tiếp theo
-          if (currentZoneCount >= 50) {
+          // Xếp hộp tự động: Đủ số thẻ cài đặt thì nhảy hộp tiếp theo
+          if (currentZoneCount >= cardsPerBox) {
             maxZoneNum++;
             currentZoneCount = 0;
           }
@@ -206,8 +208,8 @@ export function useCardImport(showToast: (msg: string, type: 'success' | 'error'
 
     let finalZoneNum = maxZoneNum;
 
-    // 3. Quyết định sang hộp mới nếu: Hộp cũ đã đủ 50 thẻ, HOẶC có lệnh Ép sang hộp
-    if (cardsInMaxZone >= 50 || (forceNextBoxRef.current && cardsInMaxZone > 0)) {
+    // 3. Quyết định sang hộp mới nếu: Hộp cũ đã đủ số lượng, HOẶC có lệnh Ép sang hộp
+    if (cardsInMaxZone >= cardsPerBox || (forceNextBoxRef.current && cardsInMaxZone > 0)) {
       finalZoneNum = maxZoneNum + 1;
       forceNextBoxRef.current = false; // Tắt cờ sau khi đã thực thi thành công
       setIsForceNextBox(false);
@@ -260,6 +262,7 @@ export function useCardImport(showToast: (msg: string, type: 'success' | 'error'
     processImportCard,
     isForceNextBox,
     nextBoxName,
-    cardsInCurrentBox
+    cardsInCurrentBox,
+    cardsPerBox
   };
 }

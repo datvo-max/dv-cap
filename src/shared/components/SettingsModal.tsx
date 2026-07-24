@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSettings } from "../hooks/useSettings";
+import { toast } from "react-hot-toast";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -16,19 +17,28 @@ export default function SettingsModal({
   onRestoreDatabase,
   onRequestClearData
 }: SettingsModalProps) {
-  const { unitName, updateUnitName } = useSettings();
+  const { unitName, updateUnitName, cardsPerBox, updateCardsPerBox } = useSettings();
   const [localUnitName, setLocalUnitName] = useState(unitName);
+  const [localCardsPerBox, setLocalCardsPerBox] = useState(cardsPerBox.toString());
 
   useEffect(() => {
     if (isOpen) {
       setLocalUnitName(unitName);
+      setLocalCardsPerBox(cardsPerBox.toString());
     }
-  }, [isOpen, unitName]);
+  }, [isOpen, unitName, cardsPerBox]);
 
   if (!isOpen) return null;
 
   const handleSaveSettings = () => {
     updateUnitName(localUnitName);
+    const parsedCards = parseInt(localCardsPerBox, 10);
+    if (!isNaN(parsedCards) && parsedCards > 0) {
+      updateCardsPerBox(parsedCards);
+    } else {
+      setLocalCardsPerBox(cardsPerBox.toString()); // Reset on invalid input
+    }
+    toast.success("Đã lưu cài đặt hệ thống!");
     onClose();
   };
 
@@ -47,22 +57,37 @@ export default function SettingsModal({
         </div>
 
         <div className="p-6 space-y-6">
-          {/* Section: Đổi tên đơn vị */}
+          {/* Section: Đổi tên đơn vị & Số lượng thẻ */}
           <div>
-            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Thông tin Đơn vị</h4>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">Tên Đơn vị (Hiển thị trên Header)</label>
-            <input
-              type="text"
-              value={localUnitName}
-              onChange={(e) => setLocalUnitName(e.target.value)}
-              placeholder="Ví dụ: Tân An, Bến Lức..."
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-            />
+            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Thông tin Cơ bản</h4>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">Tên Đơn vị (Hiển thị trên Header)</label>
+                <input
+                  type="text"
+                  value={localUnitName}
+                  onChange={(e) => setLocalUnitName(e.target.value)}
+                  placeholder="Ví dụ: Tân An, Bến Lức..."
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">Số thẻ tối đa mỗi hộp</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={localCardsPerBox}
+                  onChange={(e) => setLocalCardsPerBox(e.target.value)}
+                  placeholder="Ví dụ: 50"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+            </div>
             <button 
               onClick={handleSaveSettings}
-              className="mt-2 w-full py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition-colors shadow-sm"
+              className="mt-4 w-full py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition-colors shadow-sm"
             >
-              Lưu thay đổi Tên Đơn vị
+              Lưu thay đổi Cài đặt
             </button>
           </div>
 

@@ -18,6 +18,7 @@ interface ReturnControlPanelProps {
   isForceNextBox: boolean;
   nextBoxName: string;
   cardsInCurrentBox: number;
+  cardsPerBox: number;
 }
 
 export default function ReturnControlPanel({
@@ -35,7 +36,8 @@ export default function ReturnControlPanel({
   onOpenRenameModal,
   isForceNextBox,
   nextBoxName,
-  cardsInCurrentBox
+  cardsInCurrentBox,
+  cardsPerBox
 }: ReturnControlPanelProps) {
   const [activeFocus, setActiveFocus] = useState<'import' | 'return' | null>(null);
 
@@ -79,7 +81,7 @@ export default function ReturnControlPanel({
     <>
       {/* 📥 KHỐI 1: NẠP DỮ LIỆU */}
       <div className="bg-blue-50/40 p-3 rounded-lg border border-blue-100 flex flex-col gap-4 transition-colors duration-300">
-        
+
         {/* PHẦN A: NẠP EXCEL */}
         <div className="bg-white p-3 rounded-md border border-blue-200 shadow-sm flex flex-col gap-2">
           <p className="text-[11px] font-bold text-blue-700 uppercase flex items-center gap-1.5 border-b border-blue-100 pb-1 mb-1">
@@ -113,7 +115,7 @@ export default function ReturnControlPanel({
             <div className="flex items-center gap-2 bg-blue-50 px-2 py-1 rounded text-[10px] font-bold text-blue-800 shadow-inner">
               <span>Hộp hiện tại: <span className="text-blue-900 text-[11px]">{nextBoxName}</span></span>
               <span className="text-blue-300">|</span>
-              <span>SL: <span className={`${cardsInCurrentBox >= 45 ? 'text-red-600' : 'text-blue-900'}`}>{cardsInCurrentBox}/50</span></span>
+              <span>SL: <span className={`${cardsInCurrentBox >= (cardsPerBox - 5) ? 'text-red-600' : 'text-blue-900'}`}>{cardsInCurrentBox}/{cardsPerBox}</span></span>
             </div>
           </div>
 

@@ -37,8 +37,17 @@ export function useSystemUtils(
       showToast("Đang tạo file sao lưu hệ thống...", "info");
 
       const blob = await db.export();
+      
+      // Bổ sung cài đặt vào file backup
+      const text = await blob.text();
+      const parsed = JSON.parse(text);
+      parsed.customSettings = {
+        unitName: localStorage.getItem("dv_cap_unit_name") || "Tân An",
+        cardsPerBox: localStorage.getItem("dv_cap_cards_per_box") || 50
+      };
+      const finalBlob = new Blob([JSON.stringify(parsed)], { type: "application/json" });
 
-      const url = URL.createObjectURL(blob);
+      const url = URL.createObjectURL(finalBlob);
       const a = document.createElement("a");
       a.href = url;
       a.download = `KhoThe_Backup_${new Date().toISOString().split('T')[0]}.json`;
@@ -58,17 +67,43 @@ export function useSystemUtils(
 
     try {
       await import('dexie-export-import');
+      showToast("Đang xử lý file sao lưu...", "warning");
+
+      // Khắc phục triệt để lỗi khác version:
+      // Đọc file, sửa lại trường databaseVersion cho khớp với db hiện tại (db.verno)
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      
+      if (parsed.data && parsed.data.databaseVersion !== undefined) {
+        parsed.data.databaseVersion = db.verno; // Ép version của file bằng version hiện tại
+      }
+      
+      // Phục hồi cài đặt nếu có
+      if (parsed.customSettings) {
+        if (parsed.customSettings.unitName) {
+          localStorage.setItem("dv_cap_unit_name", parsed.customSettings.unitName);
+        }
+        if (parsed.customSettings.cardsPerBox) {
+          localStorage.setItem("dv_cap_cards_per_box", parsed.customSettings.cardsPerBox.toString());
+        }
+        window.dispatchEvent(new Event("dv_cap_settings_updated"));
+      }
+
+      const modifiedBlob = new Blob([JSON.stringify(parsed)], { type: "application/json" });
+
       showToast("Đang khôi phục hệ thống...", "warning");
 
-      await db.import(file, {
+      await db.import(modifiedBlob, {
         clearTablesBeforeImport: true,
+        acceptMissingTables: true, // Chấp nhận nếu file backup thiếu các bảng mới
+        acceptNameDiff: true,      // Chấp nhận nếu có sự khác biệt nhỏ về tên
       });
 
       showToast("✅ Đã khôi phục toàn bộ kho thẻ thành công!", "success");
       e.target.value = "";
     } catch (error) {
       console.error("Lỗi restore:", error);
-      showToast("❌ Lỗi khi đọc file sao lưu. Vui lòng kiểm tra lại!", "error");
+      showToast("❌ Lỗi khi đọc file sao lưu. File có thể bị hỏng hoặc không đúng định dạng!", "error");
     }
   };
 

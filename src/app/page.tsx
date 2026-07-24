@@ -25,6 +25,10 @@ import ReturnControlPanel from "@/features/delivery/components/ReturnControlPane
 
 // --- COMPONENT CỦA PHÂN HỆ 3 (MỚI) ---
 import UnissuedDataTable from "@/features/appointments/components/UnissuedDataTable";
+
+// --- COMPONENT CỦA PHÂN HỆ 4 (ĐỐI SÁNH) ---
+import MatchingDashboard from "@/features/matching/components/MatchingDashboard";
+
 import ExportConfigModal from "@/features/delivery/components/ExportConfigModal";
 import MergeBoxesModal from "@/features/delivery/components/MergeBoxesModal";
 import AssignShipperModal from "@/features/delivery/components/AssignShipperModal";
@@ -34,8 +38,8 @@ import SettingsModal from "@/shared/components/SettingsModal";
 
 export default function Home() {
   const { user, isAllowed, loading, isGuest } = useAuth();
-  // MỚI: Thêm trạng thái tab 'giay-hen'
-  const [activeTab, setActiveTab] = useState<'nhap-lieu' | 'tra-the' | 'giay-hen'>('nhap-lieu');
+  // MỚI: Thêm trạng thái tab 'doi-sanh'
+  const [activeTab, setActiveTab] = useState<'nhap-lieu' | 'tra-the' | 'giay-hen' | 'doi-sanh'>('nhap-lieu');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const app = useScannerApp();
@@ -53,14 +57,14 @@ export default function Home() {
   useEffect(() => {
     setTimeout(() => {
       setIsMounted(true);
-      const savedTab = localStorage.getItem('cccd_active_tab') as 'nhap-lieu' | 'tra-the' | 'giay-hen' | null;
+      const savedTab = localStorage.getItem('cccd_active_tab') as 'nhap-lieu' | 'tra-the' | 'giay-hen' | 'doi-sanh' | null;
       if (savedTab) {
         setActiveTab(savedTab);
       }
     }, 0);
   }, []);
 
-  const handleTabChange = (tab: 'nhap-lieu' | 'tra-the' | 'giay-hen') => {
+  const handleTabChange = (tab: 'nhap-lieu' | 'tra-the' | 'giay-hen' | 'doi-sanh') => {
     setActiveTab(tab);
     localStorage.setItem('cccd_active_tab', tab);
   };
@@ -104,6 +108,15 @@ export default function Home() {
                 }`}
             >
               📑 PHÂN HỆ 3: THEO DÕI GIẤY HẸN
+            </button>
+            <button
+              onClick={() => handleTabChange('doi-sanh')}
+              className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'doi-sanh'
+                ? "bg-teal-600 text-white shadow-md transform scale-105"
+                : "text-gray-500 hover:text-teal-600 hover:bg-teal-50"
+                }`}
+            >
+              🔄 PHÂN HỆ 4: ĐỐI SÁNH
             </button>
           </div>
         </div>
@@ -199,6 +212,7 @@ export default function Home() {
                     isForceNextBox={returnApp.isForceNextBox}
                     nextBoxName={returnApp.nextBoxName}
                     cardsInCurrentBox={returnApp.cardsInCurrentBox}
+                    cardsPerBox={returnApp.cardsPerBox}
                   />
                 </div>
                 <div className="w-full lg:w-3/4">
@@ -231,6 +245,13 @@ export default function Home() {
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 max-w-5xl mx-auto">
             <UnissuedDataTable />
           </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* NỘI DUNG TAB 4 (ĐỐI SÁNH) */}
+        {/* ======================================================== */}
+        {activeTab === 'doi-sanh' && (
+          <MatchingDashboard />
         )}
 
       </div>}
