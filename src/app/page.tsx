@@ -35,11 +35,12 @@ import AssignShipperModal from "@/features/delivery/components/AssignShipperModa
 import MoveCardsBoxModal from "@/features/delivery/components/MoveCardsBoxModal";
 import RenameBoxModal from "@/features/delivery/components/RenameBoxModal";
 import SettingsModal from "@/shared/components/SettingsModal";
+import UserGuideTab from "@/features/guide/components/UserGuideTab";
 
 export default function Home() {
   const { user, isAllowed, loading, isGuest } = useAuth();
-  // MỚI: Thêm trạng thái tab 'doi-sanh'
-  const [activeTab, setActiveTab] = useState<'nhap-lieu' | 'tra-the' | 'giay-hen' | 'doi-sanh'>('nhap-lieu');
+  // MỚI: Thêm trạng thái tab 'gioi-thieu' và 'doi-sanh'
+  const [activeTab, setActiveTab] = useState<'gioi-thieu' | 'nhap-lieu' | 'tra-the' | 'giay-hen' | 'doi-sanh'>('gioi-thieu');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const app = useScannerApp();
@@ -57,14 +58,14 @@ export default function Home() {
   useEffect(() => {
     setTimeout(() => {
       setIsMounted(true);
-      const savedTab = localStorage.getItem('cccd_active_tab') as 'nhap-lieu' | 'tra-the' | 'giay-hen' | 'doi-sanh' | null;
+      const savedTab = localStorage.getItem('cccd_active_tab') as 'gioi-thieu' | 'nhap-lieu' | 'tra-the' | 'giay-hen' | 'doi-sanh' | null;
       if (savedTab) {
         setActiveTab(savedTab);
       }
     }, 0);
   }, []);
 
-  const handleTabChange = (tab: 'nhap-lieu' | 'tra-the' | 'giay-hen' | 'doi-sanh') => {
+  const handleTabChange = (tab: 'gioi-thieu' | 'nhap-lieu' | 'tra-the' | 'giay-hen' | 'doi-sanh') => {
     setActiveTab(tab);
     localStorage.setItem('cccd_active_tab', tab);
   };
@@ -79,9 +80,18 @@ export default function Home() {
 
       {isMounted && <div className="max-w-[1700px] mx-auto px-4">
 
-        {/* THANH ĐIỀU HƯỚNG 3 TAB */}
-        <div className="flex justify-center mb-8">
-          <div className="bg-white p-1.5 rounded-xl flex flex-wrap justify-center gap-2 shadow-sm border border-gray-200 max-w-full">
+        {/* THANH ĐIỀU HƯỚNG CÁC TAB */}
+        <div className="flex justify-center mb-6 md:mb-8">
+          <div className="bg-white p-1.5 rounded-xl flex flex-nowrap overflow-x-auto justify-start md:justify-center md:flex-wrap gap-2 shadow-sm border border-gray-200 max-w-full scrollbar-none">
+            <button
+              onClick={() => handleTabChange('gioi-thieu')}
+              className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'gioi-thieu'
+                ? "bg-emerald-600 text-white shadow-md transform scale-105"
+                : "text-gray-500 hover:text-emerald-600 hover:bg-emerald-50"
+                }`}
+            >
+              📖 GIỚI THIỆU & HƯỚNG DẪN
+            </button>
             <button
               onClick={() => handleTabChange('nhap-lieu')}
               className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'nhap-lieu'
@@ -120,6 +130,13 @@ export default function Home() {
             </button>
           </div>
         </div>
+
+        {/* ======================================================== */}
+        {/* NỘI DUNG TAB GIỚI THIỆU */}
+        {/* ======================================================== */}
+        {activeTab === 'gioi-thieu' && (
+          <UserGuideTab onNavigateTab={(tab) => handleTabChange(tab)} />
+        )}
 
         {/* ======================================================== */}
         {/* NỘI DUNG TAB 1 */}
