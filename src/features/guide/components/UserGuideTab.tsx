@@ -54,24 +54,24 @@ export default function UserGuideTab({ onNavigateTab }: UserGuideTabProps) {
       ],
       keywords: ["offline", "indexeddb", "dexie", "cơ sở dữ liệu", "lưu trữ cục bộ", "tốc độ", "mất mạng"]
     },
-    {
-      id: "overview-auth",
-      sectionId: "overview",
-      title: "Bảo mật Xác thực Google OAuth & Danh sách Trắng (Whitelist)",
-      badge: "Bảo mật",
-      badgeColor: "bg-emerald-100 text-emerald-800 border-emerald-200",
-      icon: <ShieldCheck className="w-5 h-5 text-emerald-600" />,
-      summary: "Hệ thống kiểm soát quyền truy cập chặt chẽ thông qua tài khoản Google (Gmail) đối chiếu với Danh sách trắng trên Firebase Cloud Firestore.",
-      steps: [
-        "Khi truy cập, người dùng chọn 'Đăng nhập với Google' và sử dụng Gmail công vụ.",
-        "Hệ thống tự động kiểm tra bảng 'allowed_users' trên Firebase Firestore. Chỉ các email được cấp quyền (allowed: true) mới được phép vào hệ thống.",
-        "Hỗ trợ 'Chế độ Khách (Guest Mode)' để kiểm thử nhanh hoặc trải nghiệm tính năng mà không cần quyền Whitelist (dữ liệu cách ly với tài khoản chính)."
-      ],
-      tips: [
-        "Để cấp quyền cho nhân viên mới, Quản trị viên chỉ cần thêm email vào bảng allowed_users trên Firebase."
-      ],
-      keywords: ["bảo mật", "oauth", "google", "login", "đăng nhập", "whitelist", "firebase", "guest mode", "khách", "quyền"]
-    },
+    // {
+    //   id: "overview-auth",
+    //   sectionId: "overview",
+    //   title: "Bảo mật Xác thực Google OAuth & Danh sách Trắng (Whitelist)",
+    //   badge: "Bảo mật",
+    //   badgeColor: "bg-emerald-100 text-emerald-800 border-emerald-200",
+    //   icon: <ShieldCheck className="w-5 h-5 text-emerald-600" />,
+    //   summary: "Hệ thống kiểm soát quyền truy cập chặt chẽ thông qua tài khoản Google (Gmail) đối chiếu với Danh sách trắng trên Firebase Cloud Firestore.",
+    //   steps: [
+    //     "Khi truy cập, người dùng chọn 'Đăng nhập với Google' và sử dụng Gmail công vụ.",
+    //     "Hệ thống tự động kiểm tra bảng 'allowed_users' trên Firebase Firestore. Chỉ các email được cấp quyền (allowed: true) mới được phép vào hệ thống.",
+    //     "Hỗ trợ 'Chế độ Khách (Guest Mode)' để kiểm thử nhanh hoặc trải nghiệm tính năng mà không cần quyền Whitelist (dữ liệu cách ly với tài khoản chính)."
+    //   ],
+    //   tips: [
+    //     "Để cấp quyền cho nhân viên mới, Quản trị viên chỉ cần thêm email vào bảng allowed_users trên Firebase."
+    //   ],
+    //   keywords: ["bảo mật", "oauth", "google", "login", "đăng nhập", "whitelist", "firebase", "guest mode", "khách", "quyền"]
+    // },
 
     // --- PHÂN HỆ 1 ---
     {
@@ -332,21 +332,21 @@ export default function UserGuideTab({ onNavigateTab }: UserGuideTabProps) {
     },
 
     // --- MẸO & KHẮC PHỤC SỰ CỐ ---
-    {
-      id: "tips-camera-https",
-      sectionId: "tips",
-      title: "Yêu Cầu HTTPS / Localhost Để Mở Camera Quét QR",
-      badge: "Khắc phục sự cố",
-      badgeColor: "bg-amber-100 text-amber-800 border-amber-200",
-      icon: <Camera className="w-5 h-5 text-amber-600" />,
-      summary: "Giải quyết hiện tượng trình duyệt chặn camera trên điện thoại hoặc máy tính khi test trong mạng nội bộ.",
-      steps: [
-        "Quy định bảo mật của trình duyệt hiện đại (Chrome/Safari/Edge) BẮT BUỘC trang web phải chạy qua giao thức an toàn 'https://' hoặc đường dẫn 'localhost' thì mới cấp quyền truy cập Camera (thư viện html5-qrcode).",
-        "Khi truy cập bằng IP mạng LAN (ví dụ: http://192.168.1.5:3000) trên điện thoại, camera sẽ bị từ chối quyền.",
-        "Khắc phục: Sử dụng HTTPS Proxy (ngrok, cloudflared) hoặc truy cập trên GitHub Pages chính thức của đơn vị có chứng chỉ SSL (https)."
-      ],
-      keywords: ["camera", "https", "localhost", "lỗi camera", "từ chối quyền", "quét qr", "html5-qrcode", "proxy", "ssl"]
-    },
+    // {
+    //   id: "tips-camera-https",
+    //   sectionId: "tips",
+    //   title: "Yêu Cầu HTTPS / Localhost Để Mở Camera Quét QR",
+    //   badge: "Khắc phục sự cố",
+    //   badgeColor: "bg-amber-100 text-amber-800 border-amber-200",
+    //   icon: <Camera className="w-5 h-5 text-amber-600" />,
+    //   summary: "Giải quyết hiện tượng trình duyệt chặn camera trên điện thoại hoặc máy tính khi test trong mạng nội bộ.",
+    //   steps: [
+    //     "Quy định bảo mật của trình duyệt hiện đại (Chrome/Safari/Edge) BẮT BUỘC trang web phải chạy qua giao thức an toàn 'https://' hoặc đường dẫn 'localhost' thì mới cấp quyền truy cập Camera (thư viện html5-qrcode).",
+    //     "Khi truy cập bằng IP mạng LAN (ví dụ: http://192.168.1.5:3000) trên điện thoại, camera sẽ bị từ chối quyền.",
+    //     "Khắc phục: Sử dụng HTTPS Proxy (ngrok, cloudflared) hoặc truy cập trên GitHub Pages chính thức của đơn vị có chứng chỉ SSL (https)."
+    //   ],
+    //   keywords: ["camera", "https", "localhost", "lỗi camera", "từ chối quyền", "quét qr", "html5-qrcode", "proxy", "ssl"]
+    // },
     {
       id: "tips-hardware-scanner",
       sectionId: "tips",
@@ -354,7 +354,7 @@ export default function UserGuideTab({ onNavigateTab }: UserGuideTabProps) {
       badge: "Mẹo chuyên gia",
       badgeColor: "bg-amber-100 text-amber-800 border-amber-200",
       icon: <Zap className="w-5 h-5 text-amber-600" />,
-      summary: "Thiết lập không gian làm việc chuyên nghiệp, rảnh tay và đạt tốc độ xử lý hàng trăm thẻ mỗi giờ.",
+      summary: "Thiết lập không gian làm việc chuyên nghiệp, rảnh tay và đạt tốc độ xử lý hàng nghìn thẻ mỗi giờ.",
       steps: [
         "Trang bị đầu quét mã vạch/QR 2D cổng USB hoặc Bluetooth kết nối trực tiếp vào máy tính tại quầy.",
         "Trên ứng dụng, chọn chế độ 'Bật Máy Quét (Device Scanner)'. Đặt con trỏ chuột vào ô nhận dữ liệu.",
