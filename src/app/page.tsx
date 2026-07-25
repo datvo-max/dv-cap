@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useScannerApp } from "@/features/intake/hooks/useScannerApp";
 import { useCardReturnApp } from "@/features/delivery/hooks/useCardReturnApp";
 
@@ -37,37 +38,37 @@ import RenameBoxModal from "@/features/delivery/components/RenameBoxModal";
 import SettingsModal from "@/shared/components/SettingsModal";
 import UserGuideTab from "@/features/guide/components/UserGuideTab";
 
-export default function Home() {
+function HomeContent() {
   const { user, isAllowed, loading, isGuest } = useAuth();
-  // MỚI: Thêm trạng thái tab 'gioi-thieu' và 'doi-sanh'
-  const [activeTab, setActiveTab] = useState<'gioi-thieu' | 'nhap-lieu' | 'tra-the' | 'giay-hen' | 'doi-sanh'>('gioi-thieu');
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const tabParam = searchParams.get("tab") as "gioi-thieu" | "nhap-lieu" | "tra-the" | "giay-hen" | "doi-sanh" | null;
+  const activeTab = tabParam || "gioi-thieu";
+
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const app = useScannerApp();
   const returnApp = useCardReturnApp();
 
-  const activeToasts = activeTab === 'nhap-lieu' ? app.toasts : returnApp.toasts;
-  const activeProgress = activeTab === 'nhap-lieu' ? app.exportProgress : returnApp.exportProgress;
+  const activeToasts = activeTab === "nhap-lieu" ? app.toasts : returnApp.toasts;
+  const activeProgress = activeTab === "nhap-lieu" ? app.exportProgress : returnApp.exportProgress;
 
-  const activeModalConfig = activeTab === 'nhap-lieu' ? app.modalConfig : returnApp.modalConfig;
-  const activeConfirmClear = activeTab === 'nhap-lieu' ? app.confirmClearData : returnApp.confirmClearData;
-  const activeCloseModal = activeTab === 'nhap-lieu' ? app.closeModal : returnApp.closeModal;
+  const activeModalConfig = activeTab === "nhap-lieu" ? app.modalConfig : returnApp.modalConfig;
+  const activeConfirmClear = activeTab === "nhap-lieu" ? app.confirmClearData : returnApp.confirmClearData;
+  const activeCloseModal = activeTab === "nhap-lieu" ? app.closeModal : returnApp.closeModal;
 
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setTimeout(() => {
-      setIsMounted(true);
-      const savedTab = localStorage.getItem('cccd_active_tab') as 'gioi-thieu' | 'nhap-lieu' | 'tra-the' | 'giay-hen' | 'doi-sanh' | null;
-      if (savedTab) {
-        setActiveTab(savedTab);
-      }
-    }, 0);
+    setIsMounted(true);
   }, []);
 
-  const handleTabChange = (tab: 'gioi-thieu' | 'nhap-lieu' | 'tra-the' | 'giay-hen' | 'doi-sanh') => {
-    setActiveTab(tab);
-    localStorage.setItem('cccd_active_tab', tab);
+  const handleTabChange = (tab: "gioi-thieu" | "nhap-lieu" | "tra-the" | "giay-hen" | "doi-sanh") => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", tab);
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   if (loading || (!user && !isGuest) || !isAllowed) {
@@ -328,5 +329,13 @@ export default function Home() {
         onRequestClearData={returnApp.requestClearData}
       />
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center font-bold text-emerald-700">Đang tải ứng dụng...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }

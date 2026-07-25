@@ -46,8 +46,8 @@ export default function UserGuideTab({ onNavigateTab }: UserGuideTabProps) {
       summary: "Hệ thống lưu trữ toàn bộ dữ liệu kho thẻ và lịch sử quét trực tiếp trên trình duyệt (IndexedDB), đảm bảo thao tác siêu tốc và không bị ảnh hưởng khi mất mạng.",
       steps: [
         "Mọi thao tác quét mã, thêm sửa thẻ hay phân hộp đều được lưu ngay vào cơ sở dữ liệu cục bộ (CCCD_KhoThe_DB).",
-        "Không cần chờ đợi tải trang hay đồng bộ máy chủ liên tục trong quá trình nghiệp vụ tại quầy.",
-        "Dữ liệu được bảo mật an toàn trên thiết bị của nhân viên thao tác."
+        "Không cần chờ đợi tải trang hay đồng bộ máy chủ liên tục trong quá trình nghiệp vụ.",
+        "Dữ liệu được bảo mật an toàn trên thiết bị của Cán bộ thao tác."
       ],
       tips: [
         "Vì dữ liệu lưu trên trình duyệt, hãy sử dụng tính năng 'Sao lưu dữ liệu (Backup JSON)' định kỳ trong mục Settings để bảo quản."
@@ -77,15 +77,15 @@ export default function UserGuideTab({ onNavigateTab }: UserGuideTabProps) {
     {
       id: "intake-scanner",
       sectionId: "intake",
-      title: "Quét Mã QR CCCD Nhập Liệu Tự Động",
+      title: "Quét Mã QR Thẻ căn cước Nhập Liệu Tự Động",
       badge: "Phân hệ 1",
       badgeColor: "bg-blue-100 text-blue-800 border-blue-200",
       icon: <QrCode className="w-5 h-5 text-blue-600" />,
-      summary: "Sử dụng camera điện thoại/webcam hoặc máy quét cầm tay USB/Bluetooth để bóc tách tự động các trường thông tin từ mã QR trên thẻ CCCD.",
+      summary: "Sử dụng camera điện thoại/webcam hoặc máy quét cầm tay USB/Bluetooth để bóc tách tự động các trường thông tin từ mã QR trên Thẻ căn cước.",
       steps: [
         "Tại Bảng điều khiển Quét (bên trái), chọn 'Bật Webcam' để dùng camera thiết bị, hoặc chọn 'Bật Máy Quét' nếu dùng đầu quét cầm tay (Bluetooth/USB).",
-        "Đưa mã QR trên thẻ CCCD vào vùng quét hoặc bấm cò máy quét.",
-        "Hệ thống tự động phân tích và tự động điền các thông tin: Số CCCD, Họ tên, Ngày sinh, Giới tính, Địa chỉ thường trú, Ngày cấp...",
+        "Đưa mã QR trên Thẻ căn cước vào vùng quét hoặc bấm cò máy quét.",
+        "Hệ thống tự động phân tích và tự động điền các thông tin: Số ĐDCN, Họ tên, Ngày sinh, Giới tính, Địa chỉ thường trú, Ngày cấp, Tên cha, Tên mẹ.",
         "Bản ghi hợp lệ sẽ tự động được thêm vào Danh sách bên phải kèm âm báo thành công."
       ],
       tips: [
@@ -98,15 +98,15 @@ export default function UserGuideTab({ onNavigateTab }: UserGuideTabProps) {
     {
       id: "intake-excel-export",
       sectionId: "intake",
-      title: "Tải lên & Xuất Báo Cáo Excel Danh Sách Quét",
+      title: "Tải lên & Xuất File Excel Danh Sách Đã Quét",
       badge: "Phân hệ 1",
       badgeColor: "bg-blue-100 text-blue-800 border-blue-200",
       icon: <FileSpreadsheet className="w-5 h-5 text-blue-600" />,
-      summary: "Tải lên danh sách có sẵn từ file Excel hoặc xuất danh sách đã quét ra file Excel với định dạng chuyên nghiệp chuẩn hóa.",
+      summary: "Tải lên danh sách hình ảnh chụp có chứa mã QR của Thẻ căn cước hoặc xuất danh sách đã quét ra file Excel với định dạng chuyên nghiệp chuẩn hóa.",
       steps: [
-        "Tải lên (Import): Bấm nút 'Chọn File Excel' tại bảng điều khiển để nhập nhanh danh sách công dân từ bảng tính vào hệ thống.",
-        "Xuất file (Export): Bấm nút 'Xuất Excel', hệ thống tự động tạo bảng tính chuẩn hóa màu sắc, phông chữ, định dạng ngày tháng và viền bảng.",
-        "Xóa dữ liệu phiên làm việc: Bấm 'Xóa Dữ Liệu' -> Xác nhận trên Modal cảnh báo để làm sạch danh sách quét trong ngày."
+        "Tải lên (Import): Bấm nút 'Chọn File' tại bảng điều khiển để nhập danh sách hình ảnh chụp có chứa mã QR của Thẻ căn cước vào hệ thống.",
+        "Xuất file (Export): Bấm nút 'Xuất Excel', hệ thống tự động tạo bảng tính với định dạng bảng tính chuyên nghiệp chuẩn hóa màu sắc, phông chữ, định dạng ngày tháng và viền bảng.",
+        "Xóa dữ liệu phiên làm việc: Bấm 'Xóa Dữ Liệu' -> Xác nhận trên Modal cảnh báo để làm sạch danh sách đã quét."
       ],
       keywords: ["excel", "xuất excel", "tải lên", "import", "export", "báo cáo", "danh sách", "xóa dữ liệu"],
       targetTab: "nhap-lieu"
@@ -139,28 +139,28 @@ export default function UserGuideTab({ onNavigateTab }: UserGuideTabProps) {
       summary: "Quy trình đưa thẻ vào kho tự động phân bổ theo các hộp lưu trữ (Box), giới hạn dung lượng và tối ưu hóa vị trí.",
       steps: [
         "Tải file Excel mẫu chuẩn bằng nút 'Tải File Mẫu' (Import_Sample_QLTCC.xlsx) và điền danh sách thẻ cần nhập kho.",
-        "Tại Bảng Công cụ Nhập Kho: Tùy chọn bật/tắt 'Nhập Không Cần Ảnh (No Photo Import)' để tăng tốc độ nạp dữ liệu hàng loạt.",
-        "Thiết lập 'Số thẻ tối đa / Hộp (Cards Per Box)': Khi nhập liệu hoặc quét, hệ thống tự động đếm thẻ trong hộp hiện tại. Nếu đầy, hệ thống tự động tạo hộp mới (ví dụ: Box 1 -> Box 2).",
-        "Sử dụng công tắc 'Buộc chuyển sang hộp tiếp theo (Force Next Box)' khi bạn muốn ngắt hộp ngay lập tức tại vị trí phân loại hiện tại dù hộp chưa đầy."
+        "Tại Bảng Công cụ Nhập Kho: Tùy chọn bật/tắt 'Thẻ Không có Ảnh (No Photo Import)' để phân loại thẻ không có ảnh vào các hộp riêng.",
+        "Trước khi tải file Excel, nên thiết lập 'Số thẻ tối đa / Hộp (Cards Per Box)' để hệ thống tự động đếm thẻ trong hộp hiện tại. Nếu đầy, hệ thống tự động tạo hộp mới (ví dụ: Hộp 1 -> Hộp 2).",
+        "Để ngắt hộp ngay lập tức tại vị trí phân loại hiện tại dù hộp chưa đầy, hãy bật công tắc 'Sang hộp mới (Next Box)'."
       ],
       tips: [
-        "Luôn tải và sử dụng file Excel mẫu của hệ thống để tránh sai lệch tên cột khi Import."
+        "Luôn tải và sử dụng file Excel mẫu của hệ thống để tránh sai lệch tên cột khi Import.",
       ],
-      keywords: ["nhập kho", "excel mẫu", "box", "zone", "hộp", "lưu trữ", "no photo", "force next box", "cards per box"],
+      keywords: ["nhập kho", "excel mẫu", "box", "zone", "hộp", "lưu trữ", "no photo", "next box", "cards per box"],
       targetTab: "tra-the"
     },
     {
       id: "delivery-box-management",
       sectionId: "delivery",
-      title: "Bộ Công Cụ Quản Lý Hộp (Rename, Merge, Move Cards)",
+      title: "Bộ Công Cụ Quản Lý Hộp (Đổi tên, Gộp hộp, Chuyển thẻ sang hộp khác)",
       badge: "Phân hệ 2",
       badgeColor: "bg-indigo-100 text-indigo-800 border-indigo-200",
       icon: <Layers className="w-5 h-5 text-indigo-600" />,
-      summary: "Tổ chức và tái cơ cấu lại các hộp/tủ lưu trữ thẻ thực tế một cách vô cùng linh hoạt.",
+      summary: "Tổ chức và sắp xếp lại các hộp/tủ lưu trữ thẻ thực tế một cách linh hoạt.",
       steps: [
-        "Đổi tên hộp (Rename Box): Bấm nút 'Đổi Tên Hộp', chọn hộp cũ từ danh sách và nhập tên mới (ví dụ: 'Tủ 1 - Ngăn A') giúp nhân viên dễ tìm kiếm vật lý.",
+        "Đổi tên hộp (Rename Box): Bấm nút 'Đổi Tên Hộp', chọn hộp cũ từ danh sách và nhập tên mới (ví dụ: 'Tủ 1 - Ngăn A') giúp cán bộ dễ tìm kiếm.",
         "Gộp hộp (Merge Boxes): Bấm 'Gộp Hộp', chọn các hộp lẻ/hộp ít thẻ để dồn toàn bộ thẻ sang một hộp đích chung, giúp giải phóng tủ kệ.",
-        "Chuyển thẻ sang hộp khác (Move Cards): Tại bảng danh sách kho, tích chọn các thẻ cụ thể -> Bấm 'Chuyển Hộp (Move Box)' -> Chọn hộp đích để chuyển dời chỉ với 1 cú nhấp chuột."
+        "Di chuyển thẻ sang hộp khác (Move Cards): Tại bảng danh sách kho, tích chọn các thẻ cụ thể -> Bấm 'Chuyển Hộp (Move Box)' -> Chọn hộp đích để chuyển dời chỉ với 1 cú nhấp chuột."
       ],
       keywords: ["đổi tên hộp", "rename", "gộp hộp", "merge box", "chuyển thẻ", "move cards", "tổ chức", "quản lý kho"],
       targetTab: "tra-the"
@@ -168,19 +168,19 @@ export default function UserGuideTab({ onNavigateTab }: UserGuideTabProps) {
     {
       id: "delivery-return-qr",
       sectionId: "delivery",
-      title: "Quét Mã Trả Thẻ Cho Công Dân & Hoàn Tác (Undo)",
+      title: "Xác nhận trả thẻ | Quét mã & Hoàn tác",
       badge: "Phân hệ 2",
       badgeColor: "bg-indigo-100 text-indigo-800 border-indigo-200",
       icon: <CheckCircle2 className="w-5 h-5 text-indigo-600" />,
-      summary: "Quy trình trả thẻ siêu nhanh tại quầy thông qua quét mã QR kèm cơ chế bảo vệ chống thao tác nhầm.",
+      summary: "Quy trình trả thẻ nhanh trực tiếp cho công dân bằng cách Xác nhận trả hoặc quét mã QR.",
       steps: [
         "Tại mục Quét Mã Trả Thẻ, bấm 'Bật Webcam' hoặc dùng máy quét chuyên dụng.",
-        "Công dân xuất trình giấy hẹn hoặc thông tin có mã QR/Số CCCD -> Tiến hành quét mã.",
+        "Công dân xuất trình giấy hẹn -> Cán bộ tiến hành tìm kiếm thông tin CCCD/Số giấy hẹn -> Xác nhận trả hoặc sau khi lấy thẻ từ kho ra thì quét Mã QR để xác nhận đã trả thẻ.",
         "Hệ thống ngay lập tức định vị thẻ trong kho, hiển thị vị trí chính xác (Hộp/Zone) và đổi trạng thái thẻ thành 'Đã trả (Delivered)'.",
         "Cơ chế Hoàn tác (Undo): Ngay sau khi trả thẻ thành công, trên góc màn hình sẽ hiện thông báo Toast kèm nút 'Hoàn tác (Undo)'. Nếu lỡ quét nhầm, bấm vào đây để đưa thẻ về trạng thái 'Trong kho' tức thì."
       ],
       tips: [
-        "Bạn cũng có thể bấm hoàn tác (Undo) từ bên trong Modal Chi tiết Thẻ đối với các thẻ vừa chuyển trạng thái gần đây."
+        "Cán bộ cũng có thể bấm hoàn tác (Undo) từ bên trong Modal Chi tiết Thẻ đối với các thẻ vừa chuyển trạng thái gần đây."
       ],
       keywords: ["trả thẻ", "quét qr", "định vị", "delivered", "đã trả", "hoàn tác", "undo", "toast"],
       targetTab: "tra-the"
@@ -195,9 +195,9 @@ export default function UserGuideTab({ onNavigateTab }: UserGuideTabProps) {
       summary: "Hỗ trợ bàn giao lô thẻ cho nhân viên bưu điện hoặc shipper đi giao tận nhà cho công dân.",
       steps: [
         "Bật 'Chế độ chọn (Select Mode)' trên bảng danh sách kho -> Tích chọn các thẻ cần bàn giao cho Shipper.",
-        "Bấm nút 'Gán Shipper (Assign Shipper)' -> Nhập Tên Shipper, Số điện thoại và Ghi chú bàn giao.",
+        "Bấm nút 'Giao cho Shipper' -> Nhập Tên Shipper, Số điện thoại và Ghi chú bàn giao.",
         "Trạng thái các thẻ được gán sẽ chuyển thành 'Đang giao (Delivering)'.",
-        "Xử lý hàng loạt sau khi giao: Khi Shipper báo cáo kết quả, chọn lại các thẻ tương ứng và bấm 'Xác nhận Đã Giao Hàng Loạt (Bulk Confirm Delivered)' nếu thành công, hoặc bấm 'Trả Lại Kho Hàng Loạt (Bulk Return to Warehouse)' nếu công dân vắng mặt/giao thất bại."
+        "Xử lý hàng loạt sau khi giao: Khi Shipper báo cáo kết quả, chọn lại các thẻ tương ứng và bấm 'Xác nhận Đã Giao Hàng Loạt' nếu thành công, hoặc bấm 'Trả Lại Kho Hàng Loạt' nếu công dân vắng mặt/giao thất bại."
       ],
       keywords: ["shipper", "bàn giao", "giao tận nhà", "bưu điện", "delivering", "đang giao", "hàng loạt", "bulk"],
       targetTab: "tra-the"
@@ -205,18 +205,17 @@ export default function UserGuideTab({ onNavigateTab }: UserGuideTabProps) {
     {
       id: "delivery-edit-modal",
       sectionId: "delivery",
-      title: "Chỉnh Sửa Chi Tiết & Bổ Sung Hình Ảnh Thẻ",
+      title: "Chỉnh Sửa Chi Tiết & Lịch Sử Tác Động Thẻ",
       badge: "Phân hệ 2",
       badgeColor: "bg-indigo-100 text-indigo-800 border-indigo-200",
       icon: <Edit3 className="w-5 h-5 text-indigo-600" />,
-      summary: "Cập nhật linh hoạt thông tin cá nhân, bổ sung hình ảnh chụp thẻ thực tế và ghi chú công tác.",
+      summary: "Cho phép quét lại QR của Thẻ, cập nhật số điện thoại liên hệ, ghi chú, hoàn về kho, xoá thẻ và theo dõi dòng thời gian Lịch sử tác động đối với thẻ.",
       steps: [
-        "Trong danh sách kho thẻ, bấm trực tiếp vào bất kỳ hàng thẻ nào hoặc bấm biểu tượng 'Sửa (Edit)'.",
-        "Modal Chi tiết Thẻ xuất hiện: Cho phép cập nhật Số CCCD, Họ tên, SĐT công dân, Địa chỉ và Vị trí hộp.",
-        "Bổ sung ảnh thẻ: Tải lên hình ảnh mặt trước/mặt sau thẻ CCCD để kiểm chứng chứng từ thực tế khi cần.",
-        "Thêm Ghi chú (Notes): Ghi nhận các yêu cầu đặc biệt của công dân (ví dụ: 'Người nhà đến nhận thay vào chiều thứ 6')."
+        "Trong danh sách kho thẻ, bấm trực tiếp vào bất kỳ hàng thẻ nào hoặc bấm biểu tượng 'Sửa (Edit)' để mở Modal chi tiết.",
+        "Tab Thông tin: Cho phép cập nhật Số Thẻ căn cước, Họ tên, SĐT công dân, Địa chỉ, Vị trí hộp và Ghi chú công tác. Bạn cũng có thể thực hiện thao tác hoàn về kho hoặc xóa thẻ tại tab này.",
+        "Tab Lịch sử tác động: Ghi nhận chi tiết dòng thời gian toàn bộ các tác động đã thực hiện đối với thẻ (Nạp thẻ vào kho, Bàn giao cho shipper, Giao hàng thành công, Trả thẻ trực tiếp, Khôi phục/Hoàn tác về kho, Đổi tên/Gộp hộp, Sửa thông tin thẻ...) kèm thời gian thực hiện chính xác."
       ],
-      keywords: ["chỉnh sửa", "edit modal", "ảnh thẻ", "cập nhật", "ghi chú", "chi tiết"],
+      keywords: ["chỉnh sửa", "edit modal", "cập nhật", "ghi chú", "chi tiết", "lịch sử", "lịch sử tác động", "history", "dòng thời gian"],
       targetTab: "tra-the"
     },
     {
@@ -228,9 +227,9 @@ export default function UserGuideTab({ onNavigateTab }: UserGuideTabProps) {
       icon: <Download className="w-5 h-5 text-indigo-600" />,
       summary: "Xuất file Excel báo cáo tổng hợp kho theo từng bộ lọc trạng thái thực tế phục vụ kiểm kê.",
       steps: [
-        "Bấm nút 'Xuất Báo Cáo (Export)' tại thanh công cụ Kho.",
-        "Tại Modal Cấu hình Xuất Excel, chọn loại dữ liệu muốn xuất: Toàn bộ thẻ trong kho, Chỉ thẻ chưa trả (In Stock), Chỉ thẻ đang giao (Delivering), hoặc Thẻ đã trả thành công (Delivered).",
-        "Bấm xác nhận, hệ thống sẽ tải xuống file báo cáo Excel được phân trang và định dạng bảng màu rõ ràng."
+        "Xuất báo cáo từ phần thống kê phía trên Phân hệ 2, hoặc Thanh công cụ bên trái",
+        "Tại Modal Cấu hình Xuất Excel, chọn các trường dữ liệu muốn xuất",
+        "Bấm xác nhận, hệ thống sẽ tải xuống file Excel báo cáo."
       ],
       keywords: ["xuất kho", "export config", "báo cáo kho", "trạng thái", "lọc thẻ", "excel"],
       targetTab: "tra-the"
@@ -244,15 +243,11 @@ export default function UserGuideTab({ onNavigateTab }: UserGuideTabProps) {
       badge: "Phân hệ 3",
       badgeColor: "bg-orange-100 text-orange-800 border-orange-200",
       icon: <Calendar className="w-5 h-5 text-orange-600" />,
-      summary: "Quản lý tập trung các trường hợp công dân đã có giấy hẹn nhưng thẻ chưa về kho hoặc bị lỗi phôi thẻ cần xử lý lại.",
+      summary: "Quản lý tập trung các trường hợp công dân đã có giấy hẹn nhưng thẻ chưa về kho hoặc bị lỗi cần xử lý lại.",
       steps: [
         "Chuyển sang Tab '📑 PHÂN HỆ 3: THEO DÕI GIẤY HẸN' trên thanh điều hướng.",
-        "Danh sách hiển thị các hồ sơ đang chờ cấp thẻ (Unissued Cards) hoặc các trường hợp thẻ bị lỗi từ trung tâm cần thu hồi/in lại.",
-        "Sử dụng công cụ tìm kiếm và bộ lọc thời gian để lọc ra các giấy hẹn quá hạn (Overdue) nhằm ưu tiên liên hệ giải quyết cho người dân.",
+        "Danh sách hiển thị các hồ sơ đang chờ cấp thẻ hoặc các trường hợp thẻ bị lỗi từ trung tâm cần thu hồi/in lại.",
         "Cập nhật trạng thái xử lý sau khi đã phối hợp xong với cơ quan cấp trên."
-      ],
-      tips: [
-        "Rà soát danh sách này định kỳ vào đầu ngày làm việc để chủ động trả lời người dân khi họ đến tra cứu giấy hẹn."
       ],
       keywords: ["giấy hẹn", "chưa cấp", "unissued", "lỗi thẻ", "backlog", "quá hạn", "theo dõi", "overdue"],
       targetTab: "giay-hen"
@@ -266,13 +261,13 @@ export default function UserGuideTab({ onNavigateTab }: UserGuideTabProps) {
       badge: "Phân hệ 4",
       badgeColor: "bg-teal-100 text-teal-800 border-teal-200",
       icon: <RefreshCw className="w-5 h-5 text-teal-600" />,
-      summary: "Kiểm tra chéo tự động giữa danh sách thẻ thực tế quét tại quầy và kho dữ liệu kỳ vọng để phát hiện chênh lệch.",
+      summary: "Kiểm tra chéo tự động giữa danh sách thẻ thực tế và dữ liệu kỳ vọng để phát hiện chênh lệch.",
       steps: [
         "Chuyển sang Tab '🔄 PHÂN HỆ 4: ĐỐI SÁNH'.",
         "Sử dụng khu vực quét mã đối sánh (hoặc nạp danh sách) để đưa dữ liệu thực tế vào hệ thống.",
         "Hệ thống tự động chạy thuật toán đối chiếu với Kho thẻ hiện có và phân chia kết quả ra 2 bảng riêng biệt:",
-        "1. Bảng Dữ liệu Đã Khớp (Matched Data Table): Danh sách các thẻ có mặt đầy đủ trong cả thực tế và dữ liệu kỳ vọng.",
-        "2. Bảng Dữ liệu Lệch / Chưa Khớp (Unmatched Data Table): Danh sách các thẻ bị thiếu trong kho hoặc thẻ dư thừa phát sinh ngoài danh sách, giúp nhân viên lập biên bản và tìm nguyên nhân ngay."
+        "1. Bảng Dữ liệu Đã Khớp: Các thẻ tìm thấy trong kho. Tại mỗi thẻ hỗ trợ thao tác nhanh: Bổ sung dữ liệu mới, Chọn trường cần bổ sung, hoặc Giữ nguyên không thay đổi.",
+        "2. Bảng Dữ liệu Lệch / Chưa Khớp: Danh sách các thẻ bị thiếu trong kho hoặc thẻ dư thừa phát sinh ngoài danh sách, giúp nhân viên lập biên bản và tìm nguyên nhân ngay."
       ],
       keywords: ["đối sánh", "matching", "kiểm tra chéo", "khớp", "lệch", "matched", "unmatched", "chênh lệch"],
       targetTab: "doi-sanh"
@@ -288,8 +283,8 @@ export default function UserGuideTab({ onNavigateTab }: UserGuideTabProps) {
       icon: <Settings className="w-5 h-5 text-purple-600" />,
       summary: "Tùy chỉnh tên Đơn vị quản lý hiển thị trên toàn hệ thống và các tiêu đề báo cáo Excel xuất ra.",
       steps: [
-        "Bấm vào biểu tượng Bánh răng (Settings) ở góc phải trên cùng của Header.",
-        "Trong Modal Cài đặt, nhập 'Tên Đơn Vị' (ví dụ: 'Công An Phường 1 - Quận A').",
+        "Bấm vào biểu tượng Bánh răng (Settings) trong phần menu bên phải.",
+        "Trong Modal Cài đặt, nhập Tên Đơn Vị.",
         "Bấm Lưu, tên đơn vị mới sẽ lập tức được áp dụng trên Header và tiêu đề chính của mọi bảng tính Excel khi bạn Xuất Báo Cáo."
       ],
       keywords: ["cài đặt", "settings", "tên đơn vị", "unit name", "cấu hình", "header"],
@@ -315,11 +310,11 @@ export default function UserGuideTab({ onNavigateTab }: UserGuideTabProps) {
     {
       id: "admin-clear-data",
       sectionId: "admin",
-      title: "Xóa Toàn Bộ Dữ Liệu Chuyển Kỳ Làm Việc",
+      title: "Xóa Toàn Bộ Dữ Liệu",
       badge: "Quản trị",
       badgeColor: "bg-rose-100 text-rose-800 border-rose-200",
       icon: <Trash2 className="w-5 h-5 text-rose-600" />,
-      summary: "Làm sạch toàn bộ dữ liệu trên trình duyệt một cách an toàn để chuẩn bị cho đợt cấp phát mới hoặc sau khi thanh tra.",
+      summary: "Xóa toàn bộ dữ liệu trên trình duyệt một cách an toàn khi chuyển máy tính hoặc có yêu cầu khác",
       steps: [
         "Trong Modal Cài đặt (Settings), lướt xuống vùng Nguy hiểm (Danger Zone) -> Bấm nút 'Xóa Toàn Bộ Dữ Liệu'.",
         "Hệ thống sẽ hiển thị Modal Cảnh Báo bảo mật yêu cầu bạn xác nhận thao tác.",
@@ -356,10 +351,10 @@ export default function UserGuideTab({ onNavigateTab }: UserGuideTabProps) {
       icon: <Zap className="w-5 h-5 text-amber-600" />,
       summary: "Thiết lập không gian làm việc chuyên nghiệp, rảnh tay và đạt tốc độ xử lý hàng nghìn thẻ mỗi giờ.",
       steps: [
-        "Trang bị đầu quét mã vạch/QR 2D cổng USB hoặc Bluetooth kết nối trực tiếp vào máy tính tại quầy.",
+        "Trang bị đầu quét mã vạch/QR 2D cổng USB hoặc Bluetooth kết nối trực tiếp vào máy tính.",
         "Trên ứng dụng, chọn chế độ 'Bật Máy Quét (Device Scanner)'. Đặt con trỏ chuột vào ô nhận dữ liệu.",
         "Gắn điện thoại/máy quét lên giá đỡ cố định, nhân viên chỉ cần đưa thẻ qua vùng quét liên tục mà không cần thao tác chuột.",
-        "Bật chế độ 'Buộc chuyển hộp tự động (Force Next Box)' và quy định dung lượng hộp (Cards Per Box) để vừa quét vừa chia hộp hoàn toàn tự động!"
+        "Hệ thống tự động chia hộp dựa trên cấu hình dung lượng hộp."
       ],
       keywords: ["máy quét usb", "bluetooth", "rảnh tay", "tốc độ cao", "tối ưu", "mẹo", "siêu tốc", "quét vạch"]
     }
@@ -394,15 +389,15 @@ export default function UserGuideTab({ onNavigateTab }: UserGuideTabProps) {
         <div className="relative z-10 max-w-4xl space-y-6">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-semibold tracking-wide uppercase shadow-sm">
             <Sparkles className="w-4 h-4 animate-pulse text-emerald-400" />
-            <span>Tài Liệu Hướng Dẫn Kỹ Thuật & Nghiệp Vụ - Phiên Bản 2026</span>
+            <span>Tài Liệu Hướng Dẫn Kỹ Thuật & Nghiệp Vụ - 2026</span>
           </div>
 
           <h2 className="text-3xl lg:text-5xl font-extrabold tracking-tight leading-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-emerald-100 to-teal-200">
-            Hệ Thống Quản Lý & Cấp Phát Thẻ Căn Cước Địa Phương (QL-TCC)
+            Hệ Thống Quản Lý & Phát Thẻ Căn Cước Địa Phương (QL-TCC)
           </h2>
 
           <p className="text-base lg:text-lg text-emerald-100/90 leading-relaxed font-normal max-w-3xl">
-            Tài liệu tổng hợp toàn diện giúp Cán bộ nắm vững toàn bộ tính năng của phần mềm: từ quy trình quét mã QR nhập liệu tự động, tổ chức kho thẻ theo Box/Zone, quản lý bàn giao Shipper đến khả năng lưu trữ offline-first với IndexedDB.
+            Tài liệu tổng hợp toàn diện giúp Cán bộ nắm vững toàn bộ tính năng của phần mềm: Từ quy trình quét mã QR nhập liệu tự động, tổ chức kho thẻ theo Box/Zone, quản lý bàn giao Shipper đến khả năng lưu trữ offline-first với IndexedDB.
           </p>
 
           {/* AUTHOR INFO BADGE IN HERO */}
@@ -435,177 +430,182 @@ export default function UserGuideTab({ onNavigateTab }: UserGuideTabProps) {
               <span className="text-2xl font-black text-cyan-300">QR Code</span>
               <span className="text-xs font-medium text-emerald-100 mt-1">Quét Siêu Tốc 2D</span>
             </div>
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/15 flex flex-col justify-center items-center text-center">
+            {/* <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/15 flex flex-col justify-center items-center text-center">
               <span className="text-2xl font-black text-amber-300">Google</span>
               <span className="text-xs font-medium text-emerald-100 mt-1">Bảo Mật Whitelist</span>
+            </div> */}
+          </div>
+        </div>
+      </div>
+
+      {/* --- MAIN CONTENT AREA (2-COLUMN ON DESKTOP: LEFT SIDEBAR, RIGHT CONTENT) --- */}
+      <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
+        {/* LEFT COLUMN: SEARCH & SECTION FILTER BAR */}
+        <div className="w-full lg:w-80 xl:w-96 lg:flex-shrink-0 lg:sticky lg:top-20 z-30 bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-200 space-y-4 md:space-y-6 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto scrollbar-thin">
+          <div className="flex flex-col md:flex-row lg:flex-col md:items-center lg:items-stretch justify-between gap-4">
+            <div className="space-y-1">
+              <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                <span>Tra Cứu Hướng Dẫn Chức Năng</span>
+              </h3>
+              <p className="text-xs text-gray-500">
+                Nhập từ khóa công cụ (ví dụ: <span className="font-semibold text-emerald-700">"shipper"</span>, <span className="font-semibold text-emerald-700">"gộp hộp"</span>, <span className="font-semibold text-emerald-700">"webcam"</span>, <span className="font-semibold text-emerald-700">"sao lưu"</span>...)
+              </p>
+            </div>
+
+            {/* Search Input */}
+            <div className="relative w-full md:w-80 lg:w-full">
+              <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Tìm kiếm công cụ, tính năng..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-9 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all shadow-inner"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs font-bold bg-gray-200 hover:bg-gray-300 rounded-full w-5 h-5 flex items-center justify-center transition-colors"
+                  title="Xóa từ khóa"
+                >
+                  ✕
+                </button>
+              )}
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* --- SEARCH & SECTION FILTER BAR --- */}
-      <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-200 space-y-4 md:space-y-6 static lg:sticky lg:top-20 z-40 backdrop-blur-lg bg-white/95">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-emerald-600" />
-              Tra Cứu Hướng Dẫn Chức Năng
-            </h3>
-            <p className="text-xs text-gray-500">
-              Nhập từ khóa công cụ (ví dụ: <span className="font-semibold text-emerald-700">"shipper"</span>, <span className="font-semibold text-emerald-700">"gộp hộp"</span>, <span className="font-semibold text-emerald-700">"webcam"</span>, <span className="font-semibold text-emerald-700">"sao lưu"</span>...)
-            </p>
-          </div>
-
-          {/* Search Input */}
-          <div className="relative w-full md:w-80">
-            <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Tìm kiếm công cụ, tính năng..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-9 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all shadow-inner"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs font-bold bg-gray-200 hover:bg-gray-300 rounded-full w-5 h-5 flex items-center justify-center transition-colors"
-                title="Xóa từ khóa"
-              >
-                ✕
-              </button>
-            )}
+          {/* Section Filter Pills */}
+          <div className="flex flex-nowrap overflow-x-auto pb-2 -mx-2 px-2 gap-2 pt-2 border-t border-gray-100 md:flex-wrap md:overflow-visible md:pb-0 md:mx-0 md:px-0 lg:flex-col lg:items-stretch lg:gap-1.5 scrollbar-none">
+            {[
+              { id: 'all', label: "🌟 Tất Cả", count: guideItems.length },
+              { id: 'overview', label: "💡 Kiến Trúc & Bảo Mật", count: guideItems.filter(i => i.sectionId === 'overview').length },
+              { id: 'intake', label: "📥 Phân Hệ 1: Lập Danh Sách", count: guideItems.filter(i => i.sectionId === 'intake').length },
+              { id: 'delivery', label: "📤 Phân Hệ 2: Kho & Trả Thẻ", count: guideItems.filter(i => i.sectionId === 'delivery').length },
+              { id: 'appointments', label: "📑 Phân Hệ 3: Giấy Hẹn", count: guideItems.filter(i => i.sectionId === 'appointments').length },
+              { id: 'matching', label: "🔄 Phân Hệ 4: Đối Sánh", count: guideItems.filter(i => i.sectionId === 'matching').length },
+              { id: 'admin', label: "⚙️ Quản Trị & Sao Lưu", count: guideItems.filter(i => i.sectionId === 'admin').length },
+              { id: 'tips', label: "🛠️ Mẹo & Khắc Phục Sự Cố", count: guideItems.filter(i => i.sectionId === 'tips').length },
+            ].map((tab) => {
+              const isActive = activeSection === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveSection(tab.id as GuideSectionId)}
+                  className={`px-3.5 py-1.5 lg:py-2.5 rounded-lg lg:rounded-xl text-xs font-bold transition-all flex items-center justify-between gap-1.5 whitespace-nowrap lg:whitespace-normal ${isActive
+                    ? "bg-emerald-600 text-white shadow-md transform scale-102 lg:scale-100"
+                    : "bg-gray-100 text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 border border-transparent hover:border-emerald-200"
+                    }`}
+                >
+                  <span className="text-left">{tab.label}</span>
+                  <span className={`px-1.5 py-0.5 rounded-full text-[10px] flex-shrink-0 font-extrabold ${isActive ? "bg-emerald-700 text-white" : "bg-gray-200 text-gray-600"}`}>
+                    {tab.count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Section Filter Pills */}
-        <div className="flex flex-nowrap overflow-x-auto pb-2 -mx-2 px-2 gap-2 pt-2 border-t border-gray-100 md:flex-wrap md:overflow-visible md:pb-0 md:mx-0 md:px-0 scrollbar-none">
-          {[
-            { id: 'all', label: "🌟 Tất Cả Các Phần", count: guideItems.length },
-            { id: 'overview', label: "💡 Kiến Trúc & Bảo Mật", count: guideItems.filter(i => i.sectionId === 'overview').length },
-            { id: 'intake', label: "📥 Phân Hệ 1: Lập Danh Sách", count: guideItems.filter(i => i.sectionId === 'intake').length },
-            { id: 'delivery', label: "📤 Phân Hệ 2: Kho & Trả Thẻ", count: guideItems.filter(i => i.sectionId === 'delivery').length },
-            { id: 'appointments', label: "📑 Phân Hệ 3: Giấy Hẹn", count: guideItems.filter(i => i.sectionId === 'appointments').length },
-            { id: 'matching', label: "🔄 Phân Hệ 4: Đối Sánh", count: guideItems.filter(i => i.sectionId === 'matching').length },
-            { id: 'admin', label: "⚙️ Quản Trị & Sao Lưu", count: guideItems.filter(i => i.sectionId === 'admin').length },
-            { id: 'tips', label: "🛠️ Mẹo & Khắc Phục Sự Cố", count: guideItems.filter(i => i.sectionId === 'tips').length },
-          ].map((tab) => {
-            const isActive = activeSection === tab.id;
-            return (
+        {/* RIGHT COLUMN: GUIDE ITEMS GRID / LIST */}
+        <div className="flex-1 w-full min-w-0">
+          {filteredItems.length === 0 ? (
+            <div className="bg-white rounded-2xl p-12 text-center border border-gray-200 shadow-sm space-y-3">
+              <HelpCircle className="w-12 h-12 text-gray-300 mx-auto animate-bounce" />
+              <h4 className="text-lg font-bold text-gray-700">Không tìm thấy tài liệu hướng dẫn phù hợp</h4>
+              <p className="text-sm text-gray-500 max-w-md mx-auto">
+                Không có công cụ nào khớp với từ khóa <span className="font-semibold text-emerald-600">"{searchQuery}"</span> trong phần đã chọn. Hãy thử tìm từ khóa ngắn gọn hơn như "excel", "qr", "hộp", "backup".
+              </p>
               <button
-                key={tab.id}
-                onClick={() => setActiveSection(tab.id as GuideSectionId)}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${isActive
-                  ? "bg-emerald-600 text-white shadow-md transform scale-102"
-                  : "bg-gray-100 text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 border border-transparent hover:border-emerald-200"
-                  }`}
+                onClick={() => { setSearchQuery(""); setActiveSection("all"); }}
+                className="mt-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm transition-colors"
               >
-                <span>{tab.label}</span>
-                <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${isActive ? "bg-emerald-700 text-white" : "bg-gray-200 text-gray-600"}`}>
-                  {tab.count}
-                </span>
+                Xem lại tất cả bài viết
               </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* --- GUIDE ITEMS GRID / LIST --- */}
-      {filteredItems.length === 0 ? (
-        <div className="bg-white rounded-2xl p-12 text-center border border-gray-200 shadow-sm space-y-3">
-          <HelpCircle className="w-12 h-12 text-gray-300 mx-auto animate-bounce" />
-          <h4 className="text-lg font-bold text-gray-700">Không tìm thấy tài liệu hướng dẫn phù hợp</h4>
-          <p className="text-sm text-gray-500 max-w-md mx-auto">
-            Không có công cụ nào khớp với từ khóa <span className="font-semibold text-emerald-600">"{searchQuery}"</span> trong phần đã chọn. Hãy thử tìm từ khóa ngắn gọn hơn như "excel", "qr", "hộp", "backup".
-          </p>
-          <button
-            onClick={() => { setSearchQuery(""); setActiveSection("all"); }}
-            className="mt-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm transition-colors"
-          >
-            Xem lại tất cả bài viết
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-          {filteredItems.map((item) => (
-            <div
-              key={item.id}
-              className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col h-full group"
-            >
-              {/* Card Header */}
-              <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50/80 via-white to-gray-50/40 flex items-start justify-between gap-4">
-                <div className="flex items-start gap-3.5">
-                  <div className="p-2.5 bg-white rounded-xl shadow-sm border border-gray-200/80 group-hover:scale-110 transition-transform duration-200 flex-shrink-0">
-                    {item.icon}
-                  </div>
-                  <div className="space-y-1">
-                    <span className={`inline-block px-2.5 py-0.5 rounded-md text-[11px] font-extrabold border ${item.badgeColor}`}>
-                      {item.badge}
-                    </span>
-                    <h4 className="text-base font-bold text-gray-800 group-hover:text-emerald-700 transition-colors leading-snug">
-                      {item.title}
-                    </h4>
-                  </div>
-                </div>
-              </div>
-
-              {/* Card Body - Summary & Steps */}
-              <div className="p-6 space-y-5 flex-1 flex flex-col justify-between">
-                <div className="space-y-4">
-                  <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 p-3.5 rounded-xl border border-gray-100 font-normal">
-                    {item.summary}
-                  </p>
-
-                  <div className="space-y-2.5">
-                    <h5 className="text-xs font-extrabold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                      Quy Trình & Thao Tác Thực Hiện:
-                    </h5>
-                    <ul className="space-y-2 text-sm text-gray-700 pl-1">
-                      {item.steps.map((step, idx) => (
-                        <li key={idx} className="flex items-start gap-2.5">
-                          <span className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-extrabold flex items-center justify-center mt-0.5">
-                            {idx + 1}
-                          </span>
-                          <span className="leading-snug">{step}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Tips Callout */}
-                  {item.tips && item.tips.length > 0 && (
-                    <div className="bg-amber-50/80 border border-amber-200/80 rounded-xl p-3.5 space-y-1.5 text-amber-900 text-xs">
-                      <div className="font-extrabold flex items-center gap-1.5 text-amber-800">
-                        <Lightbulb className="w-4 h-4 text-amber-600 flex-shrink-0" />
-                        <span>Mẹo Thực Hành Nhanh:</span>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+              {filteredItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col h-full group"
+                >
+                  {/* Card Header */}
+                  <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50/80 via-white to-gray-50/40 flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3.5">
+                      <div className="p-2.5 bg-white rounded-xl shadow-sm border border-gray-200/80 group-hover:scale-110 transition-transform duration-200 flex-shrink-0">
+                        {item.icon}
                       </div>
-                      {item.tips.map((tip, idx) => (
-                        <p key={idx} className="leading-relaxed pl-5 font-medium text-amber-800/90">
-                          • {tip}
-                        </p>
-                      ))}
+                      <div className="space-y-1">
+                        <span className={`inline-block px-2.5 py-0.5 rounded-md text-[11px] font-extrabold border ${item.badgeColor}`}>
+                          {item.badge}
+                        </span>
+                        <h4 className="text-base font-bold text-gray-800 group-hover:text-emerald-700 transition-colors leading-snug">
+                          {item.title}
+                        </h4>
+                      </div>
                     </div>
-                  )}
-                </div>
-
-                {/* Card Footer - Target Navigation Button */}
-                {item.targetTab && (
-                  <div className="pt-4 border-t border-gray-100 flex justify-end">
-                    <button
-                      onClick={() => item.targetTab && onNavigateTab(item.targetTab)}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white text-xs font-bold rounded-xl border border-emerald-200 hover:border-emerald-600 transition-all duration-200 shadow-sm group/btn"
-                    >
-                      <span>Mở ngay thao tác tại Tab</span>
-                      <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" />
-                    </button>
                   </div>
-                )}
-              </div>
+
+                  {/* Card Body - Summary & Steps */}
+                  <div className="p-6 space-y-5 flex-1 flex flex-col justify-between">
+                    <div className="space-y-4">
+                      <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 p-3.5 rounded-xl border border-gray-100 font-normal">
+                        {item.summary}
+                      </p>
+
+                      <div className="space-y-2.5">
+                        <h5 className="text-xs font-extrabold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                          Quy Trình & Thao Tác Thực Hiện:
+                        </h5>
+                        <ul className="space-y-2 text-sm text-gray-700 pl-1">
+                          {item.steps.map((step, idx) => (
+                            <li key={idx} className="flex items-start gap-2.5">
+                              <span className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-extrabold flex items-center justify-center mt-0.5">
+                                {idx + 1}
+                              </span>
+                              <span className="leading-snug">{step}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* Tips Callout */}
+                      {item.tips && item.tips.length > 0 && (
+                        <div className="bg-amber-50/80 border border-amber-200/80 rounded-xl p-3.5 space-y-1.5 text-amber-900 text-xs">
+                          <div className="font-extrabold flex items-center gap-1.5 text-amber-800">
+                            <Lightbulb className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                            <span>Mẹo Thực Hành Nhanh:</span>
+                          </div>
+                          {item.tips.map((tip, idx) => (
+                            <p key={idx} className="leading-relaxed pl-5 font-medium text-amber-800/90">
+                              • {tip}
+                            </p>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Card Footer - Target Navigation Button */}
+                    {item.targetTab && (
+                      <div className="pt-4 border-t border-gray-100 flex justify-end">
+                        <button
+                          onClick={() => item.targetTab && onNavigateTab(item.targetTab)}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white text-xs font-bold rounded-xl border border-emerald-200 hover:border-emerald-600 transition-all duration-200 shadow-sm group/btn"
+                        >
+                          <span>Mở ngay thao tác tại Tab</span>
+                          <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
-      )}
+      </div>
 
       {/* --- DEVELOPER & SUPPORT CONTACT CARD --- */}
       <div className="bg-gradient-to-br from-emerald-50/90 via-teal-50/50 to-white rounded-3xl p-6 md:p-8 border border-emerald-200/80 shadow-sm flex flex-col lg:flex-row items-center justify-between gap-6">
@@ -618,7 +618,7 @@ export default function UserGuideTab({ onNavigateTab }: UserGuideTabProps) {
             Thông Tin Tác Giả & Góp Ý Phát Triển
           </h4>
           <p className="text-sm text-gray-600 max-w-xl leading-relaxed font-normal">
-            Phần mềm được phát triển nhằm tối ưu hóa hiệu quả nghiệp vụ cấp phát thẻ Căn cước. Nếu có bất kỳ ý kiến đóng góp, đề xuất nâng cấp tính năng hay cần hỗ trợ kỹ thuật trong quá trình sử dụng, xin vui lòng liên hệ:
+            Phần mềm được phát triển nhằm tối ưu hóa hiệu quả nghiệp vụ quản lý, phát thẻ Căn cước. Nếu có bất kỳ ý kiến đóng góp, đề xuất nâng cấp tính năng hay cần hỗ trợ kỹ thuật trong quá trình sử dụng, xin vui lòng liên hệ:
           </p>
         </div>
 
@@ -647,7 +647,7 @@ export default function UserGuideTab({ onNavigateTab }: UserGuideTabProps) {
             </div>
             <div className="text-left">
               <div className="text-[10px] text-blue-100 uppercase font-semibold">Zalo Hỗ Trợ & Góp Ý</div>
-              <div className="text-white font-extrabold text-base">0945235799 (Võ Tấn Đạt)</div>
+              <div className="text-white font-extrabold text-base">0945.235.799 (Võ Tấn Đạt)</div>
             </div>
           </a>
         </div>
@@ -658,10 +658,10 @@ export default function UserGuideTab({ onNavigateTab }: UserGuideTabProps) {
         <div className="space-y-2 text-center md:text-left">
           <h4 className="text-xl font-bold text-white flex items-center justify-center md:justify-start gap-2">
             <ShieldCheck className="w-6 h-6 text-emerald-400" />
-            Đã Sẵn Sàng Vận Hành Hệ Thống?
+            Đã Sẵn Sàng Bắt Đầu?
           </h4>
           <p className="text-sm text-emerald-200/80 max-w-xl leading-relaxed">
-            Hãy bắt đầu bằng việc chuyển sang **Phân hệ 1** để tiến hành quét nhập liệu danh sách CCCD hoặc **Phân hệ 2** để cấu hình kho thẻ ngay hôm nay!
+            Hãy bắt đầu bằng việc chuyển sang *Phân hệ 1* để tiến hành quét nhập liệu danh sách Thẻ căn cước hoặc *Phân hệ 2* để cấu hình kho thẻ ngay hôm nay!
           </p>
         </div>
 

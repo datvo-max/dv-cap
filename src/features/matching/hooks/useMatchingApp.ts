@@ -1,6 +1,6 @@
 // src/features/matching/hooks/useMatchingApp.ts
 import { useState, useCallback } from "react";
-import { db, MatchingRecord, addCardHistory, addCardHistoryBulk } from "@/shared/lib/db";
+import { db, MatchingRecord, CardRecord, addCardHistory, addCardHistoryBulk } from "@/shared/lib/db";
 import { parseCCCD } from "@/shared/utils/cccdParser";
 import * as XLSX from "xlsx";
 import { useLiveQuery } from "dexie-react-hooks";
@@ -51,14 +51,30 @@ export function useMatchingApp() {
     }, {} as Record<number, any>);
   }, [matchingData]) || {};
 
-  const processRecord = async (record: Omit<MatchingRecord, 'id' | 'status' | 'importedAt'>) => {
+  const normalizeStr = (val?: string) => {
+    if (!val || val === "-" || val === "Chưa rõ") return "";
+    return String(val).trim().toLowerCase();
+  };
+
+  const isIdenticalCard = (newRec: Record<string, any>, oldCard: CardRecord) => {
+    const fields = ["fullName", "issueDate", "dob", "address", "gender", "fatherName", "motherName"] as const;
+    return fields.every((f) => normalizeStr(newRec[f]) === normalizeStr(oldCard[f as keyof CardRecord] as string));
+  };
+
+  const processRecord = async (record: Omit<MatchingRecord, 'id' | 'status' | 'importedAt'>): Promise<'added' | 'skipped_identical'> => {
     // Tiêu chí đối sánh: idNumber VÀ issueDate
     const existingCards = await db.cards
       .where('idNumber')
       .equals(record.idNumber)
       .toArray();
 
-    const exactMatch = existingCards.find(c => c.issueDate === record.issueDate);
+    // Kiểm tra xem có thẻ nào trong kho giống hệt thông tin hay không
+    const identicalCard = existingCards.find(c => isIdenticalCard(record, c));
+    if (identicalCard) {
+      return 'skipped_identical';
+    }
+
+    const exactMatch = existingCards.find(c => c.issueDate === record.issueDate) || existingCards[0];
 
     const matchEntry: MatchingRecord = {
       ...record,
@@ -68,6 +84,7 @@ export function useMatchingApp() {
     };
 
     await db.matchingCards.add(matchEntry);
+    return 'added';
   };
 
   const handleScanSuccess = async (decodedText: string) => {
@@ -80,11 +97,16 @@ export function useMatchingApp() {
       const { id: _id, rawText: _rawText, type: _type, ...recordData } = record;
       void _id; void _rawText; void _type;
 
-      await processRecord({
+      const result = await processRecord({
         ...recordData,
         type: record.type === "Không hợp lệ" ? "Thẻ Căn cước" : record.type,
       } as Omit<MatchingRecord, 'id' | 'status' | 'importedAt'>);
-      showToast(`✅ Đã nạp: ${record.fullName}`, "success");
+
+      if (result === 'skipped_identical') {
+        showToast(`⚠️ Thẻ ${record.fullName} không có thay đổi so với kho hiện tại, đã bỏ qua.`, "warning");
+      } else {
+        showToast(`✅ Đã nạp: ${record.fullName}`, "success");
+      }
     } catch (error) {
       console.error(error);
       showToast("❌ Lỗi khi nạp dữ liệu quét!", "error");
@@ -147,6 +169,7 @@ export function useMatchingApp() {
         const data = XLSX.utils.sheet_to_json(ws) as Record<string, string | number>[];
 
         let successCount = 0;
+        let skippedCount = 0;
 
         for (const row of data) {
           const idNumber = String(row['Số CCCD'] || row['So CCCD'] || row['ID'] || '');
@@ -166,12 +189,20 @@ export function useMatchingApp() {
             type: "Thẻ Căn cước"
           };
 
-          await processRecord(recordData);
-          successCount++;
+          const res = await processRecord(recordData);
+          if (res === 'skipped_identical') {
+            skippedCount++;
+          } else {
+            successCount++;
+          }
         }
 
-        if (successCount > 0) {
+        if (successCount > 0 && skippedCount > 0) {
+          showToast(`✅ Đã nạp ${successCount} thẻ! (Bỏ qua ${skippedCount} thẻ giống hệt trong kho)`, "success");
+        } else if (successCount > 0) {
           showToast(`✅ Đã nạp thành công ${successCount} thẻ để đối sánh!`, "success");
+        } else if (skippedCount > 0) {
+          showToast(`⚠️ Toàn bộ ${skippedCount} thẻ trong Excel giống hệt trong kho, đã bỏ qua!`, "warning");
         }
       } catch (err) {
         console.error(err);
@@ -237,6 +268,36 @@ export function useMatchingApp() {
     } catch (e) {
       console.error(e);
       showToast("❌ Lỗi khi cập nhật thông tin!", "error");
+    }
+  };
+
+  const updateSelectedFields = async (matchingId: number, selectedUpdates: Partial<CardRecord>) => {
+    try {
+      const matchRec = await db.matchingCards.get(matchingId);
+      if (!matchRec || !matchRec.matchedCardId) return;
+
+      const card = await db.cards.get(matchRec.matchedCardId);
+      if (!card) return;
+
+      if (Object.keys(selectedUpdates).length > 0) {
+        const changes: string[] = [];
+        for (const [key, val] of Object.entries(selectedUpdates)) {
+          const oldVal = card[key as keyof typeof card];
+          if (val !== oldVal) {
+            changes.push(`${key}: "${oldVal || '-'}" -> "${val}"`);
+          }
+        }
+        await db.cards.update(card.id!, selectedUpdates);
+        if (changes.length > 0) {
+          await addCardHistory(card.idNumber, 'edit', `Cập nhật chọn lọc (Đối sánh): ${changes.join(', ')}`);
+        }
+      }
+
+      await db.matchingCards.update(matchingId, { status: 'resolved' });
+      showToast("✅ Đã cập nhật các trường được chọn cho thẻ!", "success");
+    } catch (e) {
+      console.error(e);
+      showToast("❌ Lỗi khi cập nhật thông tin chọn lọc!", "error");
     }
   };
 
@@ -410,6 +471,7 @@ export function useMatchingApp() {
     handleImportExcel,
     updateField,
     updateAllFields,
+    updateSelectedFields,
     resolveMatch,
     addToWarehouse,
     ignoreRecord,

@@ -115,6 +115,7 @@ export default function MatchingDashboard() {
               matchedCardsMap={matchApp.matchedCardsMap}
               onUpdateField={matchApp.updateField}
               onUpdateAllFields={matchApp.updateAllFields}
+              onUpdateSelectedFields={matchApp.updateSelectedFields}
               onResolveMatch={matchApp.resolveMatch}
               selectedIds={matchApp.selectedMatchedIds}
               setSelectedIds={matchApp.setSelectedMatchedIds}

@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { MatchingRecord, CardRecord } from "@/shared/lib/db";
-import { ArrowLeft, CheckCircle, Save, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, CheckCircle, Save, ChevronLeft, ChevronRight, Sliders } from "lucide-react";
+import SelectFieldsModal from "./SelectFieldsModal";
 
 interface MatchedDataTableProps {
   matchedRecords: MatchingRecord[];
   matchedCardsMap: Record<number, CardRecord>;
   onUpdateField: (matchingId: number, fieldName: keyof MatchingRecord, newValue: string) => void;
   onUpdateAllFields: (matchingId: number) => void;
+  onUpdateSelectedFields: (matchingId: number, selectedUpdates: Partial<CardRecord>) => void;
   onResolveMatch: (matchingId: number) => void;
   selectedIds: number[];
   setSelectedIds: React.Dispatch<React.SetStateAction<number[]>>;
@@ -36,6 +38,7 @@ export default function MatchedDataTable({
   matchedCardsMap,
   onUpdateField,
   onUpdateAllFields,
+  onUpdateSelectedFields,
   onResolveMatch,
   selectedIds,
   setSelectedIds,
@@ -44,6 +47,7 @@ export default function MatchedDataTable({
 }: MatchedDataTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
+  const [activeModalId, setActiveModalId] = useState<number | null>(null);
 
   if (matchedRecords.length === 0) {
     return (
@@ -93,8 +97,9 @@ export default function MatchedDataTable({
             <CheckCircle className="w-5 h-5 text-blue-500" />
             Đã Tìm Thấy Trong Kho ({matchedRecords.length})
           </h3>
-          <div className="text-[11px] text-gray-500 flex items-center gap-3 bg-gray-50 px-2 py-1 rounded-md border border-gray-200 shadow-inner">
+          <div className="text-[11px] text-gray-500 flex flex-wrap items-center gap-3 bg-gray-50 px-2 py-1 rounded-md border border-gray-200 shadow-inner">
             <span className="flex items-center gap-1 font-medium"><Save className="w-3.5 h-3.5 text-blue-600" /> Bổ sung dữ liệu mới</span>
+            <span className="flex items-center gap-1 font-medium"><Sliders className="w-3.5 h-3.5 text-amber-600" /> Chọn trường</span>
             <span className="flex items-center gap-1 font-medium"><CheckCircle className="w-3.5 h-3.5 text-gray-500" /> Giữ nguyên không thay đổi</span>
           </div>
         </div>
@@ -210,14 +215,21 @@ export default function MatchedDataTable({
                       <button
                         onClick={() => onUpdateAllFields(record.id!)}
                         className="p-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors shadow-sm"
-                        title="Bổ sung thông tin mới"
+                        title="Bổ sung toàn bộ thông tin mới"
                       >
                         <Save className="w-4 h-4" />
                       </button>
                       <button
+                        onClick={() => setActiveModalId(record.id!)}
+                        className="p-2 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-colors shadow-sm"
+                        title="Chọn trường thông tin muốn cập nhật"
+                      >
+                        <Sliders className="w-4 h-4" />
+                      </button>
+                      <button
                         onClick={() => onResolveMatch(record.id!)}
                         className="p-2 bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors shadow-sm"
-                        title="Giữ thông tin cũ"
+                        title="Giữ toàn bộ thông tin cũ"
                       >
                         <CheckCircle className="w-4 h-4 text-gray-500" />
                       </button>
@@ -271,6 +283,14 @@ export default function MatchedDataTable({
           </div>
         )}
       </div>
+
+      <SelectFieldsModal
+        isOpen={activeModalId !== null}
+        onClose={() => setActiveModalId(null)}
+        matchingRecord={matchedRecords.find(r => r.id === activeModalId) || null}
+        oldCard={activeModalId !== null ? (matchedCardsMap[matchedRecords.find(r => r.id === activeModalId)?.matchedCardId || 0] || null) : null}
+        onConfirm={onUpdateSelectedFields}
+      />
     </div>
   );
 }
