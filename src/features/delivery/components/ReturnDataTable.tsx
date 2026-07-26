@@ -5,6 +5,7 @@ import { db } from "@/shared/lib/db";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 import { removeVietnameseTones } from "@/shared/utils/removeVietnameseTones";
+import { CheckCircle, Truck, Archive, Phone, Image } from "lucide-react";
 
 interface ReturnDataTableProps {
   onReturnCard: (idNumber: string) => void;
@@ -83,6 +84,19 @@ export default function ReturnDataTable({
   // =====================================
 
   const allCards = useLiveQuery(() => db.cards.orderBy('zone').toArray());
+
+  // MỚI: Truy vấn nhanh danh sách key (cardId) từ bảng ảnh để đếm số lượng ảnh của mỗi thẻ mà không cần load dữ liệu Base64
+  const imageCountMap = useLiveQuery(async () => {
+    const keys = await db.cardImages.orderBy('cardId').keys();
+    const map = new Map<number, number>();
+    for (const key of keys) {
+      const cardId = Number(key);
+      if (!isNaN(cardId)) {
+        map.set(cardId, (map.get(cardId) || 0) + 1);
+      }
+    }
+    return map;
+  }, []) || new Map<number, number>();
 
   const filteredData = useMemo(() => {
     if (!allCards) return [];
@@ -300,6 +314,45 @@ export default function ReturnDataTable({
         </div>
       )}
 
+      {/* CHÚ THÍCH KÝ HIỆU TRẠNG THÁI (LEGEND) */}
+      <div className="px-4 py-2.5 bg-gray-50/90 border-b border-gray-200 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[11px] text-gray-600">
+        <span className="font-bold text-gray-700 flex items-center gap-1">
+          💡 Chú thích trạng thái:
+        </span>
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <span className="flex items-center gap-1 font-medium" title="Thẻ đã được bàn giao cho công dân">
+            <CheckCircle className="w-3.5 h-3.5 text-emerald-600 inline" /> Đã trả
+          </span>
+          <span className="flex items-center gap-1 font-medium" title="Thẻ đang được giao bởi shipper">
+            <Truck className="w-3.5 h-3.5 text-amber-600 inline" /> Đang giao
+          </span>
+          <span className="flex items-center gap-1 font-medium" title="Thẻ vẫn đang lưu trong kho">
+            <Archive className="w-3.5 h-3.5 text-indigo-600 inline" /> Trong kho
+          </span>
+        </div>
+        <span className="text-gray-300">|</span>
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <span className="flex items-center gap-1 font-medium" title="Đã có số điện thoại liên hệ">
+            <Phone className="w-3.5 h-3.5 text-blue-600 inline" /> Có SĐT
+          </span>
+          <span className="flex items-center gap-1 font-medium" title="Chưa có số điện thoại liên hệ">
+            <Phone className="w-3.5 h-3.5 text-gray-300 inline" /> Chưa SĐT
+          </span>
+        </div>
+        <span className="text-gray-300">|</span>
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <span className="flex items-center gap-1 font-medium" title="Chưa có ảnh đính kèm (0/4)">
+            <Image className="w-3.5 h-3.5 text-gray-300 inline" /> 0 ảnh
+          </span>
+          <span className="flex items-center gap-1 font-medium" title="Đã có từ 1 đến 3 ảnh đính kèm">
+            <Image className="w-3.5 h-3.5 text-amber-500 inline" /> 1-3 ảnh
+          </span>
+          <span className="flex items-center gap-1 font-medium" title="Đã có đủ 4 ảnh đính kèm">
+            <Image className="w-3.5 h-3.5 text-emerald-600 inline" /> Đủ 4 ảnh
+          </span>
+        </div>
+      </div>
+
       <div className="overflow-x-auto min-h-100">
         <table className="w-full text-xs text-left border-collapse text-gray-600 whitespace-nowrap relative">
           <thead className="bg-gray-100 text-gray-700 font-bold stick z-10 shadow-sm">
@@ -316,7 +369,7 @@ export default function ReturnDataTable({
               )}
               <th className="px-3 py-3 text-center w-12 border-b border-gray-200">STT</th>
               <th className="px-3 py-3 border-b border-gray-200">Vị trí</th>
-              <th className="px-3 py-3 border-b border-gray-200">Trạng thái</th>
+              <th className="px-3 py-3 text-center border-b border-gray-200">Trạng thái</th>
               <th className="px-3 py-3 border-b border-gray-200">Số CCCD</th>
               <th className="px-3 py-3 border-b border-gray-200">Họ và Tên</th>
               <th className="px-3 py-3 border-b border-gray-200">Ngày Sinh</th>
@@ -357,18 +410,55 @@ export default function ReturnDataTable({
                       {String(item.zone).includes('Hộp') ? item.zone : `Hộp ${item.zone}`}
                     </td>
 
-                    <td className="px-3 py-2.5">
-                      {item.status === 'returned' && (
-                        <span className="px-2 py-0.5 bg-gray-200 text-gray-600 rounded text-[10px] font-bold">Đã trả</span>
-                      )}
-                      {item.status === 'shipping' && (
-                        <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-[10px] font-bold flex items-center gap-0.5 w-fit">
-                          🚚 Đang giao
-                        </span>
-                      )}
-                      {item.status === 'pending' && (
-                        <span className="px-2 py-0.5 bg-red-100 text-red-600 rounded text-[10px] font-bold animate-pulse">Chưa trả</span>
-                      )}
+                    <td className="px-3 py-2.5 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        {/* Icon 1: Trạng thái trả thẻ */}
+                        {item.status === 'returned' && (
+                          <span title="Thẻ đã trả cho công dân" className="cursor-help">
+                            <CheckCircle className="w-4 h-4 text-emerald-600" />
+                          </span>
+                        )}
+                        {item.status === 'shipping' && (
+                          <span title="Thẻ đang giao shipper" className="cursor-help">
+                            <Truck className="w-4 h-4 text-amber-600" />
+                          </span>
+                        )}
+                        {item.status === 'pending' && (
+                          <span title="Thẻ chưa trả (lưu trong kho)" className="cursor-help">
+                            <Archive className="w-4 h-4 text-indigo-600" />
+                          </span>
+                        )}
+
+                        {/* Icon 2: Số điện thoại */}
+                        {item.phoneNumber && item.phoneNumber.trim() !== "" ? (
+                          <span title={`Đã có SĐT: ${item.phoneNumber}`} className="cursor-help">
+                            <Phone className="w-4 h-4 text-blue-600" />
+                          </span>
+                        ) : (
+                          <span title="Chưa có số điện thoại" className="cursor-help">
+                            <Phone className="w-4 h-4 text-gray-300" />
+                          </span>
+                        )}
+
+                        {/* Icon 3: Số lượng ảnh */}
+                        {(() => {
+                          const count = item.id ? (imageCountMap.get(item.id) || 0) : 0;
+                          let iconColor = "text-gray-300";
+                          if (count >= 4) iconColor = "text-emerald-600";
+                          else if (count > 0) iconColor = "text-amber-500";
+                          return (
+                            <span
+                              title={`Ảnh đính kèm: ${count}/4 ảnh`}
+                              className={`flex items-center font-bold text-[10px] cursor-help ${iconColor}`}
+                            >
+                              <Image className="w-4 h-4" />
+                              {count > 0 && count < 4 && (
+                                <span className="ml-0.5 text-[9px] leading-none">{count}</span>
+                              )}
+                            </span>
+                          );
+                        })()}
+                      </div>
                     </td>
 
                     <td className="px-3 py-2.5 font-bold text-blue-900">{item.idNumber}</td>
