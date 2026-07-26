@@ -47,6 +47,17 @@ function HomeContent() {
   const tabParam = searchParams.get("tab") as "gioi-thieu" | "nhap-lieu" | "tra-the" | "giay-hen" | "doi-sanh" | null;
   const activeTab = tabParam || "gioi-thieu";
 
+  const [loadedTabs, setLoadedTabs] = useState<Set<string>>(() => new Set([activeTab]));
+
+  useEffect(() => {
+    setLoadedTabs((prev) => {
+      if (prev.has(activeTab)) return prev;
+      const next = new Set(prev);
+      next.add(activeTab);
+      return next;
+    });
+  }, [activeTab]);
+
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const app = useScannerApp();
@@ -66,6 +77,12 @@ function HomeContent() {
   }, []);
 
   const handleTabChange = (tab: "gioi-thieu" | "nhap-lieu" | "tra-the" | "giay-hen" | "doi-sanh") => {
+    setLoadedTabs((prev) => {
+      if (prev.has(tab)) return prev;
+      const next = new Set(prev);
+      next.add(tab);
+      return next;
+    });
     const params = new URLSearchParams(searchParams.toString());
     params.set("tab", tab);
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
@@ -135,15 +152,17 @@ function HomeContent() {
         {/* ======================================================== */}
         {/* NỘI DUNG TAB GIỚI THIỆU */}
         {/* ======================================================== */}
-        {activeTab === 'gioi-thieu' && (
-          <UserGuideTab onNavigateTab={(tab) => handleTabChange(tab)} />
+        {loadedTabs.has('gioi-thieu') && (
+          <div className={activeTab === 'gioi-thieu' ? 'block' : 'hidden'}>
+            <UserGuideTab onNavigateTab={(tab) => handleTabChange(tab)} />
+          </div>
         )}
 
         {/* ======================================================== */}
         {/* NỘI DUNG TAB 1 */}
         {/* ======================================================== */}
-        {activeTab === 'nhap-lieu' && (
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+        {loadedTabs.has('nhap-lieu') && (
+          <div className={`animate-in fade-in slide-in-from-bottom-2 duration-300 ${activeTab === 'nhap-lieu' ? 'block' : 'hidden'}`}>
             <DashboardReport />
             <div className="flex flex-col lg:flex-row gap-6 items-start">
               <div className="w-full lg:w-1/4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm lg:sticky lg:top-24 space-y-4">
@@ -200,8 +219,8 @@ function HomeContent() {
         {/* ======================================================== */}
         {/* NỘI DUNG TAB 2 */}
         {/* ======================================================== */}
-        {activeTab === 'tra-the' && (
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+        {loadedTabs.has('tra-the') && (
+          <div className={`animate-in fade-in slide-in-from-bottom-2 duration-300 ${activeTab === 'tra-the' ? 'block' : 'hidden'}`}>
             <ReturnScannerSection
               isWebCamActive={returnApp.isWebCamActive}
               cameraAction={returnApp.cameraAction}
@@ -259,8 +278,8 @@ function HomeContent() {
         {/* ======================================================== */}
         {/* NỘI DUNG TAB 3 (MỚI) */}
         {/* ======================================================== */}
-        {activeTab === 'giay-hen' && (
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 max-w-5xl mx-auto">
+        {loadedTabs.has('giay-hen') && (
+          <div className={`animate-in fade-in slide-in-from-bottom-2 duration-300 max-w-5xl mx-auto ${activeTab === 'giay-hen' ? 'block' : 'hidden'}`}>
             <UnissuedDataTable />
           </div>
         )}
@@ -268,8 +287,10 @@ function HomeContent() {
         {/* ======================================================== */}
         {/* NỘI DUNG TAB 4 (ĐỐI SÁNH) */}
         {/* ======================================================== */}
-        {activeTab === 'doi-sanh' && (
-          <MatchingDashboard />
+        {loadedTabs.has('doi-sanh') && (
+          <div className={activeTab === 'doi-sanh' ? 'block' : 'hidden'}>
+            <MatchingDashboard />
+          </div>
         )}
 
       </div>}
