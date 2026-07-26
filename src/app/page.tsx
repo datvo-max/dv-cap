@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useScannerApp } from "@/features/intake/hooks/useScannerApp";
 import { useCardReturnApp } from "@/features/delivery/hooks/useCardReturnApp";
 
@@ -40,23 +40,30 @@ import UserGuideTab from "@/features/guide/components/UserGuideTab";
 
 function HomeContent() {
   const { user, isAllowed, loading, isGuest } = useAuth();
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const tabParam = searchParams.get("tab") as "gioi-thieu" | "nhap-lieu" | "tra-the" | "giay-hen" | "doi-sanh" | null;
-  const activeTab = tabParam || "gioi-thieu";
+  type TabType = "gioi-thieu" | "nhap-lieu" | "tra-the" | "giay-hen" | "doi-sanh";
+  const initialTab = (searchParams.get("tab") as TabType) || "gioi-thieu";
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab);
+  const [loadedTabs, setLoadedTabs] = useState<Set<string>>(() => new Set([initialTab]));
 
-  const [loadedTabs, setLoadedTabs] = useState<Set<string>>(() => new Set([activeTab]));
-
+  // Lắng nghe sự kiện popstate khi người dùng sử dụng nút Back/Forward của trình duyệt
   useEffect(() => {
-    setLoadedTabs((prev) => {
-      if (prev.has(activeTab)) return prev;
-      const next = new Set(prev);
-      next.add(activeTab);
-      return next;
-    });
-  }, [activeTab]);
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const tab = (params.get("tab") as TabType) || "gioi-thieu";
+      setActiveTab(tab);
+      setLoadedTabs((prev) => {
+        if (prev.has(tab)) return prev;
+        const next = new Set(prev);
+        next.add(tab);
+        return next;
+      });
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
@@ -76,16 +83,18 @@ function HomeContent() {
     setIsMounted(true);
   }, []);
 
-  const handleTabChange = (tab: "gioi-thieu" | "nhap-lieu" | "tra-the" | "giay-hen" | "doi-sanh") => {
+  const handleTabChange = (tab: TabType) => {
+    if (tab === activeTab) return;
+    setActiveTab(tab);
     setLoadedTabs((prev) => {
       if (prev.has(tab)) return prev;
       const next = new Set(prev);
       next.add(tab);
       return next;
     });
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(window.location.search);
     params.set("tab", tab);
-    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    window.history.pushState(null, "", `${pathname}?${params.toString()}`);
   };
 
   if (loading || (!user && !isGuest) || !isAllowed) {
