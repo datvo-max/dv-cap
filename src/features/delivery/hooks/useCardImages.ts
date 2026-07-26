@@ -10,7 +10,7 @@ interface UseCardImagesReturn {
   uploadError: string | null;
   addImage: (file: File, imageType: ImageType) => Promise<void>;
   deleteImage: (imageType: ImageType) => Promise<void>;
-  downloadImage: (imageType: ImageType, filename?: string) => void;
+  downloadImage: (imageType: ImageType, filename?: string) => Promise<void>;
 }
 
 export function useCardImages(
@@ -97,22 +97,48 @@ export function useCardImages(
     setImages((prev) => ({ ...prev, [imageType]: null }));
   }, [images]);
 
-  const downloadImage = useCallback((imageType: ImageType, filename?: string) => {
+  const downloadImage = useCallback(async (imageType: ImageType, filename?: string) => {
     const rec = images[imageType];
     if (!rec) return;
-    const defaultFilenames: Record<ImageType, string> = {
-      front: "mat-truoc-the.jpg",
-      back: "mat-sau-the.jpg",
-      citizen: "anh-cong-dan.jpg",
-      other: "anh-khac.jpg",
-    };
+
+    let targetFilename = filename;
+    if (!targetFilename) {
+      const defaultFilenames: Record<ImageType, string> = {
+        front: "mat-truoc-the.jpg",
+        back: "mat-sau-the.jpg",
+        citizen: "anh-cong-dan.jpg",
+        other: "anh-khac.jpg",
+      };
+
+      let idNumberPrefix = "CCCD";
+      if (cardId) {
+        try {
+          const card = await db.cards.get(cardId);
+          if (card && card.idNumber) {
+            idNumberPrefix = card.idNumber;
+          }
+        } catch {
+          // Bỏ qua lỗi khi đọc DB
+        }
+      }
+
+      // Format ngày tải ảnh: YYYYMMDD (ví dụ: 20260726)
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, "0");
+      const dd = String(now.getDate()).padStart(2, "0");
+      const dateStr = `${yyyy}${mm}${dd}`;
+
+      targetFilename = `${idNumberPrefix}_${dateStr}_${defaultFilenames[imageType]}`;
+    }
+
     const link = document.createElement("a");
     link.href = rec.dataUrl;
-    link.download = filename || defaultFilenames[imageType];
+    link.download = targetFilename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  }, [images]);
+  }, [images, cardId]);
 
   return { images, isUploading, uploadError, addImage, deleteImage, downloadImage };
 }
