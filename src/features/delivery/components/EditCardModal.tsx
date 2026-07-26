@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { db, CardRecord, addCardHistory, HistoryRecord } from "@/shared/lib/db";
 import { parseCCCD } from "@/shared/utils/cccdParser";
+import CardImagesTab from "./CardImagesTab";
 
 interface EditCardModalProps {
   isOpen: boolean;
@@ -28,7 +29,7 @@ export default function EditCardModal({ isOpen, cardId, onClose, onSave, onDelet
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [isConfirmingUndo, setIsConfirmingUndo] = useState(false); // MỚI: State cho pop-up hoàn tác
 
-  const [activeTab, setActiveTab] = useState<'info' | 'history'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'images' | 'history'>('info');
   const [historyLogs, setHistoryLogs] = useState<HistoryRecord[]>([]);
 
   useEffect(() => {
@@ -174,6 +175,16 @@ export default function EditCardModal({ isOpen, cardId, onClose, onSave, onDelet
               📋 Chi tiết thẻ
             </button>
             <button
+              onClick={() => setActiveTab('images')}
+              className={`flex-1 py-3 text-xs font-bold transition-all duration-150 border-b-2 flex items-center justify-center gap-1.5 cursor-pointer ${
+                activeTab === 'images'
+                  ? "border-indigo-600 text-indigo-600 bg-white"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              🖼️ Hình ảnh
+            </button>
+            <button
               onClick={() => setActiveTab('history')}
               className={`flex-1 py-3 text-xs font-bold transition-all duration-150 border-b-2 flex items-center justify-center gap-1.5 cursor-pointer ${
                 activeTab === 'history'
@@ -189,6 +200,10 @@ export default function EditCardModal({ isOpen, cardId, onClose, onSave, onDelet
         <div className="p-5 space-y-4">
           {isLoading ? (
             <div className="text-center py-8 text-gray-500 text-sm">Đang tải dữ liệu...</div>
+          ) : activeTab === 'images' ? (
+            <div className="max-h-[420px] overflow-y-auto pr-1">
+              <CardImagesTab cardId={cardId} isOpen={isOpen} />
+            </div>
           ) : activeTab === 'history' ? (
             <div className="max-h-[380px] overflow-y-auto space-y-4 pr-1">
               {historyLogs.length === 0 ? (
@@ -358,7 +373,7 @@ export default function EditCardModal({ isOpen, cardId, onClose, onSave, onDelet
         </div>
 
         <div className="bg-gray-50 px-5 py-3 border-t flex justify-between items-center gap-2">
-          {activeTab === 'history' ? (
+          {(activeTab === 'history' || activeTab === 'images') ? (
             <div className="w-full flex justify-end">
               <button
                 type="button"

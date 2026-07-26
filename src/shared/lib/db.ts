@@ -84,12 +84,22 @@ export interface MatchingRecord extends Omit<CCCDRecord, 'id'> {
   importedAt: number;
 }
 
+export interface CardImageRecord {
+  id?: number;
+  cardId: number;                                               // Khóa ngoại → cards.id
+  imageType: 'front' | 'back' | 'citizen' | 'other';           // Loại ảnh
+  label?: string;                                               // Nhãn tùy chỉnh (dùng khi imageType = 'other')
+  dataUrl: string;                                              // Base64 JPEG đã compress
+  createdAt: number;                                            // Timestamp
+}
+
 class CardDatabase extends Dexie {
   scannedCards!: Table<ScannedRecord>;
   cards!: Table<CardRecord>;
   unissuedCards!: Table<UnissuedRecord>;
   cardHistory!: Table<HistoryRecord>;
   matchingCards!: Table<MatchingRecord>;
+  cardImages!: Table<CardImageRecord>;
 
   constructor() {
     super('CCCD_KhoThe_DB');
@@ -142,6 +152,17 @@ class CardDatabase extends Dexie {
       unissuedCards: '++id, &idNumber, fullName, appointmentDate',
       cardHistory: '++id, idNumber, action, timestamp',
       matchingCards: '++id, idNumber, status, importedAt'
+    });
+
+    // Phiên bản 8: Bổ sung bảng lưu ảnh đính kèm thẻ (mặt trước, mặt sau, ảnh công dân, ảnh khác)
+    // Chỉ ADD bảng mới, không thay đổi bảng cũ → toàn vẹn dữ liệu 100% cho người dùng phiên bản cũ
+    this.version(8).stores({
+      cards: '++id, idNumber, fullName, phoneNumber, importDate, status, zone, canceledIdNumber',
+      scannedCards: '++id, &idNumber, fullName, scannedAt, fatherName, motherName',
+      unissuedCards: '++id, &idNumber, fullName, appointmentDate',
+      cardHistory: '++id, idNumber, action, timestamp',
+      matchingCards: '++id, idNumber, status, importedAt',
+      cardImages: '++id, cardId, imageType, createdAt'
     });
   }
 }
