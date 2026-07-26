@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useScannerApp } from "@/features/intake/hooks/useScannerApp";
 import { useCardReturnApp } from "@/features/delivery/hooks/useCardReturnApp";
 
@@ -40,7 +40,6 @@ import UserGuideTab from "@/features/guide/components/UserGuideTab";
 
 function HomeContent() {
   const { user, isAllowed, loading, isGuest } = useAuth();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   type TabType = "gioi-thieu" | "nhap-lieu" | "tra-the" | "giay-hen" | "doi-sanh";
@@ -94,7 +93,8 @@ function HomeContent() {
     });
     const params = new URLSearchParams(window.location.search);
     params.set("tab", tab);
-    window.history.pushState(null, "", `${pathname}?${params.toString()}`);
+    // Dùng window.location.pathname để giữ basePath (/dv-cap) khi deploy lên GitHub Pages
+    window.history.pushState(null, "", `${window.location.pathname}?${params.toString()}`);
   };
 
   if (loading || (!user && !isGuest) || !isAllowed) {
