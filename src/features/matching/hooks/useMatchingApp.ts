@@ -133,7 +133,11 @@ export function useMatchingApp() {
     }
 
     if (handleScanSuccessRef.current) {
-      handleScanSuccessRef.current(decodedText);
+      // Phải bắt lỗi Promise vì handleScanSuccess là async
+      Promise.resolve(handleScanSuccessRef.current(decodedText)).catch((err) => {
+        console.error("Lỗi xử lý QR (Phân hệ 4):", err);
+        showToast("❌ Có lỗi xảy ra khi xử lý mã QR!", "error");
+      });
     }
 
     setTimeout(() => {
@@ -143,24 +147,43 @@ export function useMatchingApp() {
 
   const startWebcam = async () => {
     setIsWebCamActive(true);
-    setTimeout(async () => {
+    // Chờ DOM render phần tử #matching-reader — polling thay vì timeout cố định
+    const waitForElement = (id: string, maxWait = 2000, interval = 100): Promise<boolean> => {
+      return new Promise((resolve) => {
+        const start = Date.now();
+        const check = () => {
+          if (document.getElementById(id)) return resolve(true);
+          if (Date.now() - start >= maxWait) return resolve(false);
+          setTimeout(check, interval);
+        };
+        check();
+      });
+    };
+
+    const elementReady = await waitForElement('matching-reader');
+    if (!elementReady) {
+      showToast("Lỗi: Không tìm thấy khung camera. Vui lòng thử lại.", "error");
+      setIsWebCamActive(false);
+      return;
+    }
+
+    try {
       if (!html5QrCodeRef.current) {
         html5QrCodeRef.current = new Html5Qrcode("matching-reader");
       }
-      try {
-        if (!html5QrCodeRef.current.isScanning) {
-          await html5QrCodeRef.current.start(
-            { facingMode: "environment" },
-            { fps: 10, qrbox: { width: 250, height: 250 } },
-            handleCameraScan,
-            () => { }
-          );
-        }
-      } catch (err) {
-        console.warn("Lỗi phần cứng camera:", err);
-        showToast("Lỗi mở camera! Vui lòng thử lại hoặc kiểm tra quyền truy cập.", "error");
+      if (!html5QrCodeRef.current.isScanning) {
+        await html5QrCodeRef.current.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 250, height: 250 } },
+          handleCameraScan,
+          () => { }
+        );
       }
-    }, 150);
+    } catch (err) {
+      console.warn("Lỗi phần cứng camera:", err);
+      showToast("Lỗi mở camera! Vui lòng thử lại hoặc kiểm tra quyền truy cập.", "error");
+      setIsWebCamActive(false);
+    }
   };
 
   const stopWebcam = async () => {

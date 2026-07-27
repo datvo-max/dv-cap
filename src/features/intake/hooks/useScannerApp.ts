@@ -107,13 +107,19 @@ export function useScannerApp() {
     }
 
     if (handleScanSuccessRef.current) {
-      handleScanSuccessRef.current(decodedText);
+      // Phải bắt lỗi Promise vì handleScanSuccess là async
+      // Nếu không, lỗi IndexedDB / validation sẽ bị nuốt trên mobile
+      Promise.resolve(handleScanSuccessRef.current(decodedText)).catch((err) => {
+        console.error("Lỗi xử lý QR (Phân hệ 1):", err);
+        showToast("❌ Có lỗi xảy ra khi xử lý mã QR!", "error");
+      });
     }
 
     setTimeout(() => {
       isCameraPaused.current = false;
     }, 2000);
   };
+
 
   const startWebcam = async () => {
     setIsWebCamActive(true);
