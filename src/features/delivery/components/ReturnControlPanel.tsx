@@ -106,7 +106,7 @@ export default function ReturnControlPanel({
         </div>
 
         {/* PHẦN B: NẠP THỦ CÔNG (QUÉT/CAMERA) */}
-        <div className={`bg-white p-3 rounded-md border border-blue-200 shadow-sm flex flex-col gap-3 transition-opacity duration-300 ${activeFocus === 'import' ? 'opacity-30' : 'opacity-100'}`}>
+        <div className="bg-white p-3 rounded-md border border-blue-200 shadow-sm flex flex-col gap-3">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-blue-100 pb-2">
             <p className="text-[11px] font-bold text-blue-700 uppercase flex items-center gap-1.5">
               <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
@@ -144,22 +144,22 @@ export default function ReturnControlPanel({
           </div>
 
           {/* Ô quét nạp thẻ */}
-          <div className={`relative p-[1.5px] rounded-[7px] transition-all duration-300 ${activeFocus === 'import' ? 'overflow-hidden shadow-lg' : 'border border-blue-200 bg-white'
-            }`}>
-            {activeFocus === 'import' && (
-              <div className="absolute w-[150%] aspect-square top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,#ff453a,#ff9f0a,#30d158,#0a84ff,#bf5af2,#ff453a)] animate-[spin_3.5s_linear_infinite]" />
-            )}
-            <div className="relative bg-white rounded-[5px] z-10">
-              <input
-                ref={importInputRef}
-                onKeyDown={onImportScannerInput}
-                onFocus={() => setActiveFocus('import')}
-                onBlur={() => setActiveFocus(null)}
-                placeholder={activeFocus === 'import' ? "🔫 Đang đợi dữ liệu từ máy quét..." : "🔫 Click vào đây và quét thẻ để thêm ..."}
-                className="w-full pl-3 pr-3 py-1.5 text-xs outline-none text-blue-900 bg-transparent font-medium"
-                title="Nạp lẻ bằng máy quét phần cứng"
-              />
-            </div>
+          <div className={`transition-all duration-200 rounded-lg ${
+            activeFocus === 'import'
+              ? 'border-2 border-dashed border-blue-500 bg-white shadow-sm'
+              : 'border border-blue-200 bg-white rounded-md'
+          }`}>
+            <input
+              ref={importInputRef}
+              onKeyDown={onImportScannerInput}
+              onFocus={() => setActiveFocus('import')}
+              onBlur={() => setActiveFocus(null)}
+              placeholder={activeFocus === 'import' ? "🔫 Đang đợi dữ liệu từ máy quét..." : "🔫 Click vào đây và quét thẻ để thêm ..."}
+              className={`w-full pl-3 pr-3 py-1.5 text-xs outline-none font-medium ${
+                activeFocus === 'import' ? 'text-blue-700 placeholder:text-blue-400 placeholder:animate-pulse' : 'text-blue-900'
+              }`}
+              title="Nạp lẻ bằng máy quét phần cứng"
+            />
           </div>
 
           <button
@@ -173,35 +173,33 @@ export default function ReturnControlPanel({
 
       {/* 📤 KHỐI 2: TRẢ THẺ */}
       <div className="bg-green-50/40 p-3 rounded-lg border border-green-100 flex flex-col gap-3 transition-colors duration-300">
-        <p className={`text-[11px] font-bold text-green-700 uppercase flex items-center gap-1.5 mb-1 transition-opacity duration-300 ${activeFocus === 'return' ? 'opacity-30' : 'opacity-100'
-          }`}>
+        <p className="text-[11px] font-bold text-green-700 uppercase flex items-center gap-1.5 mb-1">
           <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           Xác nhận trả thẻ
         </p>
 
-        {/* Ô quét trả thẻ kèm viền chạy động */}
-        <div className={`relative p-[1.5px] rounded-[7px] transition-all duration-300 ${activeFocus === 'return' ? 'overflow-hidden shadow-lg' : 'border border-green-200 bg-white'
-          }`}>
-          {activeFocus === 'return' && (
-            <div className="absolute w-[150%] aspect-square top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[conic-gradient(from_0deg,#30d158,#ffd60a,#ff9f0a,#30d158)] animate-[spin_3.5s_linear_infinite]" />
-          )}
-          <div className="relative bg-white rounded-[5px] z-10">
-            <input
-              ref={returnInputRef}
-              onKeyDown={onReturnScannerInput}
-              onFocus={() => setActiveFocus('return')}
-              onBlur={() => setActiveFocus(null)}
-              placeholder={activeFocus === 'return' ? "🔫 Đang đợi dữ liệu từ máy quét..." : "🔫 Click vào đây và quét thẻ để trả ..."}
-              className="w-full pl-3 pr-3 py-1.5 text-xs outline-none text-green-900 bg-transparent font-medium"
-              title="Trả thẻ bằng máy quét phần cứng"
-            />
-          </div>
+        {/* Ô quét trả thẻ */}
+        <div className={`transition-all duration-200 rounded-lg ${
+          activeFocus === 'return'
+            ? 'border-2 border-dashed border-green-500 bg-white shadow-sm'
+            : 'border border-green-200 bg-white rounded-md'
+        }`}>
+          <input
+            ref={returnInputRef}
+            onKeyDown={onReturnScannerInput}
+            onFocus={() => setActiveFocus('return')}
+            onBlur={() => setActiveFocus(null)}
+            placeholder={activeFocus === 'return' ? "🔫 Đang đợi dữ liệu từ máy quét..." : "🔫 Click vào đây và quét thẻ để trả ..."}
+            className={`w-full pl-3 pr-3 py-1.5 text-xs outline-none font-medium ${
+              activeFocus === 'return' ? 'text-green-700 placeholder:text-green-500 placeholder:animate-pulse' : 'text-green-900'
+            }`}
+            title="Trả thẻ bằng máy quét phần cứng"
+          />
         </div>
 
         <button
           onClick={() => onStartWebcam('return')}
-          className={`w-full py-2 rounded-md font-bold text-xs border transition-all duration-300 shadow-sm bg-white text-green-700 border-green-300 hover:bg-green-50 ${activeFocus === 'return' ? 'opacity-30' : 'opacity-100'
-            }`}
+          className="w-full py-2 rounded-md font-bold text-xs border transition-all duration-300 shadow-sm bg-white text-green-700 border-green-300 hover:bg-green-50"
         >
           📸 Mở Camera Trả Thẻ
         </button>

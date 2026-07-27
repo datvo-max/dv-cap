@@ -75,31 +75,41 @@ export default function DashboardReport() {
   return (
     <div className="mb-6">
       <h3 className="text-lg font-bold text-gray-700 mb-3 flex items-center gap-2">
-        📊 Thống kê
+        📊 Chỉ số báo cáo
       </h3>
 
       {/* Lưới hiển thị các thẻ số liệu */}
-      {/* Đã chuyển từ "grid" sang "flex" kết hợp lg:justify-center để dồn các thẻ ra giữa màn hình máy tính */}
       <div className="flex flex-wrap gap-3 lg:justify-center">
-        {reportData.map((item, index) => (
-          <div
-            key={index}
-            // w-[calc...] giữ 2 cột trên mobile
-            // sm:w-auto sm:min-w-[150px] giúp các thẻ co giãn vừa phải
-            // lg:text-center giúp toàn bộ chữ bên trong ô được đưa ra giữa
-            className="grow sm:grow-0 w-[calc(50%-0.375rem)] sm:w-auto sm:min-w-37.5 lg:min-w-45 bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group text-left lg:text-center flex flex-col justify-center"
-          >
-            {/* Thanh màu trang trí nhỏ ở mép dưới thẻ */}
-            <div className="absolute bottom-0 left-0 w-full h-1 bg-blue-100 group-hover:bg-blue-500 transition-colors"></div>
+        {reportData.map((item, index) => {
+          // Xoay vòng palette màu để đồng bộ với ReturnDashboard
+          const borderColors = [
+            'border-l-blue-500', 'border-l-indigo-500', 'border-l-purple-500',
+            'border-l-emerald-500', 'border-l-amber-500', 'border-l-rose-500',
+          ];
+          const hoverColors = [
+            'group-hover:bg-blue-200', 'group-hover:bg-indigo-200', 'group-hover:bg-purple-200',
+            'group-hover:bg-emerald-200', 'group-hover:bg-amber-200', 'group-hover:bg-rose-200',
+          ];
+          const borderColor = borderColors[index % borderColors.length];
+          const hoverColor = hoverColors[index % hoverColors.length];
 
-            <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 line-clamp-1" title={item.label}>
-              {item.label}
-            </p>
-            <p className="text-2xl font-black text-blue-900">
-              {item.value}
-            </p>
-          </div>
-        ))}
+          return (
+            <div
+              key={index}
+              className={`grow sm:grow-0 w-[calc(50%-0.375rem)] sm:w-auto sm:min-w-37.5 lg:min-w-45 bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group border-l-4 ${borderColor}`}
+            >
+              {/* Thanh màu trang trí nhỏ ở mép dưới thẻ */}
+              <div className={`absolute bottom-0 left-0 w-full h-1 bg-gray-100 ${hoverColor} transition-colors`} />
+
+              <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1 line-clamp-1" title={item.label}>
+                {item.label}
+              </p>
+              <p className="text-2xl font-black text-blue-900">
+                {item.value}
+              </p>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

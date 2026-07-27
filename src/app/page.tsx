@@ -174,8 +174,8 @@ function HomeContent() {
           <div className={`animate-in fade-in slide-in-from-bottom-2 duration-300 ${activeTab === 'nhap-lieu' ? 'block' : 'hidden'}`}>
             <DashboardReport />
             <div className="flex flex-col lg:flex-row gap-6 items-start">
-              <div className="w-full lg:w-1/4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm lg:sticky lg:top-24 space-y-4">
-                <h4 className="text-sm font-bold text-gray-700 border-b pb-2 mb-2">Bảng Điều Khiển Quét</h4>
+              <div className="w-full lg:w-1/4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm lg:sticky lg:top-24 flex flex-col gap-4">
+                <h4 className="text-sm font-bold text-gray-700 border-b pb-2">Bảng Điều Khiển Quét</h4>
                 <ControlPanel
                   isDeviceScannerActive={app.isDeviceScannerActive}
                   isWebCamActive={app.isWebCamActive}
@@ -186,15 +186,15 @@ function HomeContent() {
                   onExportExcel={app.handleExportExcel}
                   onClearData={app.requestClearData}
                   onFileUpload={app.handleFileUpload}
+                  scannerDisplayValue={app.scannerDisplayValue}
                 />
                 <ScannerSection
                   isWebCamActive={app.isWebCamActive}
-                  isDeviceScannerActive={app.isDeviceScannerActive}
                   isFlashActive={app.isFlashActive}
-                  scannerDisplayValue={app.scannerDisplayValue}
                   scannerInputRef={app.scannerInputRef}
                   onScannerInput={app.handleScannerInput}
                   onScannerChange={app.handleScannerChange}
+                  onStopWebcam={app.stopWebcam}
                 />
               </div>
 
