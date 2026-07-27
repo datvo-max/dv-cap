@@ -1,5 +1,5 @@
 // src/hooks/useCardReturnApp.ts
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { db, addCardHistory } from "@/shared/lib/db";
 import { Html5Qrcode } from "html5-qrcode";
 
@@ -116,6 +116,13 @@ export function useCardReturnApp() {
   // ==========================================
   // 6. XỬ LÝ CAMERA (Đã được nối dây với cardImporter)
   // ==========================================
+  const cardImporterRef = useRef(cardImporter);
+  const processReturnCardRef = useRef(processReturnCard);
+  useEffect(() => {
+    cardImporterRef.current = cardImporter;
+    processReturnCardRef.current = processReturnCard;
+  });
+
   const handleScannerChange = (e: React.ChangeEvent<HTMLInputElement>) => { setScannerDisplayValue(e.target.value); };
 
   const handleCameraScan = (decodedText: string) => {
@@ -124,13 +131,23 @@ export function useCardReturnApp() {
     setIsFlashActive(true);
     setTimeout(() => setIsFlashActive(false), 100);
 
+    if (typeof navigator !== "undefined" && navigator && navigator.vibrate) {
+      try {
+        navigator.vibrate(150);
+      } catch {
+        // Bỏ qua nếu trình duyệt không hỗ trợ rung
+      }
+    }
+
     if (cameraActionRef.current === 'import') {
-      // Gọi hàm Nạp thẻ từ module đã tách (Cực kỳ quan trọng)
-      if (cardImporter.processImportCard) {
-        cardImporter.processImportCard(decodedText);
+      // Gọi hàm Nạp thẻ từ module đã tách qua Ref
+      if (cardImporterRef.current && cardImporterRef.current.processImportCard) {
+        cardImporterRef.current.processImportCard(decodedText);
       }
     } else {
-      processReturnCard(decodedText);
+      if (processReturnCardRef.current) {
+        processReturnCardRef.current(decodedText);
+      }
     }
     setTimeout(() => { isCameraPaused.current = false; }, 2000);
   };

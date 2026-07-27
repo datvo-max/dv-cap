@@ -1,5 +1,5 @@
 // src/features/matching/hooks/useMatchingApp.ts
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { db, MatchingRecord, CardRecord, addCardHistory, addCardHistoryBulk } from "@/shared/lib/db";
 import { parseCCCD } from "@/shared/utils/cccdParser";
 import * as XLSX from "xlsx";
@@ -113,13 +113,28 @@ export function useMatchingApp() {
     }
   };
 
+  const handleScanSuccessRef = useRef(handleScanSuccess);
+  useEffect(() => {
+    handleScanSuccessRef.current = handleScanSuccess;
+  });
+
   const handleCameraScan = (decodedText: string) => {
     if (isCameraPaused.current) return;
     isCameraPaused.current = true;
     setIsFlashActive(true);
     setTimeout(() => setIsFlashActive(false), 100);
 
-    handleScanSuccess(decodedText);
+    if (typeof navigator !== "undefined" && navigator && navigator.vibrate) {
+      try {
+        navigator.vibrate(150);
+      } catch {
+        // Bỏ qua nếu trình duyệt không hỗ trợ rung
+      }
+    }
+
+    if (handleScanSuccessRef.current) {
+      handleScanSuccessRef.current(decodedText);
+    }
 
     setTimeout(() => {
       isCameraPaused.current = false;

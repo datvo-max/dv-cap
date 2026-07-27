@@ -86,13 +86,28 @@ export function useScannerApp() {
     }
   };
 
+  const handleScanSuccessRef = useRef(handleScanSuccess);
+  useEffect(() => {
+    handleScanSuccessRef.current = handleScanSuccess;
+  });
+
   const handleCameraScan = (decodedText: string) => {
     if (isCameraPaused.current) return;
     isCameraPaused.current = true;
     setIsFlashActive(true);
     setTimeout(() => setIsFlashActive(false), 100);
 
-    handleScanSuccess(decodedText);
+    if (typeof navigator !== "undefined" && navigator && navigator.vibrate) {
+      try {
+        navigator.vibrate(150);
+      } catch {
+        // Bỏ qua nếu trình duyệt chặn hoặc không hỗ trợ rung
+      }
+    }
+
+    if (handleScanSuccessRef.current) {
+      handleScanSuccessRef.current(decodedText);
+    }
 
     setTimeout(() => {
       isCameraPaused.current = false;
