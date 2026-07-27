@@ -67,7 +67,7 @@ export default function ScannerSection({
       </div>
 
       {/* Div ẩn dùng để xử lý đọc file ảnh tải lên ngầm — luôn trong DOM */}
-      <div id="file-scanner" className="hidden" />
+      <div id="file-scanner" className="absolute w-0 h-0 overflow-hidden opacity-0 pointer-events-none" aria-hidden="true" />
 
       {/* Input ẩn dùng cho máy quét vật lý — luôn trong DOM */}
       <input
