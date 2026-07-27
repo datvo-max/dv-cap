@@ -33,8 +33,8 @@ export default function ScannerSection({
             </span>
           </div>
 
-          {/* Khung camera */}
-          <div className="relative w-full rounded-md overflow-hidden shadow-inner border border-blue-300 bg-black max-h-64 flex items-center justify-center">
+          {/* Khung camera chuẩn kỹ thuật - loại bỏ max-h-64 và flex để không bị cắt xén video trên mobile */}
+          <div className="relative w-full rounded-md overflow-hidden shadow-inner border border-blue-300 bg-black">
             <div id="reader" className="w-full" />
             {/* Lớp chớp sáng khi quét thành công */}
             <div

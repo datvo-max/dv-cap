@@ -11,7 +11,7 @@ export const generateId = () => {
 };
 
 export const parseCCCD = (qrText: string): CCCDRecord => {
-  const parts = qrText.trim().split("|");
+  const parts = qrText.trim().split("|").map(p => p.trim());
   if (parts.length >= 6) {
     return {
       id: generateId(),

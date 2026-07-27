@@ -10,8 +10,8 @@ import { useLiveQuery } from "dexie-react-hooks";
 export function useScannerApp() {
   // Thay thế LocalStorage bằng useLiveQuery của Dexie.
   // Giao diện sẽ TỰ ĐỘNG cập nhật (re-render) bất cứ khi nào bảng scannedCards có thay đổi.
-  // 'asc' = Mới xếp sau (Mặc định), 'desc' = Mới xếp đầu
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  // 'asc' = Mới xếp sau, 'desc' = Mới xếp đầu (Mặc định)
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   // Gắn sortOrder vào mảng dependency để Dexie tự động truy vấn lại khi đổi chế độ
   const rawData = useLiveQuery(
@@ -56,9 +56,10 @@ export function useScannerApp() {
   // ==========================================
   const handleScanSuccess = async (decodedText: string) => {
     const record = parseCCCD(decodedText);
+    const cccdRegex = /^\d{12}$/;
 
-    if (!record.idNumber) {
-      showToast(`❌ Lỗi: Mã QR không hợp lệ!`, "error");
+    if (!record.idNumber || !cccdRegex.test(record.idNumber)) {
+      showToast(`❌ Lỗi: Mã QR không hợp lệ (Không đúng định dạng thẻ Căn cước)!`, "error");
       return;
     }
 
