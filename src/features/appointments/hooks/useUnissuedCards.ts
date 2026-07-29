@@ -206,6 +206,7 @@ export function useUnissuedCards() {
   });
 
   const [confirmingId, setConfirmingId] = useState<number | null>(null);
+  const [editingRecord, setEditingRecord] = useState<UnissuedRecord | null>(null);
 
   // MỚI: Khởi tạo mảng quản lý Toast riêng cho Phân hệ 3
   interface ToastItem { id: number; msg: string; type: "success" | "error" | "warning" | "info"; }
@@ -285,6 +286,25 @@ export function useUnissuedCards() {
     } catch (error) {
       console.error("Lỗi khi cập nhật kết quả:", error);
       showToast("❌ Có lỗi xảy ra khi cập nhật kết quả!", "error");
+    }
+  };
+
+  const requestEdit = (record: UnissuedRecord) => {
+    setEditingRecord(record);
+  };
+
+  const cancelEdit = () => {
+    setEditingRecord(null);
+  };
+
+  const handleUpdateRecord = async (id: number, updates: Partial<UnissuedRecord>) => {
+    try {
+      await db.unissuedCards.update(id, updates);
+      showToast("✅ Đã cập nhật thông tin thành công!", "success");
+      setEditingRecord(null);
+    } catch (error) {
+      console.error("Lỗi khi cập nhật:", error);
+      showToast("❌ Có lỗi xảy ra khi cập nhật!", "error");
     }
   };
 
@@ -409,6 +429,10 @@ export function useUnissuedCards() {
     toasts,
     handleUpdateResult,
     handleImageUpload,
-    isScanningPhoto
+    isScanningPhoto,
+    editingRecord,
+    requestEdit,
+    cancelEdit,
+    handleUpdateRecord
   };
 }

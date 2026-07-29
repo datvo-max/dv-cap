@@ -8,7 +8,7 @@ import { removeVietnameseTones } from "@/shared/utils/removeVietnameseTones";
 import { CheckCircle, Truck, Archive, Phone, Image } from "lucide-react";
 
 interface ReturnDataTableProps {
-  onReturnCard: (idNumber: string) => void;
+  onReturnCard: (id: number) => void;
   onUndoReturn: (id: number) => void;
   onEditCard: (id: number) => void; // MỚI: Thêm prop gọi Modal sửa
   // MỚI: Thêm các prop phục vụ chọn hàng loạt và Shipper
@@ -493,7 +493,7 @@ export default function ReturnDataTable({
                         )}
                         {item.status === 'pending' && (
                           <button
-                            onClick={() => onReturnCard(item.idNumber)}
+                            onClick={() => item.id !== undefined && onReturnCard(item.id)}
                             className="px-3 py-1 bg-green-500 text-white text-[10px] font-bold rounded-md shadow-sm hover:bg-green-600 hover:shadow transform hover:scale-105 transition-all cursor-pointer"
                             title="Xác nhận đã trả thẻ này cho công dân"
                           >
@@ -503,7 +503,7 @@ export default function ReturnDataTable({
                         {item.status === 'shipping' && (
                           <div className="flex gap-1">
                             <button
-                              onClick={() => onReturnCard(item.idNumber)}
+                              onClick={() => item.id !== undefined && onReturnCard(item.id)}
                               className="px-2 py-0.5 bg-green-600 hover:bg-green-700 text-white text-[10px] font-bold rounded-md shadow-sm transition-all cursor-pointer"
                               title="Xác nhận shipper đã giao thẻ thành công"
                             >

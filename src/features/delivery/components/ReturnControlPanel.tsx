@@ -44,7 +44,7 @@ export default function ReturnControlPanel({
   const handleDownloadTemplate = () => {
     const ws_data = [
       ["Số CCCD", "Họ và Tên", "Ngày Sinh", "Giới Tính", "Địa Chỉ", "Ngày Cấp", "Họ Tên Cha", "Họ Tên Mẹ"],
-      ["079090123456", "Nguyễn Văn A", "01/01/1990", "Nam", "Phường 1, Tân An, Long An", "15/05/2024", "Nguyễn Văn B", "Trần Thị C"]
+      ["079090123456", "Nguyễn Văn A", "01011990", "Nam", "1 NVC, Phường Tân An, Thành phố Cần Thơ", "15052024", "Nguyễn Văn B", "Trần Thị C"]
     ];
 
     const ws = XLSX.utils.aoa_to_sheet(ws_data);
@@ -144,20 +144,18 @@ export default function ReturnControlPanel({
           </div>
 
           {/* Ô quét nạp thẻ */}
-          <div className={`transition-all duration-200 rounded-lg ${
-            activeFocus === 'import'
-              ? 'border-2 border-dashed border-blue-500 bg-white shadow-sm'
-              : 'border border-blue-200 bg-white rounded-md'
-          }`}>
+          <div className={`transition-all duration-200 rounded-lg ${activeFocus === 'import'
+            ? 'border-2 border-dashed border-blue-500 bg-white shadow-sm'
+            : 'border border-blue-200 bg-white rounded-md'
+            }`}>
             <input
               ref={importInputRef}
               onKeyDown={onImportScannerInput}
               onFocus={() => setActiveFocus('import')}
               onBlur={() => setActiveFocus(null)}
               placeholder={activeFocus === 'import' ? "🔫 Đang đợi dữ liệu từ máy quét..." : "🔫 Click vào đây và quét thẻ để thêm ..."}
-              className={`w-full pl-3 pr-3 py-1.5 text-xs outline-none font-medium ${
-                activeFocus === 'import' ? 'text-blue-700 placeholder:text-blue-400 placeholder:animate-pulse' : 'text-blue-900'
-              }`}
+              className={`w-full pl-3 pr-3 py-1.5 text-xs outline-none font-medium ${activeFocus === 'import' ? 'text-blue-700 placeholder:text-blue-400 placeholder:animate-pulse' : 'text-blue-900'
+                }`}
               title="Nạp lẻ bằng máy quét phần cứng"
             />
           </div>
@@ -179,20 +177,18 @@ export default function ReturnControlPanel({
         </p>
 
         {/* Ô quét trả thẻ */}
-        <div className={`transition-all duration-200 rounded-lg ${
-          activeFocus === 'return'
-            ? 'border-2 border-dashed border-green-500 bg-white shadow-sm'
-            : 'border border-green-200 bg-white rounded-md'
-        }`}>
+        <div className={`transition-all duration-200 rounded-lg ${activeFocus === 'return'
+          ? 'border-2 border-dashed border-green-500 bg-white shadow-sm'
+          : 'border border-green-200 bg-white rounded-md'
+          }`}>
           <input
             ref={returnInputRef}
             onKeyDown={onReturnScannerInput}
             onFocus={() => setActiveFocus('return')}
             onBlur={() => setActiveFocus(null)}
             placeholder={activeFocus === 'return' ? "🔫 Đang đợi dữ liệu từ máy quét..." : "🔫 Click vào đây và quét thẻ để trả ..."}
-            className={`w-full pl-3 pr-3 py-1.5 text-xs outline-none font-medium ${
-              activeFocus === 'return' ? 'text-green-700 placeholder:text-green-500 placeholder:animate-pulse' : 'text-green-900'
-            }`}
+            className={`w-full pl-3 pr-3 py-1.5 text-xs outline-none font-medium ${activeFocus === 'return' ? 'text-green-700 placeholder:text-green-500 placeholder:animate-pulse' : 'text-green-900'
+              }`}
             title="Trả thẻ bằng máy quét phần cứng"
           />
         </div>

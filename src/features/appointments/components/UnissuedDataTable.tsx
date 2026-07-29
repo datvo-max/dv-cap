@@ -4,6 +4,7 @@
 import React from "react";
 import { useUnissuedCards } from "@/features/appointments/hooks/useUnissuedCards";
 import Toast from "@/shared/components/Toast";
+import EditUnissuedModal from "./EditUnissuedModal";
 
 export default function UnissuedDataTable() {
   const {
@@ -12,7 +13,11 @@ export default function UnissuedDataTable() {
     toasts,
     handleUpdateResult,
     handleImageUpload,
-    isScanningPhoto
+    isScanningPhoto,
+    editingRecord,
+    requestEdit,
+    cancelEdit,
+    handleUpdateRecord
   } = useUnissuedCards();
 
   const [editingResultId, setEditingResultId] = React.useState<number | null>(null);
@@ -223,6 +228,15 @@ export default function UnissuedDataTable() {
                         </div>
                       )}
 
+                      {/* NÚT SỬA */}
+                      <button
+                        onClick={() => requestEdit(item)}
+                        className="text-blue-500 hover:text-blue-700 p-1.5 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors cursor-pointer mr-1"
+                        title="Sửa thông tin"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                      </button>
+
                       {/* NÚT THÙNG RÁC MẶC ĐỊNH */}
                       <button
                         onClick={() => { if (item.id !== undefined) requestDelete(item.id) }}
@@ -241,6 +255,13 @@ export default function UnissuedDataTable() {
         </table>
       </div>
       <Toast toasts={toasts} />
+      <EditUnissuedModal
+        isOpen={!!editingRecord}
+        record={editingRecord}
+        onClose={cancelEdit}
+        onSave={handleUpdateRecord}
+        suggestedReasons={suggestedReasons}
+      />
     </div>
   );
 }

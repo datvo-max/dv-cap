@@ -52,7 +52,26 @@ export function useCardReturnApp() {
   // ==========================================
   // 5. NGHIỆP VỤ TRẢ THẺ 
   // ==========================================
-  const processReturnCard = async (rawData: string) => {
+  const processReturnCard = async (rawData: string | number) => {
+    if (typeof rawData === 'number') {
+      const card = await db.cards.get(rawData);
+      if (!card) {
+        showToast(`❌ Không tìm thấy hồ sơ!`, "error");
+        return;
+      }
+      if (card.status === 'returned') {
+        showToast(`⚠️ Thẻ của ${card.fullName} đã được trả trước đó rồi!`, "warning");
+        return;
+      }
+      await db.cards.update(card.id!, {
+        status: 'returned',
+        returnedAt: Date.now()
+      });
+      await addCardHistory(card.idNumber, 'return', 'Trả thẻ trực tiếp cho công dân');
+      showToast(`✅ Đã trả thẻ: ${card.fullName} (Vị trí: Hộp ${card.zone})`, "success");
+      return;
+    }
+
     let idNumber = rawData;
     if (rawData.includes("|")) {
       const parts = rawData.split("|");
