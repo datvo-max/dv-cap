@@ -374,9 +374,6 @@ function HomeContent() {
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
-        onBackupDatabase={returnApp.handleBackupDatabase}
-        onRestoreDatabase={returnApp.handleRestoreDatabase}
-        onRequestClearData={returnApp.requestClearData}
       />
     </main>
   );
