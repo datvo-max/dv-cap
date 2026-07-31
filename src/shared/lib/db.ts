@@ -93,6 +93,17 @@ export interface CardImageRecord {
   createdAt: number;                                            // Timestamp
 }
 
+export interface ArchiveRecord {
+  id?: number;
+  idNumber: string;
+  fullName: string;
+  dob: string;
+  gender: string;
+  address: string;
+  phoneNumber?: string;
+  createdAt: number; // Timestamp
+}
+
 class CardDatabase extends Dexie {
   scannedCards!: Table<ScannedRecord>;
   cards!: Table<CardRecord>;
@@ -100,6 +111,7 @@ class CardDatabase extends Dexie {
   cardHistory!: Table<HistoryRecord>;
   matchingCards!: Table<MatchingRecord>;
   cardImages!: Table<CardImageRecord>;
+  archives!: Table<ArchiveRecord>;
 
   constructor() {
     super('CCCD_KhoThe_DB');
@@ -163,6 +175,17 @@ class CardDatabase extends Dexie {
       cardHistory: '++id, idNumber, action, timestamp',
       matchingCards: '++id, idNumber, status, importedAt',
       cardImages: '++id, cardId, imageType, createdAt'
+    });
+
+    // Phiên bản 9: Bổ sung bảng tàng thư căn cước (archives)
+    this.version(9).stores({
+      cards: '++id, idNumber, fullName, phoneNumber, importDate, status, zone, canceledIdNumber',
+      scannedCards: '++id, &idNumber, fullName, scannedAt, fatherName, motherName',
+      unissuedCards: '++id, &idNumber, fullName, appointmentDate',
+      cardHistory: '++id, idNumber, action, timestamp',
+      matchingCards: '++id, idNumber, status, importedAt',
+      cardImages: '++id, cardId, imageType, createdAt',
+      archives: '++id, &idNumber, fullName, createdAt'
     });
   }
 }

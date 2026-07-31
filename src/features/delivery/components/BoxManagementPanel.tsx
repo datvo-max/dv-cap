@@ -11,19 +11,30 @@ interface BoxManagementPanelProps {
 export default function BoxManagementPanel({ onOpenMergeModal, onOpenRenameModal }: BoxManagementPanelProps) {
   // Truy vấn danh sách hộp và số lượng thẻ (chỉ tính thẻ chưa trả)
   const boxes = useLiveQuery(async () => {
-    const allCards = await db.cards.where('status').equals('pending').toArray();
+    const allCards = await db.cards.toArray();
     
-    const boxMap = new Map<string, number>();
+    const boxMap = new Map<string, { total: number; pending: number }>();
     for (const card of allCards) {
       if (card.zone) {
         const zoneStr = String(card.zone);
-        boxMap.set(zoneStr, (boxMap.get(zoneStr) || 0) + 1);
+        if (!boxMap.has(zoneStr)) {
+          boxMap.set(zoneStr, { total: 0, pending: 0 });
+        }
+        const box = boxMap.get(zoneStr)!;
+        box.total += 1;
+        if (card.status === 'pending') {
+          box.pending += 1;
+        }
       }
     }
 
     return Array.from(boxMap.entries())
-      .map(([zone, count]) => ({ zone, count }))
+      .map(([zone, counts]) => ({ zone, ...counts }))
       .sort((a, b) => {
+        // Hộp đã trả hết (pending === 0) đẩy xuống cuối
+        if (a.pending === 0 && b.pending > 0) return 1;
+        if (a.pending > 0 && b.pending === 0) return -1;
+
         const numA = parseInt(a.zone.replace(/\D/g, "")) || 0;
         const numB = parseInt(b.zone.replace(/\D/g, "")) || 0;
         return numA - numB;
@@ -47,8 +58,8 @@ export default function BoxManagementPanel({ onOpenMergeModal, onOpenRenameModal
               <span className="text-xs font-bold text-indigo-800">
                 {box.zone.includes('K') ? box.zone : `Hộp ${box.zone}`}
               </span>
-              <span className="text-[10px] bg-white border border-indigo-200 text-indigo-600 px-1.5 py-0.5 rounded-full font-bold shadow-sm">
-                {box.count} thẻ
+              <span className={`text-[10px] border px-1.5 py-0.5 rounded-full font-bold shadow-sm ${box.pending === 0 ? 'bg-white text-gray-400 border-gray-200' : 'bg-white text-indigo-600 border-indigo-200'}`}>
+                {box.pending} / {box.total}
               </span>
             </div>
           ))

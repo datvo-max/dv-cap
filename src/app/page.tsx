@@ -30,6 +30,9 @@ import UnissuedDataTable from "@/features/appointments/components/UnissuedDataTa
 // --- COMPONENT CỦA PHÂN HỆ 4 (ĐỐI SÁNH) ---
 import MatchingDashboard from "@/features/matching/components/MatchingDashboard";
 
+// --- COMPONENT CỦA PHÂN HỆ 5 (TÀNG THƯ) ---
+import ArchivesDashboard from "@/features/archives/components/ArchivesDashboard";
+
 import ExportConfigModal from "@/features/delivery/components/ExportConfigModal";
 import MergeBoxesModal from "@/features/delivery/components/MergeBoxesModal";
 import AssignShipperModal from "@/features/delivery/components/AssignShipperModal";
@@ -42,7 +45,7 @@ function HomeContent() {
   const { user, isAllowed, loading, isGuest } = useAuth();
   const searchParams = useSearchParams();
 
-  type TabType = "gioi-thieu" | "nhap-lieu" | "tra-the" | "giay-hen" | "doi-sanh";
+  type TabType = "gioi-thieu" | "nhap-lieu" | "tra-the" | "giay-hen" | "doi-sanh" | "tang-thu";
   const initialTab = (searchParams.get("tab") as TabType) || "gioi-thieu";
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
   const [loadedTabs, setLoadedTabs] = useState<Set<string>>(() => new Set([initialTab]));
@@ -155,6 +158,15 @@ function HomeContent() {
             >
               🔄 PHÂN HỆ 4: ĐỐI SÁNH
             </button>
+            <button
+              onClick={() => handleTabChange('tang-thu')}
+              className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'tang-thu'
+                ? "bg-purple-600 text-white shadow-md transform scale-105"
+                : "text-gray-500 hover:text-purple-600 hover:bg-purple-50"
+                }`}
+            >
+              🗄️ PHÂN HỆ 5: TÀNG THƯ
+            </button>
           </div>
         </div>
 
@@ -241,7 +253,6 @@ function HomeContent() {
               <ReturnDashboard onOpenExportModal={returnApp.openExportModal} />
               <div className="flex flex-col lg:flex-row gap-6 items-start mt-6">
                 <div className="w-full lg:w-1/4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm lg:sticky lg:top-24 flex flex-col gap-5">
-                  <h4 className="text-sm font-bold text-gray-700 border-b pb-2">Bảng Công cụ</h4>
                   <ReturnControlPanel
                     onImportExcel={returnApp.handleImportExcel}
                     importInputRef={returnApp.importInputRef}
@@ -297,8 +308,17 @@ function HomeContent() {
         {/* NỘI DUNG TAB 4 (ĐỐI SÁNH) */}
         {/* ======================================================== */}
         {loadedTabs.has('doi-sanh') && (
-          <div className={activeTab === 'doi-sanh' ? 'block' : 'hidden'}>
+          <div className={`animate-in fade-in slide-in-from-bottom-2 duration-300 ${activeTab === 'doi-sanh' ? 'block' : 'hidden'}`}>
             <MatchingDashboard />
+          </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* NỘI DUNG TAB 5 (TÀNG THƯ) */}
+        {/* ======================================================== */}
+        {loadedTabs.has('tang-thu') && (
+          <div className={`animate-in fade-in slide-in-from-bottom-2 duration-300 ${activeTab === 'tang-thu' ? 'block' : 'hidden'}`}>
+            <ArchivesDashboard />
           </div>
         )}
 

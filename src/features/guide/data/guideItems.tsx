@@ -230,6 +230,29 @@ export const guideItems: ToolGuideItem[] = [
     targetTab: "doi-sanh"
   },
 
+  // --- PHÂN HỆ 5 ---
+  {
+    id: "archives-management",
+    sectionId: "archives",
+    title: "Quản Lý & Lưu Trữ Tàng Thư CCCD",
+    badge: "Phân hệ 5",
+    badgeColor: "bg-purple-100 text-purple-800 border-purple-200",
+    icon: React.createElement(FolderPlus, { className: "w-5 h-5 text-purple-600" }),
+    summary: "Xây dựng và quản lý danh sách bàn giao Tàng thư Căn cước với khả năng tự động đối chiếu từ Kho thẻ (Phân hệ 2) hoặc nhập liệu thủ công siêu tốc.",
+    steps: [
+      "Chuyển sang Tab '🗄️ PHÂN HỆ 5: TÀNG THƯ' trên thanh điều hướng.",
+      "Tra cứu nhanh: Nhập từ 4 số định danh cá nhân trở lên vào thanh tìm kiếm. Hệ thống sẽ tự động lọc và gợi ý các thẻ đang có trong Phân hệ 2 (nhưng chưa có trong Tàng thư). Dùng mũi tên Lên/Xuống và nhấn Enter để chọn nhanh.",
+      "Nhập liệu thủ công (Đối với hồ sơ chưa có trong Kho thẻ): Khi gõ đủ 12 số mà không tìm thấy gợi ý, nhấn Enter để mở Form nhập thủ công. Con trỏ sẽ tự động chuyển sang ô Họ Tên để bạn gõ liên tục.",
+      "Mẹo nhập Ngày sinh: Bạn chỉ cần gõ 4 số (VD: 1505) và nhấn Tab, hệ thống tự động trích xuất năm sinh từ số CCCD để điền đủ ngày tháng năm sinh hoàn chỉnh.",
+      "Quản lý danh sách: Tại bảng bên phải, bạn có thể chỉnh sửa, xoá nhiều hồ sơ cùng lúc hoặc xuất trực tiếp danh sách Tàng thư ra file Excel chuyên nghiệp."
+    ],
+    tips: [
+      "Tính năng giới tính (Nam/Nữ) và thế kỷ sinh (19xx/20xx) luôn được hệ thống tự động bóc tách từ số ĐDCN mà không cần nhập tay."
+    ],
+    keywords: ["tàng thư", "archives", "lưu trữ", "bàn giao", "thủ công", "nhập liệu", "định danh", "ngày sinh"],
+    targetTab: "tang-thu"
+  },
+
   // --- QUẢN TRỊ & SAO LƯU ---
   {
     id: "admin-settings-unit",
@@ -310,6 +333,7 @@ export const GUIDE_SECTIONS = [
   { id: 'delivery' as const, label: "📤 Phân Hệ 2: Kho & Trả Thẻ" },
   { id: 'appointments' as const, label: "📑 Phân Hệ 3: Giấy Hẹn" },
   { id: 'matching' as const, label: "🔄 Phân Hệ 4: Đối Sánh" },
+  { id: 'archives' as const, label: "🗄️ Phân Hệ 5: Tàng Thư" },
   { id: 'admin' as const, label: "⚙️ Quản Trị & Sao Lưu" },
   { id: 'tips' as const, label: "🛠️ Mẹo & Khắc Phục Sự Cố" },
 ];
