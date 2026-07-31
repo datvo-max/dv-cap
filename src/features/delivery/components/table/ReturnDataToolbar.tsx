@@ -68,7 +68,16 @@ export default function ReturnDataToolbar({
 
         <div className="flex gap-2 w-full md:w-auto">
           <button
-            onClick={() => setShowFilters(!showFilters)}
+            onClick={() => {
+              if (showFilters) {
+                setFilterStatus("all");
+                setFilterIdNumber("");
+                setFilterBirthYear("");
+                setFilterFather("");
+                setFilterMother("");
+              }
+              setShowFilters(!showFilters);
+            }}
             className={`px-3 py-2 rounded-lg text-xs font-bold transition-all border shadow-sm flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer ${showFilters ? 'bg-blue-100 border-blue-300 text-blue-800' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>

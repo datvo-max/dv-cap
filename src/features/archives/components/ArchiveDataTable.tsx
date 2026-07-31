@@ -145,11 +145,11 @@ export default function ArchiveDataTable({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-center justify-between p-4 bg-gray-50 border-t border-gray-200 gap-3">
           <div className="text-sm text-gray-500">
-            Trang <span className="font-bold text-gray-700">{currentPage}</span> / {totalPages}
+            Đang xem trang <span className="font-bold text-gray-700">{currentPage}</span> / {totalPages}
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-1.5 flex-wrap justify-center">
             <button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
@@ -157,6 +157,49 @@ export default function ArchiveDataTable({
             >
               Trước
             </button>
+            
+            {(() => {
+              const pages = [];
+              const start = Math.max(1, currentPage - 2);
+              const end = Math.min(totalPages, currentPage + 2);
+
+              if (start > 1) {
+                pages.push(
+                  <button key="1" onClick={() => setCurrentPage(1)} className="px-3 py-1.5 border border-gray-300 rounded text-sm font-medium bg-white text-gray-700 hover:bg-gray-50">1</button>
+                );
+                if (start > 2) {
+                  pages.push(<span key="ellipsis-start" className="px-2 py-1.5 text-gray-500">...</span>);
+                }
+              }
+
+              for (let i = start; i <= end; i++) {
+                pages.push(
+                  <button
+                    key={i}
+                    onClick={() => setCurrentPage(i)}
+                    className={`px-3 py-1.5 border rounded text-sm font-medium ${
+                      currentPage === i
+                        ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
+                        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    {i}
+                  </button>
+                );
+              }
+
+              if (end < totalPages) {
+                if (end < totalPages - 1) {
+                  pages.push(<span key="ellipsis-end" className="px-2 py-1.5 text-gray-500">...</span>);
+                }
+                pages.push(
+                  <button key={totalPages} onClick={() => setCurrentPage(totalPages)} className="px-3 py-1.5 border border-gray-300 rounded text-sm font-medium bg-white text-gray-700 hover:bg-gray-50">{totalPages}</button>
+                );
+              }
+
+              return pages;
+            })()}
+
             <button
               onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
