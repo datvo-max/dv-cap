@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { User as UserIcon } from "lucide-react";
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -7,7 +8,7 @@ interface ProfileModalProps {
 }
 
 export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
-  const { userProfile, updateUserProfile, loading } = useAuth();
+  const { user, userProfile, updateUserProfile, loading } = useAuth();
   
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -18,9 +19,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
     if (isOpen && userProfile) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setFullName(userProfile.fullName || "");
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPhone(userProfile.phone || "");
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setUnit(userProfile.unit || "");
     }
   }, [isOpen, userProfile]);
@@ -36,7 +35,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
         unit
       });
       onClose();
-    } catch (error) {
+    } catch {
       // Lỗi đã được xử lý bằng toast trong AuthContext
     } finally {
       setIsProcessing(false);
@@ -61,6 +60,19 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
              <div className="text-center text-slate-500 py-4">Đang tải thông tin...</div>
           ) : (
             <>
+              <div className="flex flex-col items-center mb-6">
+                {user?.photoURL ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={user.photoURL} alt="Avatar" className="w-24 h-24 rounded-full shadow-md border-4 border-slate-50 object-cover" />
+                ) : (
+                  <div className="w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shadow-md border-4 border-slate-50">
+                    <UserIcon className="w-12 h-12" />
+                  </div>
+                )}
+                <h4 className="mt-4 font-bold text-lg text-slate-800">{user?.displayName || "Người dùng"}</h4>
+                <p className="text-sm text-slate-500">{user?.email}</p>
+              </div>
+
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1">Email đăng nhập</label>
                 <input

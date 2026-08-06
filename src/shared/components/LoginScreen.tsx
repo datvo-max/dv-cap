@@ -2,10 +2,10 @@
 
 import React from "react";
 import { useAuth } from "../context/AuthContext";
-import { ShieldAlert, Loader2, LogOut, User as UserIcon } from "lucide-react";
+import { Loader2, User as UserIcon } from "lucide-react";
 
 export default function LoginScreen() {
-  const { user, loading, login, logout, isAllowed, continueAsGuest } = useAuth();
+  const { loading, login, continueAsGuest } = useAuth();
 
   if (loading) {
     return (
@@ -15,35 +15,10 @@ export default function LoginScreen() {
     );
   }
 
-  // Đã đăng nhập nhưng chưa được cấp quyền (whitelist)
-  if (user && !isAllowed) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <div className="bg-white max-w-md w-full rounded-2xl shadow-xl overflow-hidden text-center p-8 border border-slate-100">
-          <div className="w-20 h-20 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-6">
-            <ShieldAlert className="w-10 h-10" />
-          </div>
-          <h2 className="text-2xl font-bold text-slate-800 mb-2">Truy cập bị từ chối</h2>
-          <p className="text-slate-600 mb-6">
-            Tài khoản <strong>{user.email}</strong> của bạn chưa được cấp quyền sử dụng phần mềm. Vui lòng liên hệ Quản trị viên để được phê duyệt.
-          </p>
-
-          <button
-            onClick={logout}
-            className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-colors duration-200"
-          >
-            <LogOut className="w-5 h-5" />
-            Đăng xuất / Đổi tài khoản khác
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   // Chưa đăng nhập
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="bg-white max-w-md w-full rounded-2xl shadow-xl overflow-hidden border border-slate-100">
+      <div className="bg-white max-w-[500px] w-full rounded-2xl shadow-xl overflow-hidden border border-slate-100">
         <div className="bg-blue-600 p-8 text-center text-white">
           <h1 className="text-3xl font-bold tracking-tight mb-2">QL-TCC</h1>
           <p className="text-blue-100">Hệ thống Quản lý Thẻ Căn cước địa phương</p>
@@ -52,7 +27,7 @@ export default function LoginScreen() {
         <div className="p-8">
           <h2 className="text-xl font-semibold text-slate-800 text-center mb-6">Đăng nhập hệ thống</h2>
           <p className="text-sm text-slate-500 text-center mb-8">
-            Hệ thống yêu cầu xác thực bằng tài khoản Google đã được quản trị viên cấp phép.
+            Hệ thống yêu cầu xác thực bằng tài khoản Google để sử dụng.
           </p>
 
           <div className="space-y-3">
