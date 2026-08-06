@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useAuth } from "../context/AuthContext";
-import { ShieldAlert, LogIn, Loader2, LogOut, User as UserIcon } from "lucide-react";
+import { ShieldAlert, Loader2, LogOut, User as UserIcon } from "lucide-react";
 
 export default function LoginScreen() {
   const { user, loading, login, logout, isAllowed, continueAsGuest } = useAuth();

@@ -10,9 +10,10 @@ import pkg from "../../../package.json";
 
 interface HeaderProps {
   onOpenSettings?: () => void;
+  onOpenProfile?: () => void;
 }
 
-export default function Header({ onOpenSettings }: HeaderProps) {
+export default function Header({ onOpenSettings, onOpenProfile }: HeaderProps) {
   const { user, isGuest, logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -52,6 +53,7 @@ export default function Header({ onOpenSettings }: HeaderProps) {
               className="flex items-center gap-2 hover:bg-slate-50 p-1.5 rounded-lg transition-colors border border-transparent hover:border-slate-200"
             >
               {user?.photoURL ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img src={user.photoURL} alt="Avatar" className="w-8 h-8 rounded-full border border-slate-200" />
               ) : (
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isGuest ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'}`}>
@@ -95,6 +97,18 @@ export default function Header({ onOpenSettings }: HeaderProps) {
                 </div>
 
                 <div className="p-1 border-b border-slate-100">
+                  {onOpenProfile && (
+                    <button
+                      onClick={() => {
+                        setIsDropdownOpen(false);
+                        onOpenProfile();
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors font-medium"
+                    >
+                      <UserIcon className="w-4 h-4" />
+                      Hồ sơ cá nhân
+                    </button>
+                  )}
                   {onOpenSettings && (
                     <button
                       onClick={() => {

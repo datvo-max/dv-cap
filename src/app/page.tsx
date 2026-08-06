@@ -39,6 +39,7 @@ import AssignShipperModal from "@/features/delivery/components/AssignShipperModa
 import MoveCardsBoxModal from "@/features/delivery/components/MoveCardsBoxModal";
 import RenameBoxModal from "@/features/delivery/components/RenameBoxModal";
 import SettingsModal from "@/shared/components/SettingsModal";
+import ProfileModal from "@/shared/components/ProfileModal";
 import UserGuideTab from "@/features/guide/components/UserGuideTab";
 
 function HomeContent() {
@@ -68,6 +69,7 @@ function HomeContent() {
   }, []);
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const app = useScannerApp();
   const returnApp = useCardReturnApp();
@@ -106,7 +108,10 @@ function HomeContent() {
 
   return (
     <main className="min-h-screen bg-gray-50 font-sans text-gray-800 pb-10">
-      <Header onOpenSettings={() => setIsSettingsOpen(true)} />
+      <Header 
+        onOpenSettings={() => setIsSettingsOpen(true)} 
+        onOpenProfile={() => setIsProfileOpen(true)} 
+      />
 
       {isMounted && <div className="max-w-[1700px] mx-auto px-4">
 
@@ -374,6 +379,10 @@ function HomeContent() {
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
+      />
+      <ProfileModal
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
       />
     </main>
   );
