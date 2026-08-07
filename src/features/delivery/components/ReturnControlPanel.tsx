@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import * as XLSX from "xlsx-js-style";
 import { X } from "lucide-react";
 import BoxManagementPanel from "./BoxManagementPanel";
@@ -42,6 +43,11 @@ export default function ReturnControlPanel({
 }: ReturnControlPanelProps) {
   const [activeFocus, setActiveFocus] = useState<'import' | 'return' | null>(null);
   const [activeModal, setActiveModal] = useState<'import' | 'return' | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleDownloadTemplate = () => {
     const ws_data = [
@@ -98,8 +104,8 @@ export default function ReturnControlPanel({
       </button>
 
       {/* Modals for Import */}
-      {activeModal === 'import' && (
-        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
+      {mounted && activeModal === 'import' && createPortal(
+        <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center p-4 border-b border-blue-100 bg-blue-50/80 rounded-t-xl">
               <h2 className="font-bold text-lg text-blue-800 flex items-center gap-2">
@@ -206,12 +212,13 @@ export default function ReturnControlPanel({
 
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Modals for Return */}
-      {activeModal === 'return' && (
-        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
+      {mounted && activeModal === 'return' && createPortal(
+        <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center p-4 border-b border-green-100 bg-green-50/80 rounded-t-xl">
               <h2 className="font-bold text-lg text-green-800 flex items-center gap-2">
@@ -258,7 +265,8 @@ export default function ReturnControlPanel({
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">

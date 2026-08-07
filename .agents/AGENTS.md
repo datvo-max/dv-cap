@@ -30,8 +30,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - **Tối ưu Mobile**: Giao diện phải Responsive 100%, ưu tiên trải nghiệm quét mã trên điện thoại di động trước.
 
 ## 5. Quản lý Mã nguồn (Git & Versioning)
-- **Không tự ý Push code**: Trừ khi có yêu cầu rõ ràng từ người dùng, tuyệt đối không tự chạy `git push`.
-- **Tự động cập nhật Version**: Bắt buộc nâng phiên bản trong file `package.json` theo Semantic Versioning (patch/minor/major) mỗi khi có yêu cầu commit & push code lên GitHub.
+- **TUYỆT ĐỐI KHÔNG TỰ Ý PUSH CODE**: Không bao giờ tự động chạy các lệnh `git commit` hay `git push` sau khi hoàn thành công việc. CHỈ push code lên GitHub khi nào người dùng CÓ YÊU CẦU RÕ RÀNG.
+- **Tự động cập nhật Version**: Bắt buộc nâng phiên bản trong file `package.json` theo Semantic Versioning (patch/minor/major) TRƯỚC KHI thực hiện yêu cầu commit & push code lên GitHub của người dùng.
 
 ## 6. UI/UX & Trải nghiệm
 - **Thiết kế chỉn chu**: Giao diện hiện đại, chuyên nghiệp, có hiệu ứng (hover, transition).
