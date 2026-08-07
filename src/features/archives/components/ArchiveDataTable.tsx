@@ -5,6 +5,7 @@ import { exportArchivesToExcel } from '../utils/exportArchivesToExcel';
 
 interface ArchiveDataTableProps {
   data: ArchiveRecord[];
+  allData: ArchiveRecord[];
 
   // Pagination
   currentPage: number;
@@ -22,6 +23,7 @@ interface ArchiveDataTableProps {
 
 export default function ArchiveDataTable({
   data,
+  allData,
   currentPage,
   totalPages,
   setCurrentPage,
@@ -35,10 +37,10 @@ export default function ArchiveDataTable({
 
   const handleExport = () => {
     if (selectedIds.size > 0) {
-      const selectedData = data.filter(d => d.id && selectedIds.has(d.id));
+      const selectedData = allData.filter(d => d.id && selectedIds.has(d.id));
       exportArchivesToExcel(selectedData);
     } else {
-      exportArchivesToExcel(data);
+      exportArchivesToExcel(allData);
     }
   };
 

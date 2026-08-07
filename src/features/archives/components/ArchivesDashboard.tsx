@@ -44,6 +44,7 @@ export default function ArchivesDashboard() {
         <div className="flex-1 min-h-0">
           <ArchiveDataTable
             data={archives.currentData}
+            allData={archives.filteredData}
             currentPage={archives.currentPage}
             totalPages={archives.totalPages}
             setCurrentPage={archives.setCurrentPage}
