@@ -36,7 +36,7 @@ export default function ArchiveDataTable({
 }: ArchiveDataTableProps) {
 
   const handleExport = () => {
-    if (selectedIds.size > 0) {
+    if (isSelectMode && selectedIds.size > 0) {
       const selectedData = allData.filter(d => d.id && selectedIds.has(d.id));
       exportArchivesToExcel(selectedData);
     } else {
@@ -76,7 +76,7 @@ export default function ArchiveDataTable({
           className="px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors flex items-center gap-1.5 shadow-sm"
         >
           <Download className="w-3.5 h-3.5" />
-          {selectedIds.size > 0 ? `Xuất Excel (${selectedIds.size})` : 'Xuất tất cả Excel'}
+          {isSelectMode && selectedIds.size > 0 ? `Xuất Excel (${selectedIds.size})` : 'Xuất tất cả Excel'}
         </button>
       </div>
 
