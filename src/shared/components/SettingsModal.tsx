@@ -132,9 +132,9 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       } else if (deleteTarget === "module3") {
         await db.unissuedCards.clear();
       } else if (deleteTarget === "module4") {
-        await db.matchingCards.clear();
-      } else if (deleteTarget === "module5") {
         await db.archives.clear();
+      } else if (deleteTarget === "module5") {
+        await db.matchingCards.clear();
       } else if (deleteTarget === "all") {
         await db.scannedCards.clear();
         await db.cards.clear();
@@ -272,8 +272,8 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 <option value="module1">Phân hệ 1: Xóa danh sách Lập quét</option>
                 <option value="module2">Phân hệ 2: Xóa toàn bộ Kho thẻ & Hình ảnh</option>
                 <option value="module3">Phân hệ 3: Xóa danh sách Giấy hẹn</option>
-                <option value="module4">Phân hệ 4: Xóa danh sách Đối sánh</option>
-                <option value="module5">Phân hệ 5: Xóa dữ liệu Tàng thư</option>
+                <option value="module4">Phân hệ 4: Xóa dữ liệu Tàng thư</option>
+                <option value="module5">Phân hệ 5: Xóa dữ liệu Đối sánh (Công cụ)</option>
                 <option value="all" className="font-bold">KHÔI PHỤC CÀI ĐẶT GỐC (XÓA SẠCH MỌI THỨ)</option>
               </select>
 

@@ -36,4 +36,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 ## 6. UI/UX & Trải nghiệm
 - **Thiết kế chỉn chu**: Giao diện hiện đại, chuyên nghiệp, có hiệu ứng (hover, transition).
 - **Phản hồi rõ ràng**: Mọi thao tác (đặc biệt là quét mã, lưu kho, xóa dữ liệu) phải có thông báo trực quan bằng thư viện `react-hot-toast`.
+## 7. Quy chuẩn Thuật ngữ
+- **Số định danh**: Nếu nói đến số, gọi là **"số ĐDCN"**. Tuyệt đối không dùng từ "CCCD" trừ trường hợp có chỉ định đặc biệt từ người dùng.
+- **Thẻ**: Nếu nói đến thẻ cứng, gọi là **"Thẻ Căn cước"**.
+
 <!-- END:ql-tcc-agent-rules -->

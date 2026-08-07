@@ -27,11 +27,11 @@ import ReturnControlPanel from "@/features/delivery/components/ReturnControlPane
 // --- COMPONENT CỦA PHÂN HỆ 3 (MỚI) ---
 import UnissuedDataTable from "@/features/appointments/components/UnissuedDataTable";
 
-// --- COMPONENT CỦA PHÂN HỆ 4 (ĐỐI SÁNH) ---
-import MatchingDashboard from "@/features/matching/components/MatchingDashboard";
-
-// --- COMPONENT CỦA PHÂN HỆ 5 (TÀNG THƯ) ---
+// --- COMPONENT CỦA PHÂN HỆ 4 (TÀNG THƯ) ---
 import ArchivesDashboard from "@/features/archives/components/ArchivesDashboard";
+
+// --- COMPONENT CỦA PHÂN HỆ 5 (CÔNG CỤ) ---
+import MatchingDashboard from "@/features/tools/components/MatchingDashboard";
 
 import ExportConfigModal from "@/features/delivery/components/ExportConfigModal";
 import MergeBoxesModal from "@/features/delivery/components/MergeBoxesModal";
@@ -46,7 +46,7 @@ function HomeContent() {
   const { user, isAllowed, loading, isGuest } = useAuth();
   const searchParams = useSearchParams();
 
-  type TabType = "gioi-thieu" | "nhap-lieu" | "tra-the" | "giay-hen" | "doi-sanh" | "tang-thu";
+  type TabType = "gioi-thieu" | "nhap-lieu" | "tra-the" | "giay-hen" | "cong-cu" | "tang-thu";
   const initialTab = (searchParams.get("tab") as TabType) || "gioi-thieu";
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
   const [loadedTabs, setLoadedTabs] = useState<Set<string>>(() => new Set([initialTab]));
@@ -155,22 +155,22 @@ function HomeContent() {
               📑 PHÂN HỆ 3: THEO DÕI GIẤY HẸN
             </button>
             <button
-              onClick={() => handleTabChange('doi-sanh')}
-              className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'doi-sanh'
-                ? "bg-teal-600 text-white shadow-md transform scale-105"
-                : "text-gray-500 hover:text-teal-600 hover:bg-teal-50"
-                }`}
-            >
-              🔄 PHÂN HỆ 4: ĐỐI SÁNH
-            </button>
-            <button
               onClick={() => handleTabChange('tang-thu')}
               className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'tang-thu'
                 ? "bg-purple-600 text-white shadow-md transform scale-105"
                 : "text-gray-500 hover:text-purple-600 hover:bg-purple-50"
                 }`}
             >
-              🗄️ PHÂN HỆ 5: TÀNG THƯ
+              🗄️ PHÂN HỆ 4: TÀNG THƯ
+            </button>
+            <button
+              onClick={() => handleTabChange('cong-cu')}
+              className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 whitespace-nowrap ${activeTab === 'cong-cu'
+                ? "bg-teal-600 text-white shadow-md transform scale-105"
+                : "text-gray-500 hover:text-teal-600 hover:bg-teal-50"
+                }`}
+            >
+              🛠️ PHÂN HỆ 5: CÔNG CỤ
             </button>
           </div>
         </div>
@@ -312,8 +312,8 @@ function HomeContent() {
         {/* ======================================================== */}
         {/* NỘI DUNG TAB 4 (ĐỐI SÁNH) */}
         {/* ======================================================== */}
-        {loadedTabs.has('doi-sanh') && (
-          <div className={`animate-in fade-in slide-in-from-bottom-2 duration-300 ${activeTab === 'doi-sanh' ? 'block' : 'hidden'}`}>
+        {loadedTabs.has('cong-cu') && (
+          <div className={`animate-in fade-in slide-in-from-bottom-2 duration-300 ${activeTab === 'cong-cu' ? 'block' : 'hidden'}`}>
             <MatchingDashboard />
           </div>
         )}

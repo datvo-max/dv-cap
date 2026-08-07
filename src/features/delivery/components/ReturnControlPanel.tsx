@@ -18,9 +18,9 @@ interface ReturnControlPanelProps {
   onOpenMergeModal: () => void;
   onOpenRenameModal: () => void;
   isForceNextBox: boolean;
-  nextBoxName: string;
   cardsInCurrentBox: number;
   cardsPerBox: number;
+  nextBoxName: string | number;
 }
 
 export default function ReturnControlPanel({
@@ -97,7 +97,7 @@ export default function ReturnControlPanel({
       
       <button 
         onClick={() => setActiveModal('return')}
-        className="w-full py-3 px-4 bg-green-50 text-green-700 hover:bg-green-100 border border-green-200 rounded-lg font-bold text-sm text-left flex items-center gap-2 transition-colors shadow-sm"
+        className="w-full py-3 px-4 bg-green-50 text-green-700 hover:bg-green-100 border border-green-200 rounded-lg font-bold text-sm text-left flex items-center gap-2 transition-colors shadow-sm mt-3"
       >
         <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
         Xác nhận trả thẻ

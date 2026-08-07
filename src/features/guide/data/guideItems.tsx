@@ -212,36 +212,36 @@ export const guideItems: ToolGuideItem[] = [
 
   // --- PHÂN HỆ 4 ---
   {
-    id: "matching-crosscheck",
-    sectionId: "matching",
-    title: "Đối Sánh Tự Động Khớp / Lệch Dữ Liệu",
+    id: "guide-module-4",
+    title: "Phân hệ 4: Quản lý Tàng thư",
+    sectionId: "archives",
     badge: "Phân hệ 4",
     badgeColor: "bg-teal-100 text-teal-800 border-teal-200",
     icon: React.createElement(RefreshCw, { className: "w-5 h-5 text-teal-600" }),
-    summary: "Kiểm tra chéo tự động giữa danh sách thẻ thực tế và dữ liệu kỳ vọng để phát hiện chênh lệch.",
+    summary: "Xây dựng và quản lý danh sách bàn giao Tàng thư Căn cước với khả năng tự động đối chiếu từ Kho thẻ (Phân hệ 2) hoặc nhập liệu thủ công siêu tốc.",
     steps: [
-      "Chuyển sang Tab '🔄 PHÂN HỆ 4: ĐỐI SÁNH'.",
+      "Chuyển sang Tab '🗄️ PHÂN HỆ 4: TÀNG THƯ'.",
       "Sử dụng khu vực quét mã đối sánh (hoặc nạp danh sách) để đưa dữ liệu thực tế vào hệ thống.",
       "Hệ thống tự động chạy thuật toán đối chiếu với Kho thẻ hiện có và phân chia kết quả ra 2 bảng riêng biệt:",
       "1. Bảng Dữ liệu Đã Khớp: Các thẻ tìm thấy trong kho. Tại mỗi thẻ hỗ trợ thao tác nhanh: Bổ sung dữ liệu mới, Chọn trường cần bổ sung, hoặc Giữ nguyên không thay đổi.",
       "2. Bảng Dữ liệu Lệch / Chưa Khớp: Danh sách các thẻ bị thiếu trong kho hoặc thẻ dư thừa phát sinh ngoài danh sách, giúp nhân viên lập biên bản và tìm nguyên nhân ngay."
     ],
-    keywords: ["đối sánh", "matching", "kiểm tra chéo", "khớp", "lệch", "matched", "unmatched", "chênh lệch"],
-    targetTab: "doi-sanh"
+    keywords: ["tàng thư", "archives", "lưu trữ", "bàn giao", "thủ công", "nhập liệu", "định danh", "ngày sinh"],
+    targetTab: "tang-thu"
   },
 
   // --- PHÂN HỆ 5 ---
   {
-    id: "archives-management",
-    sectionId: "archives",
-    title: "Quản Lý & Lưu Trữ Tàng Thư CCCD",
+    id: "guide-module-5",
+    title: "Phân hệ 5: Công cụ (Đối sánh & Tiện ích)",
+    sectionId: "tools",
     badge: "Phân hệ 5",
     badgeColor: "bg-purple-100 text-purple-800 border-purple-200",
     icon: React.createElement(FolderPlus, { className: "w-5 h-5 text-purple-600" }),
-    summary: "Xây dựng và quản lý danh sách bàn giao Tàng thư Căn cước với khả năng tự động đối chiếu từ Kho thẻ (Phân hệ 2) hoặc nhập liệu thủ công siêu tốc.",
+    summary: "Công cụ cho phép nạp danh sách Căn cước công dân và đối chiếu tự động với dữ liệu có sẵn trong kho, giúp kiểm tra thẻ đã về kho hay chưa nhanh chóng.",
     steps: [
-      "Chuyển sang Tab '🗄️ PHÂN HỆ 5: TÀNG THƯ' trên thanh điều hướng.",
-      "Tra cứu nhanh: Nhập từ 4 số định danh cá nhân trở lên vào thanh tìm kiếm. Hệ thống sẽ tự động lọc và gợi ý các thẻ đang có trong Phân hệ 2 (nhưng chưa có trong Tàng thư). Dùng mũi tên Lên/Xuống và nhấn Enter để chọn nhanh.",
+      "Chuyển sang Tab '🛠️ PHÂN HỆ 5: CÔNG CỤ' trên thanh điều hướng.",
+      "Tra cứu nhanh: Nhập từ 4 số định danh cá nhân trở lên vào thanh tìm kiếm. Hệ thống sẽ tự động lọc và gợi ý các thẻ đang có trong Phân hệ 2 (nhưng chưa có trong Đối sánh). Dùng mũi tên Lên/Xuống và nhấn Enter để chọn nhanh.",
       "Nhập liệu thủ công (Đối với hồ sơ chưa có trong Kho thẻ): Khi gõ đủ 12 số mà không tìm thấy gợi ý, nhấn Enter để mở Form nhập thủ công. Con trỏ sẽ tự động chuyển sang ô Họ Tên để bạn gõ liên tục.",
       "Mẹo nhập Ngày sinh: Bạn chỉ cần gõ 4 số (VD: 1505) và nhấn Tab, hệ thống tự động trích xuất năm sinh từ số CCCD để điền đủ ngày tháng năm sinh hoàn chỉnh.",
       "Quản lý danh sách: Tại bảng bên phải, bạn có thể chỉnh sửa, xoá nhiều hồ sơ cùng lúc hoặc xuất trực tiếp danh sách Tàng thư ra file Excel chuyên nghiệp."
@@ -249,8 +249,8 @@ export const guideItems: ToolGuideItem[] = [
     tips: [
       "Tính năng giới tính (Nam/Nữ) và thế kỷ sinh (19xx/20xx) luôn được hệ thống tự động bóc tách từ số ĐDCN mà không cần nhập tay."
     ],
-    keywords: ["tàng thư", "archives", "lưu trữ", "bàn giao", "thủ công", "nhập liệu", "định danh", "ngày sinh"],
-    targetTab: "tang-thu"
+    keywords: ["đối sánh", "matching", "kiểm tra chéo", "khớp", "lệch", "matched", "unmatched", "chênh lệch"],
+    targetTab: "cong-cu"
   },
 
   // --- QUẢN TRỊ & SAO LƯU ---
@@ -332,8 +332,8 @@ export const GUIDE_SECTIONS = [
   { id: 'intake' as const, label: "📥 Phân Hệ 1: Lập Danh Sách" },
   { id: 'delivery' as const, label: "📤 Phân Hệ 2: Kho & Trả Thẻ" },
   { id: 'appointments' as const, label: "📑 Phân Hệ 3: Giấy Hẹn" },
-  { id: 'matching' as const, label: "🔄 Phân Hệ 4: Đối Sánh" },
-  { id: 'archives' as const, label: "🗄️ Phân Hệ 5: Tàng Thư" },
+  { id: 'archives' as const, label: "🗄️ Phân Hệ 4: Tàng Thư" },
+  { id: 'tools' as const, label: "🛠️ Phân Hệ 5: Công Cụ" },
   { id: 'admin' as const, label: "⚙️ Quản Trị & Sao Lưu" },
   { id: 'tips' as const, label: "🛠️ Mẹo & Khắc Phục Sự Cố" },
 ];

@@ -1,8 +1,8 @@
 import React from "react";
 
-export type GuideSectionId = 'all' | 'overview' | 'intake' | 'delivery' | 'appointments' | 'matching' | 'archives' | 'admin' | 'tips';
+export type GuideSectionId = 'all' | 'overview' | 'intake' | 'delivery' | 'appointments' | 'tools' | 'archives' | 'admin' | 'tips';
 
-export type NavigatableTab = 'nhap-lieu' | 'tra-the' | 'giay-hen' | 'doi-sanh' | 'tang-thu';
+export type NavigatableTab = 'nhap-lieu' | 'tra-the' | 'giay-hen' | 'cong-cu' | 'tang-thu';
 
 export interface ToolGuideItem {
   id: string;

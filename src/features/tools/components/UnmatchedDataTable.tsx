@@ -98,8 +98,8 @@ export default function UnmatchedDataTable({
   };
 
   return (
-    <div id="unmatched-table-top" className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm overflow-hidden mt-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+    <div id="unmatched-table-top" className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm overflow-hidden mt-6 max-h-[calc(100vh-140px)] flex flex-col">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 shrink-0">
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
           <h3 className="font-bold text-gray-800 flex items-center gap-2">
             <AlertCircle className="w-5 h-5 text-orange-500" />
@@ -114,7 +114,7 @@ export default function UnmatchedDataTable({
       
       {/* Thanh công cụ thao tác hàng loạt */}
       {selectedIds.length > 0 && (
-        <div className="bg-orange-50 border border-orange-200 p-3 rounded-lg flex items-center justify-between mb-4 animate-in fade-in zoom-in-95 duration-200">
+        <div className="bg-orange-50 border border-orange-200 p-3 rounded-lg flex items-center justify-between mb-4 animate-in fade-in zoom-in-95 duration-200 shrink-0">
           <span className="text-sm font-semibold text-orange-800">
             Đang chọn {selectedIds.length} thẻ
           </span>
@@ -137,9 +137,9 @@ export default function UnmatchedDataTable({
         </div>
       )}
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm border-collapse">
-          <thead>
+      <div className="overflow-auto flex-1 min-h-0 bg-gray-50/20">
+        <table className="w-full text-left text-sm border-collapse bg-white">
+          <thead className="sticky top-0 z-30 shadow-sm">
             <tr className="bg-gray-100 text-gray-700 whitespace-nowrap">
               <th className="p-3 border-b border-gray-200 font-semibold w-10 text-center">
                 <input
@@ -155,7 +155,7 @@ export default function UnmatchedDataTable({
               <th className="p-3 border-b border-gray-200 font-semibold">Ngày Cấp</th>
               <th className="p-3 border-b border-gray-200 font-semibold">Địa Chỉ</th>
               <th className="p-3 border-b border-gray-200 font-semibold">Họ Tên Cha / Mẹ</th>
-              <th className="p-3 border-b border-gray-200 font-semibold sticky right-0 bg-gray-100 z-10 border-l text-right">Hành động</th>
+              <th className="p-3 border-b border-gray-200 font-semibold sticky right-0 bg-gray-100 z-40 border-l text-right shadow-[-4px_0_10px_rgba(0,0,0,0.05)]">Hành động</th>
             </tr>
           </thead>
           <tbody>
@@ -205,7 +205,7 @@ export default function UnmatchedDataTable({
         </table>
       </div>
       {/* Phân trang */}
-      <div className="flex flex-col sm:flex-row items-center justify-between border-t border-gray-200 px-4 py-3 bg-gray-50/50 gap-3">
+      <div className="flex flex-col sm:flex-row items-center justify-between border-t border-gray-200 px-4 py-3 bg-gray-50/50 gap-3 shrink-0">
         <div className="flex items-center gap-3">
           <p className="text-sm text-gray-500">
             Hiển thị <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> - <span className="font-medium">{Math.min(currentPage * itemsPerPage, unmatchedRecords.length)}</span> trong số <span className="font-medium">{unmatchedRecords.length}</span> thẻ
